@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpEvent, HttpHandler, HttpInterceptor, HttpRequest, HttpErrorResponse, HttpResponse } from '@angular/common/http';
+import { Router } from '@angular/router';
 import { Observable, throwError } from 'rxjs';
 import { catchError, tap } from 'rxjs/operators';
+import { AuthService } from '@core/services/auth/auth.service';
 import { ToastService } from '../services/misc/toast.service';
 import { DISABLE_TOAST, SHOW_SUCCESS_TOAST } from '../constants/http-context';
 
@@ -18,7 +20,11 @@ const TOAST_DEBOUNCE_MS = 5000;
 export class ErrorHandlerInterceptor implements HttpInterceptor {
   private _recentToasts = new Map<string, ToastEntry>();
 
-  constructor(private toastService: ToastService) {}
+  constructor(
+    private toastService: ToastService,
+    private authService: AuthService,
+    private router: Router,
+  ) {}
 
   intercept(request: HttpRequest<any>, next: HttpHandler): Observable<HttpEvent<any>> {
     return next.handle(request).pipe(
@@ -56,7 +62,16 @@ export class ErrorHandlerInterceptor implements HttpInterceptor {
   private _errorHandler(request: HttpRequest<any>, error: HttpErrorResponse): Observable<HttpEvent<any>> {
     const disableToast = request.context.get(DISABLE_TOAST);
 
-    if (error.status === 401 || error.status === 403) {
+    if (error.status === 401) {
+      const wasAuthenticated = this.authService.isAuthenticated();
+      this.authService.clearSession();
+      if (wasAuthenticated) {
+        this.router.navigate(['/login']);
+      }
+      return throwError(() => error);
+    }
+
+    if (error.status === 403) {
       return throwError(() => error);
     }
 

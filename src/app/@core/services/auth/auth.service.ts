@@ -1,0 +1,117 @@
+import { HttpClient } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { ApiResponse } from '@core/interfaces/ApiResponse';
+import {
+  ICreateUserAccountRequest,
+  ICreateUserAccountResponse,
+  ICurrentUser,
+  ILoginRequest,
+  ILoginResponse,
+  IRefreshTokenResponse,
+  IResetPasswordResponse,
+} from '@core/interfaces/auth/auth.interface';
+import { BASE_URL_Auth } from '@env/environment';
+import { BehaviorSubject, Observable, tap } from 'rxjs';
+
+const ACCESS_TOKEN_KEY = 'pms_access_token';
+const REFRESH_TOKEN_KEY = 'pms_refresh_token';
+const USER_KEY = 'pms_user';
+
+@Injectable({
+  providedIn: 'root',
+})
+export class AuthService {
+  private currentUserSubject = new BehaviorSubject<ICurrentUser | null>(this.readStoredUser());
+  public currentUser$ = this.currentUserSubject.asObservable();
+
+  constructor(private httpClient: HttpClient) {}
+
+  login(request: ILoginRequest): Observable<ApiResponse<ILoginResponse>> {
+    return this.httpClient.post<ApiResponse<ILoginResponse>>(`${BASE_URL_Auth}/login`, request).pipe(
+      tap((response) => {
+        if (!response.hasError) {
+          this.storeSession(response.content);
+        }
+      }),
+    );
+  }
+
+  refreshToken(): Observable<ApiResponse<IRefreshTokenResponse>> {
+    const refreshToken = this.getRefreshToken();
+    return this.httpClient.post<ApiResponse<IRefreshTokenResponse>>(`${BASE_URL_Auth}/refresh`, { refreshToken }).pipe(
+      tap((response) => {
+        if (!response.hasError) {
+          localStorage.setItem(ACCESS_TOKEN_KEY, response.content.accessToken);
+          localStorage.setItem(REFRESH_TOKEN_KEY, response.content.refreshToken);
+        }
+      }),
+    );
+  }
+
+  logout(): Observable<ApiResponse<void>> {
+    const refreshToken = this.getRefreshToken();
+    return this.httpClient.post<ApiResponse<void>>(`${BASE_URL_Auth}/logout`, { refreshToken }).pipe(
+      tap(() => this.clearSession()),
+    );
+  }
+
+  createUserAccount(request: ICreateUserAccountRequest): Observable<ApiResponse<ICreateUserAccountResponse>> {
+    return this.httpClient.post<ApiResponse<ICreateUserAccountResponse>>(`${BASE_URL_Auth}/users`, request);
+  }
+
+  resetPassword(userId: number): Observable<ApiResponse<IResetPasswordResponse>> {
+    return this.httpClient.post<ApiResponse<IResetPasswordResponse>>(`${BASE_URL_Auth}/users/${userId}/reset-password`, {});
+  }
+
+  clearSession(): void {
+    localStorage.removeItem(ACCESS_TOKEN_KEY);
+    localStorage.removeItem(REFRESH_TOKEN_KEY);
+    localStorage.removeItem(USER_KEY);
+    this.currentUserSubject.next(null);
+  }
+
+  getAccessToken(): string | null {
+    return localStorage.getItem(ACCESS_TOKEN_KEY);
+  }
+
+  getRefreshToken(): string | null {
+    return localStorage.getItem(REFRESH_TOKEN_KEY);
+  }
+
+  getRole(): string | null {
+    return this.currentUserSubject.value?.role ?? null;
+  }
+
+  isAuthenticated(): boolean {
+    const token = this.getAccessToken();
+    if (!token) return false;
+    return !this.isTokenExpired(token);
+  }
+
+  private storeSession(response: ILoginResponse): void {
+    localStorage.setItem(ACCESS_TOKEN_KEY, response.accessToken);
+    localStorage.setItem(REFRESH_TOKEN_KEY, response.refreshToken);
+    const user: ICurrentUser = { username: response.username, role: response.role };
+    localStorage.setItem(USER_KEY, JSON.stringify(user));
+    this.currentUserSubject.next(user);
+  }
+
+  private readStoredUser(): ICurrentUser | null {
+    try {
+      const raw = localStorage.getItem(USER_KEY);
+      return raw ? (JSON.parse(raw) as ICurrentUser) : null;
+    } catch {
+      return null;
+    }
+  }
+
+  private isTokenExpired(token: string): boolean {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')));
+      if (!payload.exp) return false;
+      return Date.now() >= payload.exp * 1000;
+    } catch {
+      return true;
+    }
+  }
+}
