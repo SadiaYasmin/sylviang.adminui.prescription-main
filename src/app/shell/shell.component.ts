@@ -3,6 +3,7 @@ import { ShellService } from '@app/shell/services/shell.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { MenuService } from '@app/@core/services/menu.service';
+import { AuthService } from '@core/services/auth/auth.service';
 
 @UntilDestroy()
 @Component({
@@ -24,7 +25,10 @@ export class ShellComponent implements OnInit {
 
   @ViewChild(SidebarComponent) sidebarComponent!: SidebarComponent;
 
-  constructor(private readonly _menuService: MenuService) {}
+  constructor(
+    private readonly _menuService: MenuService,
+    private readonly _authService: AuthService,
+  ) {}
 
   @HostListener('window:resize', ['$event'])
   onResize(event: any): void {
@@ -41,34 +45,14 @@ export class ShellComponent implements OnInit {
       }
     }, 100);
 
-    setTimeout(() => {
-      this.loadUserData();
-    }, 1000);
-
     this._menuService.loading$.pipe(untilDestroyed(this)).subscribe((loading) => {
       this.isMenuLoading = loading;
       this.handleLoadingState(loading);
     });
 
-    this._menuService.user$.pipe(untilDestroyed(this)).subscribe((user) => {
-      if (user && user.username) {
-        this.username = user.username;
-      }
+    this._authService.currentUser$.pipe(untilDestroyed(this)).subscribe((user) => {
+      this.username = user?.username || 'User';
     });
-  }
-
-  private loadUserData(): void {
-    try {
-      const cachedUser = localStorage.getItem('user');
-      if (cachedUser) {
-        const user = JSON.parse(cachedUser);
-        this.username = user.username || 'User';
-      } else {
-        this.username = 'User';
-      }
-    } catch {
-      this.username = 'User';
-    }
   }
 
   private handleLoadingState(isLoading: boolean): void {

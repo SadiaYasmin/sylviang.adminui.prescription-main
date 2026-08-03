@@ -55,6 +55,18 @@
 
   <!-- Right side controls -->
   <div class="flex items-center space-x-4">
+    <div class="flex items-center gap-2 text-sm text-borderDark dark:text-borderLight" *ngIf="username">
+      <span class="font-medium">{{ username }}</span>
+      <span class="text-xs opacity-70" *ngIf="role">({{ role }})</span>
+    </div>
+    <button
+      (click)="logout()"
+      class="h-8 flex items-center text-black dark:text-borderLight hover:text-primary dark:hover:text-primary duration-300"
+      aria-label="Log out"
+      title="Log out"
+    >
+      <i class="fas fa-sign-out-alt"></i>
+    </button>
     <app-theme-toggle></app-theme-toggle>
   </div>
 </header>

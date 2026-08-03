@@ -12,7 +12,6 @@ export class MenuService {
 
   public menu$ = this.menuSubject.asObservable();
   public loading$ = this.loadingSubject.asObservable();
-  public user$ = new BehaviorSubject<any>(null).asObservable();
 
   constructor() {
     this.loadFallbackMenu();
