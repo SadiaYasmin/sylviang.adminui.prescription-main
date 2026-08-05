@@ -11,7 +11,7 @@ import {
   IResetPasswordResponse,
 } from '@core/interfaces/auth/auth.interface';
 import { BASE_URL_Auth } from '@env/environment';
-import { BehaviorSubject, Observable, tap } from 'rxjs';
+import { BehaviorSubject, Observable, finalize, shareReplay, tap } from 'rxjs';
 
 const ACCESS_TOKEN_KEY = 'pms_access_token';
 const REFRESH_TOKEN_KEY = 'pms_refresh_token';
@@ -23,6 +23,11 @@ const USER_KEY = 'pms_user';
 export class AuthService {
   private currentUserSubject = new BehaviorSubject<ICurrentUser | null>(this.readStoredUser());
   public currentUser$ = this.currentUserSubject.asObservable();
+
+  // Shared by the auth guard and the HTTP interceptor so concurrent 401s (e.g. several
+  // requests firing right after the tab wakes from minimize) trigger one refresh call,
+  // not a race of several — Keycloak refresh tokens are one-time-use and rotate on exchange.
+  private refreshInFlight: Observable<ApiResponse<IRefreshTokenResponse>> | null = null;
 
   constructor(private httpClient: HttpClient) {}
 
@@ -37,15 +42,24 @@ export class AuthService {
   }
 
   refreshToken(): Observable<ApiResponse<IRefreshTokenResponse>> {
+    if (this.refreshInFlight) {
+      return this.refreshInFlight;
+    }
+
     const refreshToken = this.getRefreshToken();
-    return this.httpClient.post<ApiResponse<IRefreshTokenResponse>>(`${BASE_URL_Auth}/refresh`, { refreshToken }).pipe(
+    this.refreshInFlight = this.httpClient.post<ApiResponse<IRefreshTokenResponse>>(`${BASE_URL_Auth}/refresh`, { refreshToken }).pipe(
       tap((response) => {
         if (!response.hasError) {
           localStorage.setItem(ACCESS_TOKEN_KEY, response.content.accessToken);
           localStorage.setItem(REFRESH_TOKEN_KEY, response.content.refreshToken);
         }
       }),
+      shareReplay(1),
+      finalize(() => {
+        this.refreshInFlight = null;
+      }),
     );
+    return this.refreshInFlight;
   }
 
   logout(): Observable<ApiResponse<void>> {
@@ -84,6 +98,13 @@ export class AuthService {
 
   isAuthenticated(): boolean {
     const token = this.getAccessToken();
+    if (!token) return false;
+    return !this.isTokenExpired(token);
+  }
+
+  /** True when a (still unexpired) refresh token exists, so a silent refresh can recover the session. */
+  hasValidRefreshToken(): boolean {
+    const token = this.getRefreshToken();
     if (!token) return false;
     return !this.isTokenExpired(token);
   }

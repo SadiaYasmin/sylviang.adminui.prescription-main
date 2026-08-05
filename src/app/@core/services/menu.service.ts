@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { AuthService } from '@core/services/auth/auth.service';
 import { BehaviorSubject, Observable, of } from 'rxjs';
 import type { IMenuItem } from '@core/interfaces/menuResponse.interface';
 import { webSidebarMenuItems } from '../constants/nav-menu-items';
@@ -13,13 +14,24 @@ export class MenuService {
   public menu$ = this.menuSubject.asObservable();
   public loading$ = this.loadingSubject.asObservable();
 
-  constructor() {
+  constructor(private authService: AuthService) {
     this.loadFallbackMenu();
+    this.authService.currentUser$.subscribe(() => this.loadFallbackMenu());
   }
 
   private loadFallbackMenu(): void {
-    const items = this.transformMenuItems(webSidebarMenuItems);
+    const role = this.authService.getRole();
+    const items = this.transformMenuItems(this.filterByRole(webSidebarMenuItems, role));
     this.menuSubject.next(items);
+  }
+
+  private filterByRole(items: IMenuItem[], role: string | null): IMenuItem[] {
+    return items
+      .filter((item) => !item.roles || item.roles.length === 0 || (role != null && item.roles.includes(role)))
+      .map((item) => ({
+        ...item,
+        subItems: item.subItems ? this.filterByRole(item.subItems, role) : undefined,
+      }));
   }
 
   private transformMenuItems(items: IMenuItem[]): IMenuItem[] {

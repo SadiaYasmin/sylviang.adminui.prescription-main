@@ -231,7 +231,19 @@
   @apply h-[26px] flex items-center gap-2;
   i,
   span {
-    @apply text-white text-sm;
+    @apply text-sm;
+  }
+  &:not(.p-button-outlined):not(.p-button-text) {
+    i,
+    span {
+      @apply text-white;
+    }
+  }
+  &.p-button-outlined,
+  &.p-button-text {
+    span {
+      color: inherit;
+    }
   }
 }
 .p-button:disabled {

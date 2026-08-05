@@ -75,4 +75,42 @@ describe('AuthService', () => {
   it('isAuthenticated should be false when there is no token at all', () => {
     expect(service.isAuthenticated()).toBeFalse();
   });
+
+  it('hasValidRefreshToken should be true for an unexpired refresh token', () => {
+    const validPayload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) + 1800 }));
+    localStorage.setItem('pms_refresh_token', `header.${validPayload}.sig`);
+
+    expect(service.hasValidRefreshToken()).toBeTrue();
+  });
+
+  it('hasValidRefreshToken should be false for an expired refresh token', () => {
+    const expiredPayload = btoa(JSON.stringify({ exp: Math.floor(Date.now() / 1000) - 60 }));
+    localStorage.setItem('pms_refresh_token', `header.${expiredPayload}.sig`);
+
+    expect(service.hasValidRefreshToken()).toBeFalse();
+  });
+
+  it('hasValidRefreshToken should be false when there is no refresh token', () => {
+    expect(service.hasValidRefreshToken()).toBeFalse();
+  });
+
+  it('refreshToken should share a single in-flight call across concurrent callers', () => {
+    localStorage.setItem('pms_refresh_token', 'refresh-1');
+
+    let firstResult: unknown;
+    let secondResult: unknown;
+    service.refreshToken().subscribe((r) => (firstResult = r));
+    service.refreshToken().subscribe((r) => (secondResult = r));
+
+    const reqs = httpMock.match(`${BASE_URL_Auth}/refresh`);
+    expect(reqs.length).toBe(1);
+    reqs[0].flush({
+      hasError: false,
+      decentMessage: 'ok',
+      content: { accessToken: 'new-access', refreshToken: 'new-refresh', expiresIn: 300 },
+    });
+
+    expect(firstResult).toEqual(secondResult);
+    expect(service.getAccessToken()).toBe('new-access');
+  });
 });

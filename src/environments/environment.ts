@@ -12,3 +12,4 @@ export const BASE_URL_Payroll = `${Base_URL}/payroll`;
 // Base_URL above which points at an unrelated placeholder service on port 5112.
 export const BASE_URL_Backend = 'http://localhost:5208/prescription';
 export const BASE_URL_Auth = `${BASE_URL_Backend}/auth`;
+export const BASE_URL_Doctors = `${BASE_URL_Backend}/doctors`;

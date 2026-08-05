@@ -1,0 +1,127 @@
+<section class="page-container">
+  <button [routerLink]="['/doctors/doctor-list']" class="mb-4 inline-flex items-center gap-1.5 text-sm font-medium text-muted-color">
+    <i class="fa fa-arrow-left"></i> Back to Doctors
+  </button>
+
+  <div *ngIf="loading" class="py-16 text-center text-sm text-muted-color">Loading doctor...</div>
+
+  <ng-container *ngIf="!loading && details as d">
+    <div class="mb-6 flex items-center gap-4 rounded-2xl border border-surface-200 bg-surface-0 p-5 shadow-sm">
+      <div class="h-20 w-20 rounded-full overflow-hidden bg-surface-100 flex items-center justify-center">
+        <img *ngIf="d.profile.photoBase64" [src]="d.profile.photoBase64" [alt]="d.profile.fullName" class="h-full w-full object-cover" />
+        <i *ngIf="!d.profile.photoBase64" class="fa fa-user-doctor text-2xl text-muted-color"></i>
+      </div>
+      <div>
+        <div class="text-xl font-semibold">{{ d.profile.fullName }}</div>
+        <div class="text-sm font-medium text-primary">{{ d.profile.specialization || d.profile.department || 'General Physician' }}</div>
+        <div class="text-xs text-muted-color">{{ d.profile.department || 'General Medicine' }}</div>
+      </div>
+    </div>
+
+    <section class="mb-6">
+      <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Personal Information</div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 rounded-2xl border border-surface-200 bg-surface-0 p-4">
+        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+          <span class="text-muted-color">Full Name</span><span class="font-medium">{{ d.profile.fullName }}</span>
+        </div>
+        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+          <span class="text-muted-color">BM&amp;DC Reg. No.</span><span class="font-medium">{{ d.profile.licenseNumber || '-' }}</span>
+        </div>
+        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+          <span class="text-muted-color">Qualification</span><span class="font-medium">{{ d.profile.qualification || '-' }}</span>
+        </div>
+        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+          <span class="text-muted-color">Experience</span
+          ><span class="font-medium">{{ d.profile.experienceYears ? d.profile.experienceYears + ' years' : '-' }}</span>
+        </div>
+        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+          <span class="text-muted-color">Gender</span><span class="font-medium">{{ d.profile.gender || '-' }}</span>
+        </div>
+        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+          <span class="text-muted-color">Email</span><span class="font-medium">{{ d.profile.email || '-' }}</span>
+        </div>
+        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+          <span class="text-muted-color">Phone</span><span class="font-medium">{{ d.profile.phone }}</span>
+        </div>
+        <div class="flex justify-between py-2 text-sm">
+          <span class="text-muted-color">Status</span
+          ><span [class]="d.profile.isActive ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">{{
+            d.profile.isActive ? 'Active' : 'Inactive'
+          }}</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-6">
+      <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Prescription Analytics</div>
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+          <div class="text-xs uppercase tracking-wide text-muted-color">Total Prescriptions</div>
+          <div class="text-2xl font-semibold">{{ d.performance.totalPrescriptions }}</div>
+        </div>
+        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+          <div class="text-xs uppercase tracking-wide text-muted-color">Today's Prescriptions</div>
+          <div class="text-2xl font-semibold">{{ d.performance.todayPrescriptions }}</div>
+        </div>
+        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+          <div class="text-xs uppercase tracking-wide text-muted-color">This Month's Prescriptions</div>
+          <div class="text-2xl font-semibold">{{ d.performance.thisMonthPrescriptions }}</div>
+        </div>
+        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+          <div class="text-xs uppercase tracking-wide text-muted-color">Total Medicines Prescribed</div>
+          <div class="text-2xl font-semibold">{{ d.performance.totalMedicinesPrescribed }}</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="mb-6">
+      <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Top Prescribed Medicines</div>
+      <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-hidden">
+        <table class="w-full text-sm">
+          <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+            <tr>
+              <th class="px-4 py-2.5 text-left font-medium">Medicine Name</th>
+              <th class="px-4 py-2.5 text-right font-medium">Times Prescribed</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let m of d.performance.topMedicines">
+              <td class="px-4 py-2.5">{{ m.name }}</td>
+              <td class="px-4 py-2.5 text-right font-medium">{{ m.count }}</td>
+            </tr>
+            <tr *ngIf="d.performance.topMedicines.length === 0">
+              <td colspan="2" class="px-4 py-6 text-center text-muted-color">No medicines prescribed yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section>
+      <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Recent Prescriptions</div>
+      <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+            <tr>
+              <th class="px-4 py-2.5 text-left font-medium">Prescription ID</th>
+              <th class="px-4 py-2.5 text-left font-medium">Patient Name</th>
+              <th class="px-4 py-2.5 text-left font-medium">Diagnosis</th>
+              <th class="px-4 py-2.5 text-left font-medium">Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let rx of d.performance.recentPrescriptions">
+              <td class="px-4 py-2.5 font-mono text-xs">{{ rx.prescriptionId }}</td>
+              <td class="px-4 py-2.5">{{ rx.patientName }}</td>
+              <td class="px-4 py-2.5">{{ rx.diagnosis || '-' }}</td>
+              <td class="px-4 py-2.5">{{ rx.date | date: 'mediumDate' }}</td>
+            </tr>
+            <tr *ngIf="d.performance.recentPrescriptions.length === 0">
+              <td colspan="4" class="px-4 py-6 text-center text-muted-color">No prescriptions recorded yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+  </ng-container>
+</section>

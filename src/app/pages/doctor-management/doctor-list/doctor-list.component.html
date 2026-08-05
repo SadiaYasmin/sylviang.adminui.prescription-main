@@ -1,0 +1,153 @@
+<section class="page-container">
+  <!-- Summary stat tiles -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">Total Doctors</div>
+      <div class="text-2xl font-semibold">{{ summary.totalDoctors }}</div>
+    </div>
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">Active Doctors</div>
+      <div class="text-2xl font-semibold">{{ summary.activeDoctors }}</div>
+    </div>
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">Total Prescriptions</div>
+      <div class="text-2xl font-semibold">{{ summary.totalPrescriptions }}</div>
+    </div>
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">Total Medicine Entries</div>
+      <div class="text-2xl font-semibold">{{ summary.totalMedicineEntries }}</div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap justify-between items-end gap-3">
+    <div class="flex flex-wrap items-end gap-3">
+      <p-floatlabel variant="in">
+        <input type="text" pInputText id="searchInput" [(ngModel)]="searchTerm" name="searchInput" (keyup.enter)="applySearch()" />
+        <label for="searchInput">Search name, specialization, license</label>
+      </p-floatlabel>
+
+      <p-floatlabel variant="in">
+        <input type="text" pInputText id="departmentInput" [(ngModel)]="departmentFilter" name="departmentInput" (keyup.enter)="applySearch()" />
+        <label for="departmentInput">Department</label>
+      </p-floatlabel>
+
+      <p-select
+        [options]="[
+          { label: 'All Statuses', value: 'all' },
+          { label: 'Active', value: 'active' },
+          { label: 'Inactive', value: 'inactive' },
+        ]"
+        [(ngModel)]="statusFilter"
+        optionLabel="label"
+        optionValue="value"
+        (onChange)="applySearch()"
+      ></p-select>
+
+      <button pButton (click)="applySearch()">
+        <i class="fa fa-search"></i>
+        <span>Search</span>
+      </button>
+
+      <button *ngIf="searchTerm || departmentFilter || statusFilter !== 'all'" severity="secondary" pButton (click)="resetSearch()">
+        <i class="fa fa-times"></i>
+        <span>Reset</span>
+      </button>
+    </div>
+
+    <button [routerLink]="['/doctors/manage-doctor']" pButton>
+      <i class="fa fa-plus"></i>
+      <span>Add Doctor</span>
+    </button>
+  </div>
+
+  <div class="table-container mt-4">
+    <div class="table-title-container">
+      <h3 class="table-title">
+        Doctors
+        <span class="table-title-info" *ngIf="totalRecords > 0"> ({{ totalRecords }} total)</span>
+      </h3>
+    </div>
+
+    <div class="transition-all duration-500 ease-in-out">
+      <p-table
+        [value]="loading ? skeletonItems : doctors"
+        dataKey="doctorId"
+        [paginator]="true"
+        [rows]="rows"
+        [first]="(currentPage - 1) * rows"
+        [rowsPerPageOptions]="UI_CONFIG.pageSizeOptions"
+        [totalRecords]="totalRecords"
+        (onPage)="onPageChange($event)"
+        [lazy]="true"
+        [loading]="false"
+        scrollHeight="flex"
+        [responsiveLayout]="'scroll'"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} doctors"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            @for (col of columns; track col.field) {
+              <th [style.width]="col.width">{{ col.label }}</th>
+            }
+            <th style="width: 10rem">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-doctor>
+          @if (loading) {
+            <tr>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="3rem" height="1rem"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>{{ doctor.fullName }}</td>
+              <td>{{ doctor.specialization || '-' }}</td>
+              <td>{{ doctor.department || '-' }}</td>
+              <td>{{ doctor.licenseNumber || '-' }}</td>
+              <td>{{ doctor.phone }}</td>
+              <td>
+                <span [class]="doctor.isActive ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
+                  {{ doctor.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td>
+                <button [routerLink]="['/doctors/doctor-details', doctor.doctorId]" class="text-primary mr-2" title="View details">
+                  <i class="fa fa-eye"></i>
+                </button>
+                <button [routerLink]="['/doctors/manage-doctor', doctor.doctorId]" class="text-primary mr-2" title="Edit">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button
+                  *ngIf="doctor.isActive"
+                  class="text-danger"
+                  title="Deactivate"
+                  (click)="deactivateDoctor(doctor, $event)"
+                >
+                  <i class="fa fa-user-slash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td [attr.colspan]="columns.length + 1" class="not-found">
+              <div>
+                <i class="fa fa-magnifying-glass-minus"></i>
+                <p>No doctors match your search or filters.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</section>

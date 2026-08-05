@@ -1,0 +1,12 @@
+:host {
+  display: block;
+}
+
+// The global `.p-datepicker-input` height hack (54px, added for a floating-label
+// time picker elsewhere) makes Joining Date taller than every sibling input on
+// this plain-label form and breaks the grid alignment — reset it back to normal here.
+:host ::ng-deep .p-datepicker .p-datepicker-input,
+:host ::ng-deep .p-datepicker .p-inputtext {
+  height: auto !important;
+  padding: 0.5rem 0.75rem !important;
+}
