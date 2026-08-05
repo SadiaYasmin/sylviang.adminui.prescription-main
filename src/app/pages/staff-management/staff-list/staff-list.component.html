@@ -1,0 +1,135 @@
+<section class="page-container">
+  <div class="flex flex-wrap justify-between items-end gap-3">
+    <div class="flex flex-wrap items-end gap-3">
+      <p-floatlabel variant="in">
+        <input type="text" pInputText id="searchInput" [(ngModel)]="searchTerm" name="searchInput" (keyup.enter)="applySearch()" />
+        <label for="searchInput">Search name{{ isDoctorView ? '' : ', username, department' }}</label>
+      </p-floatlabel>
+
+      <p-floatlabel *ngIf="!isDoctorView" variant="in">
+        <input type="text" pInputText id="departmentInput" [(ngModel)]="departmentFilter" name="departmentInput" (keyup.enter)="applySearch()" />
+        <label for="departmentInput">Department</label>
+      </p-floatlabel>
+
+      <p-select
+        *ngIf="!isDoctorView"
+        [options]="[
+          { label: 'All Statuses', value: 'all' },
+          { label: 'Active', value: 'active' },
+          { label: 'Inactive', value: 'inactive' },
+        ]"
+        [(ngModel)]="statusFilter"
+        optionLabel="label"
+        optionValue="value"
+        (onChange)="applySearch()"
+      ></p-select>
+
+      <button pButton (click)="applySearch()">
+        <i class="fa fa-search"></i>
+        <span>Search</span>
+      </button>
+
+      <button *ngIf="searchTerm || departmentFilter || statusFilter !== 'all'" severity="secondary" pButton (click)="resetSearch()">
+        <i class="fa fa-times"></i>
+        <span>Reset</span>
+      </button>
+    </div>
+
+    <button *ngIf="!isDoctorView" [routerLink]="['/staff/manage-staff']" pButton>
+      <i class="fa fa-plus"></i>
+      <span>Add Staff</span>
+    </button>
+  </div>
+
+  <div class="table-container mt-4">
+    <div class="table-title-container">
+      <h3 class="table-title">
+        {{ isDoctorView ? 'Your Assigned Staff' : 'Staff' }}
+        <span class="table-title-info" *ngIf="totalRecords > 0"> ({{ totalRecords }} total)</span>
+      </h3>
+    </div>
+
+    <div class="transition-all duration-500 ease-in-out">
+      <p-table
+        [value]="loading ? skeletonItems : staff"
+        dataKey="staffId"
+        [paginator]="!isDoctorView"
+        [rows]="rows"
+        [first]="(currentPage - 1) * rows"
+        [rowsPerPageOptions]="UI_CONFIG.pageSizeOptions"
+        [totalRecords]="totalRecords"
+        (onPage)="onPageChange($event)"
+        [lazy]="!isDoctorView"
+        [loading]="false"
+        scrollHeight="flex"
+        [responsiveLayout]="'scroll'"
+        [showCurrentPageReport]="!isDoctorView"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} staff"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            @for (col of columns; track col.field) {
+              <th [style.width]="col.width">{{ col.label }}</th>
+            }
+            <th *ngIf="!isDoctorView" style="width: 8rem">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-member>
+          @if (loading) {
+            <tr>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td *ngIf="!isDoctorView"><p-skeleton width="3rem" height="1rem"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>{{ member.fullName }}</td>
+              <td>{{ member.department || '-' }}</td>
+              <td>{{ member.phone }}</td>
+              <td>
+                <span *ngIf="isDoctorView" class="doctor-chip"><i class="fa fa-user-md"></i> Assigned to you</span>
+                <div *ngIf="!isDoctorView" class="flex flex-wrap gap-1">
+                  <span *ngFor="let doctor of member.assignedDoctors" class="doctor-chip"><i class="fa fa-user-md"></i> {{ doctor.fullName }}</span>
+                  <span *ngIf="!member.assignedDoctors?.length" class="text-muted-color">Unassigned</span>
+                </div>
+              </td>
+              <td>
+                <span [class]="member.isActive ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
+                  {{ member.isActive ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td *ngIf="!isDoctorView">
+                <button [routerLink]="['/staff/manage-staff', member.staffId]" class="text-primary mr-2" title="Edit">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button
+                  *ngIf="member.isActive"
+                  class="text-danger"
+                  title="Deactivate"
+                  (click)="deactivateStaff(member, $event)"
+                >
+                  <i class="fa fa-user-slash"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td [attr.colspan]="columns.length + (isDoctorView ? 0 : 1)" class="not-found">
+              <div>
+                <i class="fa fa-magnifying-glass-minus"></i>
+                <p>{{ isDoctorView ? 'No staff are assigned to you yet.' : 'No staff match your search or filters.' }}</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</section>

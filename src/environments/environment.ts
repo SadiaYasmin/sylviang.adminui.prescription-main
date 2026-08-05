@@ -13,3 +13,4 @@ export const BASE_URL_Payroll = `${Base_URL}/payroll`;
 export const BASE_URL_Backend = 'http://localhost:5208/prescription';
 export const BASE_URL_Auth = `${BASE_URL_Backend}/auth`;
 export const BASE_URL_Doctors = `${BASE_URL_Backend}/doctors`;
+export const BASE_URL_Staff = `${BASE_URL_Backend}/staff`;

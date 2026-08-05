@@ -1,0 +1,15 @@
+:host {
+  display: block;
+}
+
+.doctor-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.125rem 0.5rem;
+  border-radius: 9999px;
+  background: var(--p-primary-50, #eff6ff);
+  color: var(--p-primary-700, #1d4ed8);
+  font-size: 0.75rem;
+  font-weight: 500;
+}

@@ -40,4 +40,11 @@ export const webSidebarMenuItems: IMenuItem[] = [
     icon: 'fa-solid fa-user-doctor',
     roles: ['Admin'],
   },
+  {
+    href: '/staff/staff-list',
+    title: 'Staff Management',
+    active: false,
+    icon: 'fa-solid fa-users',
+    roles: ['Admin', 'Doctor'],
+  },
 ];

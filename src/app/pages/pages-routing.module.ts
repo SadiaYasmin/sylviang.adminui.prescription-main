@@ -26,6 +26,12 @@ const routes: Routes = [
       data: { roles: ['Admin'] },
       loadChildren: () => import('./doctor-management/doctor-management.module').then((m) => m.DoctorManagementModule),
     },
+    {
+      path: 'staff',
+      canActivate: [roleGuard],
+      data: { roles: ['Admin', 'Doctor'] },
+      loadChildren: () => import('./staff-management/staff-management.module').then((m) => m.StaffManagementModule),
+    },
   ]),
 ];
 
