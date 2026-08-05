@@ -33,4 +33,11 @@ export const webSidebarMenuItems: IMenuItem[] = [
       },
     ],
   },
+  {
+    href: '/doctors/doctor-list',
+    title: 'Doctor Management',
+    active: false,
+    icon: 'fa-solid fa-user-doctor',
+    roles: ['Admin'],
+  },
 ];

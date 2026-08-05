@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { RouterModule, Routes } from '@angular/router';
+import { roleGuard } from '@core/guards/role.guard';
 import { Shell } from '@app/shell/services/shell.service';
 import { DashboardComponent } from './dashboard/dashboard.component';
 
@@ -18,6 +19,12 @@ const routes: Routes = [
     {
       path: 'payroll',
       loadChildren: () => import('./payroll-management/payroll-management.module').then((m) => m.PayrollManagementModule),
+    },
+    {
+      path: 'doctors',
+      canActivate: [roleGuard],
+      data: { roles: ['Admin'] },
+      loadChildren: () => import('./doctor-management/doctor-management.module').then((m) => m.DoctorManagementModule),
     },
   ]),
 ];
