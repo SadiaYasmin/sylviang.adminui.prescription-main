@@ -1,0 +1,109 @@
+<section class="page-container">
+  <div *ngIf="loading" class="text-muted-color">Loading hospital settings...</div>
+
+  <form *ngIf="!loading" [formGroup]="settingsForm" (ngSubmit)="onSubmit()" novalidate class="max-w-3xl">
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm mb-4">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-xs font-medium mb-2">Hospital Logo</label>
+          <div class="flex items-center gap-4">
+            <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 flex items-center justify-center">
+              <img *ngIf="f['logoBase64'].value" [src]="f['logoBase64'].value" alt="Hospital logo" class="h-full w-full object-contain" />
+              <i *ngIf="!f['logoBase64'].value" class="fa fa-hospital text-2xl text-muted-color"></i>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-surface-300 px-3 py-1.5 text-xs font-medium">
+                <i class="fa fa-upload"></i>
+                {{ f['logoBase64'].value ? 'Change Logo' : 'Upload Logo' }}
+                <input type="file" accept="image/*" class="hidden" (change)="onLogoSelected($event)" [disabled]="logoBusy" />
+              </label>
+              <button *ngIf="f['logoBase64'].value" type="button" (click)="removeLogo()" class="text-xs text-muted-color w-fit">
+                <i class="fa fa-times"></i> Remove logo
+              </button>
+            </div>
+          </div>
+          <div *ngIf="logoError" class="text-xs text-red-600 mt-1">{{ logoError }}</div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-2">Hospital Seal</label>
+          <div class="flex items-center gap-4">
+            <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 flex items-center justify-center">
+              <img *ngIf="f['sealBase64'].value" [src]="f['sealBase64'].value" alt="Hospital seal" class="h-full w-full object-contain" />
+              <i *ngIf="!f['sealBase64'].value" class="fa fa-stamp text-2xl text-muted-color"></i>
+            </div>
+            <div class="flex flex-col gap-1.5">
+              <label class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-surface-300 px-3 py-1.5 text-xs font-medium">
+                <i class="fa fa-upload"></i>
+                {{ f['sealBase64'].value ? 'Change Seal' : 'Upload Seal' }}
+                <input type="file" accept="image/*" class="hidden" (change)="onSealSelected($event)" [disabled]="sealBusy" />
+              </label>
+              <button *ngIf="f['sealBase64'].value" type="button" (click)="removeSeal()" class="text-xs text-muted-color w-fit">
+                <i class="fa fa-times"></i> Remove seal
+              </button>
+            </div>
+          </div>
+          <div *ngIf="sealError" class="text-xs text-red-600 mt-1">{{ sealError }}</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-medium mb-1">Hospital Name</label>
+          <input type="text" pInputText class="w-full" formControlName="name" />
+          <div *ngIf="hasError('name')" class="text-xs text-red-600 mt-1">Hospital name is required.</div>
+        </div>
+
+        <div class="sm:col-span-2">
+          <label class="block text-xs font-medium mb-1">Address</label>
+          <input type="text" pInputText class="w-full" formControlName="address" />
+          <div *ngIf="hasError('address')" class="text-xs text-red-600 mt-1">Address is required.</div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-1">Phone</label>
+          <input type="text" pInputText class="w-full" formControlName="phone" />
+          <div *ngIf="hasError('phone')" class="text-xs text-red-600 mt-1">Phone is required.</div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-1">Emergency Number</label>
+          <input type="text" pInputText class="w-full" formControlName="emergencyNumber" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-1">Email</label>
+          <input type="email" pInputText class="w-full" formControlName="email" />
+          <div *ngIf="hasError('email')" class="text-xs text-red-600 mt-1">Enter a valid email address.</div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-1">Website</label>
+          <input type="text" pInputText class="w-full" formControlName="website" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-1">Slogan (English)</label>
+          <input type="text" pInputText class="w-full" formControlName="slogan" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-1">Slogan (Bangla)</label>
+          <input type="text" pInputText class="w-full" formControlName="sloganBn" />
+        </div>
+
+        <div>
+          <label class="block text-xs font-medium mb-1">License Number</label>
+          <input type="text" pInputText class="w-full" formControlName="licenseNumber" />
+        </div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-6">
+      <button type="button" pButton severity="secondary" [routerLink]="['/templates/template-list']">Cancel</button>
+      <button type="submit" pButton [loading]="saving">Save Changes</button>
+    </div>
+  </form>
+</section>

@@ -1,0 +1,42 @@
+<div class="patient-info-block">
+  <div class="pib-row">
+    <div class="pib-field pib-name">
+      <span class="pib-label">{{ label('patientName', 'Name') }}:</span>
+      <span class="pib-value">{{ name || '-' }}</span>
+    </div>
+    <div class="pib-field pib-age">
+      <span class="pib-label">{{ label('patientAge', 'Age') }}:</span>
+      <span class="pib-value">{{ age || '-' }}</span>
+    </div>
+    <div class="pib-field pib-sex">
+      <span class="pib-label">{{ label('patientSex', 'Sex') }}:</span>
+      <span class="pib-value">{{ sex || '-' }}</span>
+    </div>
+    <div class="pib-field pib-phone">
+      <span class="pib-label">{{ label('patientPhone', 'Phone') }}:</span>
+      <span class="pib-value">{{ phone || '-' }}</span>
+    </div>
+  </div>
+
+  <div class="pib-row">
+    <div class="pib-field pib-blood-group">
+      <span class="pib-label">{{ label('patientBloodGroup', 'Blood Group') }}:</span>
+      <span class="pib-value">{{ bloodGroup || '-' }}</span>
+    </div>
+    <div class="pib-field pib-allergies">
+      <span class="pib-label">{{ label('patientAllergies', 'Allergies') }}:</span>
+      <span class="pib-value">{{ allergies || '-' }}</span>
+    </div>
+    <div class="pib-field pib-date">
+      <span class="pib-label">{{ label('patientDate', 'Date') }}:</span>
+      <span class="pib-value">{{ date || '-' }}</span>
+    </div>
+  </div>
+
+  <div class="pib-row">
+    <div class="pib-field pib-rxno pib-rxno-fullwidth">
+      <span class="pib-label">{{ label('patientRxNo', 'Rx No') }}:</span>
+      <span class="pib-value">{{ rxNo || '-' }}</span>
+    </div>
+  </div>
+</div>

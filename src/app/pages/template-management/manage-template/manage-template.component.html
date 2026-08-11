@@ -1,0 +1,266 @@
+<section class="page-container">
+  <!-- CREATE MODE -->
+  <form *ngIf="!isEditMode" [formGroup]="createForm" (ngSubmit)="createTemplate()" novalidate class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm max-w-xl">
+    <h3 class="text-lg font-semibold mb-4">Create New Template</h3>
+
+    <div class="flex flex-col gap-4">
+      <div>
+        <label class="block text-xs font-medium mb-1">Template Name</label>
+        <input type="text" pInputText class="w-full" formControlName="name" placeholder="e.g. Main OPD Prescription" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">Base Type</label>
+        <p-select [options]="typeOptions" formControlName="type" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">Language</label>
+        <p-select [options]="languageOptions" formControlName="language" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-6">
+      <button type="button" pButton severity="secondary" (click)="goBack()">Cancel</button>
+      <button type="submit" pButton [loading]="saving">Create Template</button>
+    </div>
+  </form>
+
+  <!-- EDIT MODE -->
+  <div *ngIf="isEditMode">
+    <div *ngIf="loading" class="text-muted-color">Loading template...</div>
+
+    <div *ngIf="!loading && configForm" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+      <!-- Editor column -->
+      <form [formGroup]="configForm" (ngSubmit)="save()" novalidate class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-4">
+          <div>
+            <label class="block text-xs font-medium mb-1">Template Name</label>
+            <input type="text" pInputText formControlName="name" class="w-full" />
+          </div>
+        </div>
+
+        <p-tabs [value]="activeTab" (valueChange)="activeTab = $event">
+          <p-tablist>
+            <p-tab *ngFor="let tab of tabs" [value]="tab.value">{{ tab.label }}</p-tab>
+          </p-tablist>
+
+          <p-tabpanels>
+            <!-- HEADER TAB -->
+            <p-tabpanel value="header">
+              <div formGroupName="header" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium mb-1">Background Color</label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" formControlName="bgColor" class="h-9 w-14" />
+                    <button type="button" pButton size="small" severity="secondary" [outlined]="true" (click)="clearColor('header', 'bgColor')">Clear</button>
+                  </div>
+                  <div *ngIf="isGovernment" class="text-xs text-muted-color mt-1">
+                    Government layout is always monochrome — this color is ignored for this template type.
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Height (px)</label>
+                  <p-inputnumber formControlName="height" [min]="0" styleClass="w-full"></p-inputnumber>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Logo Size (px)</label>
+                  <p-inputnumber formControlName="logoSize" [min]="0" styleClass="w-full"></p-inputnumber>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Hospital Name Font</label>
+                  <p-select [options]="nameFontOptions" formControlName="nameFont" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Border Style</label>
+                  <p-select [options]="borderStyleOptions" formControlName="borderStyle" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <!-- FOOTER TAB -->
+            <p-tabpanel value="footer">
+              <div formGroupName="footer" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium mb-1">Background Color</label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" formControlName="bgColor" class="h-9 w-14" />
+                    <button type="button" pButton size="small" severity="secondary" [outlined]="true" (click)="clearColor('footer', 'bgColor')">Clear</button>
+                  </div>
+                  <div *ngIf="isGovernment" class="text-xs text-muted-color mt-1">
+                    Government layout is always monochrome — this color is ignored for this template type.
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Height (px)</label>
+                  <p-inputnumber formControlName="height" [min]="0" styleClass="w-full"></p-inputnumber>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Border Style</label>
+                  <p-select [options]="borderStyleOptions" formControlName="borderStyle" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium mb-1">QR Verification Message (English)</label>
+                  <input type="text" pInputText class="w-full" formControlName="qrMessage" />
+                </div>
+                <div class="sm:col-span-2">
+                  <label class="block text-xs font-medium mb-1">QR Verification Message (Bangla)</label>
+                  <input type="text" pInputText class="w-full" formControlName="qrMessageBn" />
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <!-- STYLE TAB -->
+            <p-tabpanel value="style">
+              <div formGroupName="style" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium mb-1">Section Spacing (px)</label>
+                  <p-inputnumber formControlName="sectionSpacing" [min]="0" styleClass="w-full"></p-inputnumber>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Border Radius (px)</label>
+                  <p-inputnumber formControlName="borderRadius" [min]="0" styleClass="w-full"></p-inputnumber>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Divider / Border Style</label>
+                  <p-select [options]="borderStyleOptions" formControlName="borderStyle" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Accent Color</label>
+                  <div class="flex items-center gap-2">
+                    <input type="color" formControlName="accentColor" class="h-9 w-14" />
+                    <button type="button" pButton size="small" severity="secondary" [outlined]="true" (click)="clearColor('style', 'accentColor')">Clear</button>
+                  </div>
+                  <div *ngIf="isGovernment" class="text-xs text-muted-color mt-1">
+                    Government layout is always monochrome — this color is ignored for this template type.
+                  </div>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Font Family</label>
+                  <p-select [options]="fontFamilyOptions" formControlName="fontFamily" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Base Font Size (px)</label>
+                  <p-inputnumber formControlName="fontSize" [min]="8" styleClass="w-full"></p-inputnumber>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Medicine Table Style</label>
+                  <p-select [options]="tableStyleOptions" formControlName="tableStyle" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Watermark Text</label>
+                  <input type="text" pInputText class="w-full" formControlName="watermarkText" placeholder="e.g. SPECIMEN" />
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <!-- VISIBILITY TAB -->
+            <p-tabpanel value="visibility">
+              <p class="text-xs text-muted-color mb-3">
+                These toggles are cosmetic-only. Patient info, doctor info, all clinical sections, Rx/medicines, advice, follow-up, QR, and signature
+                can never be hidden here — they are always rendered.
+              </p>
+              <div formGroupName="visibility" class="flex flex-col gap-3">
+                <div class="flex items-center justify-between max-w-sm">
+                  <span>Hospital Logo</span>
+                  <p-toggleswitch formControlName="logo"></p-toggleswitch>
+                </div>
+                <div class="flex items-center justify-between max-w-sm">
+                  <span>Slogan</span>
+                  <p-toggleswitch formControlName="slogan"></p-toggleswitch>
+                </div>
+                <div class="flex items-center justify-between max-w-sm">
+                  <span>Footer</span>
+                  <p-toggleswitch formControlName="footer"></p-toggleswitch>
+                </div>
+                <div class="flex items-center justify-between max-w-sm">
+                  <span>Watermark</span>
+                  <p-toggleswitch formControlName="watermark"></p-toggleswitch>
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <!-- LABELS TAB -->
+            <p-tabpanel value="labels">
+              <div class="flex items-center justify-between mb-3">
+                <p class="text-xs text-muted-color">Every printed label is editable and auto-filled from the template's language defaults.</p>
+                <button type="button" pButton size="small" severity="secondary" [outlined]="true" (click)="resetLabelsToDefaults()">
+                  <i class="fa fa-rotate-left"></i>
+                  <span>Reset to language defaults</span>
+                </button>
+              </div>
+
+              <div *ngIf="labelsDrifted" class="rounded-lg bg-yellow-50 border border-yellow-300 text-yellow-800 text-xs px-3 py-2 mb-3">
+                <i class="fa fa-triangle-exclamation"></i>
+                These labels have been customized away from this template's current language defaults.
+              </div>
+
+              <div formGroupName="labels" class="flex flex-col gap-4">
+                <div *ngFor="let group of labelGroups">
+                  <h5 class="text-sm font-semibold mb-2">{{ group.group }}</h5>
+                  <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div *ngFor="let item of group.keys">
+                      <label class="block text-xs font-medium mb-1" [title]="item.description">{{ item.key }}</label>
+                      <input type="text" pInputText class="w-full" [formControlName]="item.key" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </p-tabpanel>
+
+            <!-- LANGUAGE TAB -->
+            <p-tabpanel value="language">
+              <p class="text-xs text-muted-color mb-3">
+                Changing the language never silently overwrites labels you've already customized away from the previous language's defaults —
+                only labels still matching the old defaults are auto-swapped to the new language's defaults.
+              </p>
+              <div class="max-w-xs">
+                <label class="block text-xs font-medium mb-1">Template Language</label>
+                <p-select
+                  [options]="languageOptions"
+                  [ngModel]="template?.language"
+                  [ngModelOptions]="{ standalone: true }"
+                  (onChange)="changeLanguage($event.value)"
+                  optionLabel="label"
+                  optionValue="value"
+                  styleClass="w-full"
+                ></p-select>
+              </div>
+            </p-tabpanel>
+
+            <!-- PRINT TAB -->
+            <p-tabpanel value="print">
+              <div formGroupName="print" class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-medium mb-1">Page Size</label>
+                  <input type="text" pInputText class="w-full" formControlName="pageSize" />
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Orientation</label>
+                  <p-select [options]="orientationOptions" formControlName="orientation" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+                </div>
+                <div>
+                  <label class="block text-xs font-medium mb-1">Margin (mm)</label>
+                  <p-inputnumber formControlName="marginMm" [min]="0" styleClass="w-full"></p-inputnumber>
+                </div>
+              </div>
+            </p-tabpanel>
+          </p-tabpanels>
+        </p-tabs>
+
+        <div class="flex justify-end gap-3 mt-6">
+          <button type="button" pButton severity="secondary" (click)="goBack()">Cancel</button>
+          <button type="submit" pButton [loading]="saving">Save Changes</button>
+        </div>
+      </form>
+
+      <!-- Live preview column -->
+      <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <h4 class="text-sm font-semibold mb-3">Live Preview</h4>
+        <div class="overflow-auto">
+          <app-template-preview *ngIf="previewConfig" [config]="previewConfig" [type]="template!.type" [hospitalSettings]="hospitalSettings" [language]="currentLangCode"></app-template-preview>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>

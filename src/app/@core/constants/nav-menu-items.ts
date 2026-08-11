@@ -8,32 +8,6 @@ export const webSidebarMenuItems: IMenuItem[] = [
     icon: 'fa-solid fa-chart-line',
   },
   {
-    title: 'Attendance',
-    active: false,
-    icon: 'fa-solid fa-clock',
-    subItems: [
-      {
-        href: '/attendance/shift-list',
-        title: 'Shift List',
-        active: false,
-        icon: 'fa-solid fa-random',
-      },
-    ],
-  },
-  {
-    title: 'Payroll',
-    active: false,
-    icon: 'fa-solid fa-money-bill-wave',
-    subItems: [
-      {
-        href: '/payroll/payroll-head-list',
-        title: 'Payroll Head',
-        active: false,
-        icon: 'fa-solid fa-list',
-      },
-    ],
-  },
-  {
     href: '/doctors/doctor-list',
     title: 'Doctor Management',
     active: false,
@@ -46,5 +20,25 @@ export const webSidebarMenuItems: IMenuItem[] = [
     active: false,
     icon: 'fa-solid fa-users',
     roles: ['Admin', 'Doctor'],
+  },
+  {
+    title: 'Prescription Templates',
+    active: false,
+    icon: 'fa-solid fa-file-medical',
+    roles: ['Admin'],
+    subItems: [
+      {
+        href: '/templates/template-list',
+        title: 'Template List',
+        active: false,
+        icon: 'fa-solid fa-list',
+      },
+      {
+        href: '/templates/hospital-settings',
+        title: 'Hospital Settings',
+        active: false,
+        icon: 'fa-solid fa-hospital',
+      },
+    ],
   },
 ];
