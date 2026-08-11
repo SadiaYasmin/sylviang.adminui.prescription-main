@@ -1,0 +1,85 @@
+.patient-info-block {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  width: 100%;
+  font-size: inherit;
+}
+
+.pib-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-start;
+  gap: 0.5rem 1.25rem;
+  width: 100%;
+}
+
+.pib-field {
+  display: flex;
+  gap: 0.35rem;
+  align-items: baseline;
+  min-width: 0;
+  // Long values wrap onto extra lines instead of being clipped/truncated (US-052).
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.pib-label {
+  font-weight: 700;
+  flex-shrink: 0;
+  white-space: nowrap;
+  font-size: 0.85em;
+  // Themed by the parent template via --tpl-accent-color; falls back to ink for the
+  // monochrome (Government) variant, which never sets that variable.
+  color: var(--tpl-accent-color, #0f172a);
+}
+
+.pib-value {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  min-width: 0;
+  flex: 1 1 auto;
+  color: #475569;
+  border-bottom: 1px dotted #cbd5e1;
+}
+
+// Row 1: Name grows to absorb extra width, Age/Sex/Phone are fixed-ish so they don't
+// get squeezed by a long name — but all four still wrap rather than clip.
+.pib-name {
+  flex: 1 1 auto;
+  min-width: 8rem;
+}
+
+.pib-age {
+  flex: 0 1 112px;
+}
+
+.pib-sex {
+  flex: 0 1 94px;
+}
+
+.pib-phone {
+  flex: 0 1 150px;
+}
+
+// Row 2: Allergies is the long field here, so it grows; Blood Group/Date are fixed-ish.
+.pib-blood-group {
+  flex: 0 1 140px;
+}
+
+.pib-allergies {
+  flex: 1 1 auto;
+  min-width: 8rem;
+}
+
+.pib-date {
+  flex: 0 1 160px;
+}
+
+// Row 3: Rx No gets its own full-width line.
+.pib-rxno-fullwidth {
+  flex: 1 1 100%;
+  width: 100%;
+}

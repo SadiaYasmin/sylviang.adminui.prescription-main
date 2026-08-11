@@ -1,0 +1,215 @@
+// Government layout: strictly monochrome — no color variables used anywhere in this file.
+.government-tpl {
+  position: relative;
+  font-family: var(--tpl-font-family, 'Baloo 2', sans-serif);
+  font-size: var(--tpl-font-size, 13px);
+  color: #000;
+  background: #fff;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.government-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 12px 16px;
+  box-sizing: border-box;
+}
+
+.hospital-logo {
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.header-text {
+  flex: 1;
+  text-align: center;
+}
+
+.hospital-name {
+  font-weight: 800;
+  font-size: 1.25em;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.hospital-slogan {
+  font-size: 0.8em;
+  margin-top: 2px;
+}
+
+.hospital-address {
+  font-size: 0.8em;
+  margin-top: 2px;
+}
+
+.doctor-info {
+  text-align: right;
+  font-size: 0.8em;
+  min-width: 130px;
+}
+
+.doctor-name {
+  font-weight: 700;
+  font-size: 1.1em;
+}
+
+.doctor-qualification,
+.doctor-reg {
+  margin-top: 1px;
+}
+
+.government-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 12px 16px 0;
+  gap: var(--tpl-section-spacing, 10px);
+}
+
+.compact-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px 16px;
+}
+
+.compact-cell {
+  border-bottom: 1px dotted #000;
+  padding-bottom: 3px;
+  font-size: 0.9em;
+}
+
+.compact-cell-full {
+  grid-column: 1 / -1;
+}
+
+.placeholder-text {
+  color: #444;
+  font-style: italic;
+}
+
+/* O/E vitals */
+.oe-block {
+  border: 1px solid #000;
+  padding: 8px 10px;
+}
+
+.oe-title {
+  text-transform: uppercase;
+  font-size: 0.85em;
+  margin-bottom: 4px;
+}
+
+.vitals {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 5px 16px;
+}
+
+.vital {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.85em;
+}
+
+.vital-label {
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vital-line {
+  flex: 1;
+  border-bottom: 1px dotted #000;
+  height: 1em;
+}
+
+/* Rx */
+.rx-section h4 {
+  margin: 0 0 4px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rx-section.table-bordered {
+  border: 1px solid #000;
+  padding: 8px 10px;
+}
+
+/* ===== Sign-off ===== */
+.signoff {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 14px 0 10px;
+  margin-top: auto;
+}
+
+.qr-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 5px;
+  width: 140px;
+}
+
+.qr-caption {
+  font-size: 0.68em;
+  text-align: center;
+  line-height: 1.3;
+}
+
+.signature-block {
+  align-self: flex-end;
+  text-align: center;
+  min-width: 150px;
+}
+
+.signature-line {
+  border-top: 1px solid #000;
+  padding-top: 4px;
+  min-width: 140px;
+}
+
+.signature-name {
+  font-weight: 700;
+  font-size: 0.9em;
+}
+
+.signature-caption {
+  font-size: 0.78em;
+}
+
+/* ===== Footer ===== */
+.government-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  box-sizing: border-box;
+  font-size: 0.72em;
+}
+
+.footer-right {
+  text-align: right;
+}
+
+.footer-right .gen {
+  display: block;
+  font-size: 0.92em;
+}
+
+/* ===== Watermark ===== */
+.watermark {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%) rotate(-30deg);
+  font-size: 2.5em;
+  color: rgba(0, 0, 0, 0.08);
+  pointer-events: none;
+  white-space: nowrap;
+}

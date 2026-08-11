@@ -1,0 +1,10 @@
+<div class="tpv-outer" [ngStyle]="outerStyle">
+  <div class="tpv-scale-wrapper" [ngStyle]="wrapperStyle">
+    <ng-container [ngSwitch]="type">
+      <app-classic-template *ngSwitchCase="'Classic'" [config]="config" [hospitalSettings]="hospitalSettings" [language]="language"></app-classic-template>
+      <app-corporate-template *ngSwitchCase="'Corporate'" [config]="config" [hospitalSettings]="hospitalSettings" [language]="language"></app-corporate-template>
+      <app-government-template *ngSwitchCase="'Government'" [config]="config" [hospitalSettings]="hospitalSettings" [language]="language"></app-government-template>
+      <app-classic-template *ngSwitchDefault [config]="config" [hospitalSettings]="hospitalSettings" [language]="language"></app-classic-template>
+    </ng-container>
+  </div>
+</div>

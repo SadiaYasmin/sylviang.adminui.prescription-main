@@ -1,0 +1,93 @@
+<section class="page-container">
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-4">
+    <h3 class="table-title">
+      Prescription Templates
+      <span class="table-title-info" *ngIf="!loading"> ({{ templates.length }} total)</span>
+    </h3>
+    <div class="flex gap-2">
+      <button pButton severity="secondary" [outlined]="true" [routerLink]="['/templates/hospital-settings']">
+        <i class="fa fa-hospital"></i>
+        <span>Hospital Settings</span>
+      </button>
+      <button pButton [routerLink]="['/templates/manage-template']">
+        <i class="fa fa-plus"></i>
+        <span>Create New</span>
+      </button>
+    </div>
+  </div>
+
+  <div class="template-grid">
+    <ng-container *ngIf="loading">
+      <div class="template-card" *ngFor="let item of skeletonItems">
+        <p-skeleton width="100%" height="220px" styleClass="mb-2"></p-skeleton>
+        <p-skeleton width="60%" height="1.2rem" styleClass="mb-1"></p-skeleton>
+        <p-skeleton width="40%" height="1rem"></p-skeleton>
+      </div>
+    </ng-container>
+
+    <ng-container *ngIf="!loading">
+      <div class="template-card" *ngFor="let template of templates">
+        <div class="template-thumb">
+          <app-template-preview [config]="template.config" [type]="template.type" [hospitalSettings]="hospitalSettings" [language]="template.language === 'Bn' ? 'bn' : 'en'" [scale]="0.28"></app-template-preview>
+        </div>
+
+        <div class="template-card-body">
+          <div class="flex items-center justify-between gap-2">
+            <h4 class="template-name" [title]="template.name">{{ template.name }}</h4>
+            <span [class]="template.enabled ? 'badge badge-enabled' : 'badge badge-disabled'">{{ template.enabled ? 'Enabled' : 'Disabled' }}</span>
+          </div>
+          <div class="template-meta">
+            <span>{{ template.type }}</span>
+            <span class="dot">&middot;</span>
+            <span>{{ template.language === 'Bn' ? 'বাংলা' : 'English' }}</span>
+            <span *ngIf="template.isSystemDefault" class="badge badge-default">System Default</span>
+          </div>
+
+          <div class="template-actions">
+            <button pButton size="small" severity="secondary" [outlined]="true" [routerLink]="['/templates/manage-template', template.templateId]" title="Edit">
+              <i class="fa fa-edit"></i>
+              <span>Edit</span>
+            </button>
+            <button pButton size="small" severity="secondary" [outlined]="true" (click)="duplicateTemplate(template)" title="Duplicate">
+              <i class="fa fa-copy"></i>
+              <span>Duplicate</span>
+            </button>
+            <button
+              pButton
+              size="small"
+              severity="secondary"
+              [outlined]="true"
+              [disabled]="template.isSystemDefault && template.enabled"
+              [pTooltip]="template.isSystemDefault && template.enabled ? 'The system-default template cannot be disabled.' : ''"
+              tooltipPosition="top"
+              (click)="toggleEnabled(template, $event)"
+              title="Toggle Enabled"
+            >
+              <i [class]="template.enabled ? 'fa fa-toggle-off' : 'fa fa-toggle-on'"></i>
+              <span>{{ template.enabled ? 'Disable' : 'Enable' }}</span>
+            </button>
+            <button
+              pButton
+              size="small"
+              severity="danger"
+              [outlined]="true"
+              [disabled]="template.isSystemDefault"
+              [pTooltip]="template.isSystemDefault ? 'The system-default template cannot be deleted.' : ''"
+              tooltipPosition="top"
+              (click)="deleteTemplate(template, $event)"
+              title="Delete"
+            >
+              <i class="fa fa-trash"></i>
+              <span>Delete</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div class="not-found" *ngIf="templates.length === 0">
+        <i class="fa fa-magnifying-glass-minus"></i>
+        <p>No templates yet. Create your first one.</p>
+      </div>
+    </ng-container>
+  </div>
+</section>
