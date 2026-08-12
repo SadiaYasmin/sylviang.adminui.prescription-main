@@ -1,0 +1,109 @@
+<section class="page-container">
+  <div class="flex flex-wrap justify-between items-end gap-3">
+    <div class="flex flex-wrap items-end gap-3">
+      <p-floatlabel variant="in">
+        <input
+          type="text"
+          pInputText
+          id="searchInput"
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchTermChange($event)"
+          name="searchInput"
+        />
+        <label for="searchInput">Search name or phone</label>
+      </p-floatlabel>
+
+      <button *ngIf="searchTerm" severity="secondary" pButton (click)="resetSearch()">
+        <i class="fa fa-times"></i>
+        <span>Reset</span>
+      </button>
+    </div>
+
+    <button *ngIf="canRegister" [routerLink]="['/patients/manage-patient']" pButton>
+      <i class="fa fa-plus"></i>
+      <span>Register Patient</span>
+    </button>
+  </div>
+
+  <div class="table-container mt-4">
+    <div class="table-title-container">
+      <h3 class="table-title">
+        Patients
+        <span class="table-title-info" *ngIf="totalRecords > 0"> ({{ totalRecords }} total)</span>
+      </h3>
+    </div>
+
+    <div class="transition-all duration-500 ease-in-out">
+      <p-table
+        [value]="loading ? skeletonItems : patients"
+        dataKey="patientId"
+        [paginator]="true"
+        [rows]="rows"
+        [first]="(currentPage - 1) * rows"
+        [rowsPerPageOptions]="UI_CONFIG.pageSizeOptions"
+        [totalRecords]="totalRecords"
+        (onPage)="onPageChange($event)"
+        [lazy]="true"
+        [loading]="false"
+        scrollHeight="flex"
+        [responsiveLayout]="'scroll'"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} patients"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 14rem">Name</th>
+            <th style="width: 10rem">Phone</th>
+            <th *ngIf="showClinical" style="width: 6rem">Age</th>
+            <th *ngIf="showClinical" style="width: 8rem">Gender</th>
+            <th *ngIf="showClinical" style="width: 8rem">Blood Group</th>
+            <th *ngIf="showClinical" style="width: 12rem">Allergy</th>
+            <th *ngIf="showRegisteredDate" style="width: 10rem">Registered</th>
+            <th *ngIf="showAdminMeta" style="width: 12rem">Registered By</th>
+            <th *ngIf="canEdit" style="width: 6rem">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-patient>
+          @if (loading) {
+            <tr>
+              <td *ngFor="let c of skeletonColumns"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>{{ patient.name }}</td>
+              <td>{{ patient.phone }}</td>
+              <td *ngIf="showClinical">{{ displayAge(patient) }}</td>
+              <td *ngIf="showClinical">{{ patient.gender || '-' }}</td>
+              <td *ngIf="showClinical">{{ bloodGroupLabel(patient) }}</td>
+              <td *ngIf="showClinical">{{ allergyDisplay(patient) }}</td>
+              <td *ngIf="showRegisteredDate">{{ patient.registeredAt | date: 'mediumDate' }}</td>
+              <td *ngIf="showAdminMeta">{{ patient.registeredByName }}</td>
+              <td *ngIf="canEdit">
+                <button [routerLink]="['/patients/manage-patient', patient.patientId]" class="text-primary mr-2" title="Edit">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button *ngIf="canCreateConsultation" class="text-primary" title="Create Consultation" (click)="openConsultationDialog(patient)">
+                  <i class="fa fa-stethoscope"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td [attr.colspan]="columnCount" class="not-found">
+              <div>
+                <i class="fa fa-magnifying-glass-minus"></i>
+                <p>No patients match your search.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <app-create-consultation-dialog *ngIf="canCreateConsultation" [visible]="showConsultationDialog" (visibleChange)="showConsultationDialog = $event" [patient]="consultationPatient"></app-create-consultation-dialog>
+</section>

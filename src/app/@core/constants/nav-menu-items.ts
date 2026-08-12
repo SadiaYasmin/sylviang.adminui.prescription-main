@@ -8,6 +8,13 @@ export const webSidebarMenuItems: IMenuItem[] = [
     icon: 'fa-solid fa-chart-line',
   },
   {
+    href: '/patients/patient-list',
+    title: 'Patients',
+    active: false,
+    icon: 'fa-solid fa-user-injured',
+    roles: ['Admin', 'Doctor', 'Staff'],
+  },
+  {
     href: '/doctors/doctor-list',
     title: 'Doctor Management',
     active: false,
@@ -20,6 +27,13 @@ export const webSidebarMenuItems: IMenuItem[] = [
     active: false,
     icon: 'fa-solid fa-users',
     roles: ['Admin', 'Doctor'],
+  },
+  {
+    href: '/consultations/consultation-list',
+    title: 'Consultations',
+    active: false,
+    icon: 'fa-solid fa-notes-medical',
+    roles: ['Admin'],
   },
   {
     title: 'Prescription Templates',

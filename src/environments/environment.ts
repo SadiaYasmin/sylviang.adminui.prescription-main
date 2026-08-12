@@ -14,5 +14,7 @@ export const BASE_URL_Backend = 'http://localhost:5208/prescription';
 export const BASE_URL_Auth = `${BASE_URL_Backend}/auth`;
 export const BASE_URL_Doctors = `${BASE_URL_Backend}/doctors`;
 export const BASE_URL_Staff = `${BASE_URL_Backend}/staff`;
+export const BASE_URL_Patients = `${BASE_URL_Backend}/patients`;
+export const BASE_URL_Consultations = `${BASE_URL_Backend}/consultations`;
 export const BASE_URL_Templates = `${BASE_URL_Backend}/templates`;
 export const BASE_URL_HospitalSettings = `${BASE_URL_Backend}/hospital-settings`;

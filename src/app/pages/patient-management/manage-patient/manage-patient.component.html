@@ -1,0 +1,62 @@
+<section class="page-container">
+  <form [formGroup]="patientForm" (ngSubmit)="onSubmit()" novalidate>
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-medium mb-1">Name</label>
+        <input type="text" pInputText class="w-full" formControlName="name" placeholder="Jane Roy" />
+        <div *ngIf="hasError('name')" class="text-xs text-red-600 mt-1">Name is required.</div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">Phone</label>
+        <input type="text" pInputText class="w-full" formControlName="phone" maxlength="11" placeholder="e.g. 01712345678" />
+        <div *ngIf="hasError('phone')" class="text-xs text-red-600 mt-1">Enter a valid Bangladesh mobile number (11 digits, starting with 013-019).</div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">Gender</label>
+        <p-select [options]="genderOptions" formControlName="gender" optionLabel="label" optionValue="value" styleClass="w-full" placeholder="Select"></p-select>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">Date of Birth</label>
+        <p-datepicker formControlName="dateOfBirth" dateFormat="yy-mm-dd" styleClass="w-full" [appendTo]="'body'"></p-datepicker>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">
+          Age
+          <span *ngIf="f['dateOfBirth'].value" class="text-muted-color font-normal">(calculated from DOB)</span>
+        </label>
+        <p-inputnumber formControlName="age" [min]="0" placeholder="Used only if DOB is unknown" styleClass="w-full"></p-inputnumber>
+        <div *ngIf="hasError('age')" class="text-xs text-red-600 mt-1">Age is required when date of birth is not provided.</div>
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">Blood Group</label>
+        <p-select [options]="bloodGroupOptions" formControlName="bloodGroup" optionLabel="label" optionValue="value" styleClass="w-full" placeholder="Select"></p-select>
+      </div>
+
+      <div class="sm:col-span-2">
+        <label class="block text-xs font-medium mb-1">Address</label>
+        <input type="text" pInputText class="w-full" formControlName="address" placeholder="Dhanmondi, Dhaka" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">Allergy</label>
+        <p-select [options]="allergySelectOptions" formControlName="allergyOption" optionLabel="label" optionValue="value" styleClass="w-full"></p-select>
+      </div>
+
+      <div *ngIf="isOtherAllergySelected">
+        <label class="block text-xs font-medium mb-1">Specify Allergy</label>
+        <input type="text" pInputText class="w-full" formControlName="allergyOtherText" placeholder="e.g. Shellfish" />
+        <div *ngIf="hasError('allergyOtherText')" class="text-xs text-red-600 mt-1">Please specify the allergy.</div>
+      </div>
+    </div>
+
+    <div class="flex justify-end gap-3 mt-6">
+      <button type="button" pButton severity="secondary" [routerLink]="['/patients/patient-list']">Cancel</button>
+      <button type="submit" pButton>{{ isEditMode ? 'Save Changes' : 'Register Patient' }}</button>
+    </div>
+  </form>
+</section>
