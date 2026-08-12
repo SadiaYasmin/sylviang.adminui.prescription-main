@@ -1,0 +1,110 @@
+export type ConsultationStatus = 'Waiting' | 'InConsultation' | 'Completed';
+
+export type ConsultationDateMode = 'Today' | 'Yesterday' | 'Custom' | 'Range';
+
+export interface ICreateConsultationRequest {
+  patientId: number;
+  doctorId: number;
+  visitDate?: string | null;
+  /** Retained for API compatibility; duplicate active consultations are never overridden. */
+  force?: boolean;
+}
+
+export interface IConsultationSummary {
+  consultationId: number;
+  displayCode: string;
+  tokenNumber: string;
+  status: ConsultationStatus;
+}
+
+export interface ICreateConsultationResponse {
+  duplicateFound: boolean;
+  consultation?: IConsultationSummary | null;
+  existingConsultation?: IConsultationSummary | null;
+}
+
+export interface IOpenConsultationResponse {
+  consultationId: number;
+  displayCode: string;
+  tokenNumber: string;
+  status: string;
+  visitDate: string;
+  patientId: number;
+  patientName: string;
+  doctorId: number;
+  doctorName: string;
+}
+
+export interface IQueueItem {
+  consultationId: number;
+  displayCode: string;
+  tokenNumber: string;
+  status: ConsultationStatus;
+  checkInAt: string;
+  patientId: number;
+  patientName: string;
+  doctorId: number;
+  doctorName: string;
+}
+
+export interface IAssignedDoctorSummary {
+  doctorId: number;
+  fullName: string;
+}
+
+export interface IConsultationListRequest {
+  page?: number;
+  pageSize?: number;
+  searchTerm?: string;
+  dateMode?: ConsultationDateMode;
+  date?: string;
+  fromDate?: string;
+  toDate?: string;
+  doctorId?: number;
+  status?: ConsultationStatus;
+}
+
+export interface IConsultationListItem {
+  consultationId: number;
+  displayCode: string;
+  tokenNumber: string;
+  status: string;
+  visitDate: string;
+  checkInAt: string;
+  patientId: number;
+  patientName: string;
+  patientPhone: string;
+  doctorId: number;
+  doctorName: string;
+}
+
+export interface IConsultationListSummary {
+  total: number;
+  waiting: number;
+  inProgress: number;
+  completed: number;
+}
+
+export interface IConsultationListResponse {
+  consultations: IConsultationListItem[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+  summary: IConsultationListSummary;
+}
+
+export interface IConsultationDetailsResponse {
+  consultationId: number;
+  displayCode: string;
+  tokenNumber: string;
+  status: string;
+  visitDate: string;
+  checkInAt: string;
+  patientId: number;
+  patientName: string;
+  patientPhone: string;
+  doctorId: number;
+  doctorName: string;
+  registeredByStaffId: number;
+  registeredByName: string;
+}

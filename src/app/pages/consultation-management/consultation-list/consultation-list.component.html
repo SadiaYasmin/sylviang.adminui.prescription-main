@@ -1,0 +1,151 @@
+<section class="page-container">
+  <!-- Summary stat tiles -->
+  <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">Total</div>
+      <div class="text-2xl font-semibold">{{ summary.total }}</div>
+    </div>
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">Waiting</div>
+      <div class="text-2xl font-semibold">{{ summary.waiting }}</div>
+    </div>
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">In Progress</div>
+      <div class="text-2xl font-semibold">{{ summary.inProgress }}</div>
+    </div>
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">Completed</div>
+      <div class="text-2xl font-semibold">{{ summary.completed }}</div>
+    </div>
+  </div>
+
+  <div class="flex flex-wrap items-end gap-3">
+    <p-floatlabel variant="in">
+      <input type="text" pInputText id="searchInput" [(ngModel)]="searchTerm" name="searchInput" (keyup.enter)="applySearch()" />
+      <label for="searchInput">Search patient name or phone</label>
+    </p-floatlabel>
+
+    <p-select [options]="dateModeOptions" [(ngModel)]="dateMode" optionLabel="label" optionValue="value" (onChange)="applySearch()"></p-select>
+
+    <p-datepicker *ngIf="isCustomDateMode" [(ngModel)]="customDate" dateFormat="yy-mm-dd" placeholder="Date" (onSelect)="applySearch()"></p-datepicker>
+
+    <ng-container *ngIf="isRangeDateMode">
+      <p-datepicker [(ngModel)]="fromDate" dateFormat="yy-mm-dd" placeholder="From" (onSelect)="applySearch()"></p-datepicker>
+      <p-datepicker [(ngModel)]="toDate" dateFormat="yy-mm-dd" placeholder="To" (onSelect)="applySearch()"></p-datepicker>
+    </ng-container>
+
+    <p-select
+      [options]="doctors"
+      [(ngModel)]="doctorId"
+      optionLabel="fullName"
+      optionValue="doctorId"
+      placeholder="All Doctors"
+      [showClear]="true"
+      (onChange)="applySearch()"
+    ></p-select>
+
+    <p-select [options]="statusOptions" [(ngModel)]="status" optionLabel="label" optionValue="value" (onChange)="applySearch()"></p-select>
+
+    <button pButton (click)="applySearch()">
+      <i class="fa fa-search"></i>
+      <span>Search</span>
+    </button>
+
+    <button severity="secondary" pButton (click)="resetSearch()">
+      <i class="fa fa-times"></i>
+      <span>Reset</span>
+    </button>
+  </div>
+
+  <div class="table-container mt-4">
+    <div class="table-title-container">
+      <h3 class="table-title">
+        Consultations
+        <span class="table-title-info" *ngIf="totalRecords > 0"> ({{ totalRecords }} total)</span>
+      </h3>
+    </div>
+
+    <div class="transition-all duration-500 ease-in-out">
+      <p-table
+        [value]="loading ? skeletonItems : consultations"
+        dataKey="consultationId"
+        [paginator]="true"
+        [rows]="rows"
+        [first]="(currentPage - 1) * rows"
+        [rowsPerPageOptions]="UI_CONFIG.pageSizeOptions"
+        [totalRecords]="totalRecords"
+        (onPage)="onPageChange($event)"
+        [lazy]="true"
+        [loading]="false"
+        scrollHeight="flex"
+        [responsiveLayout]="'scroll'"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} consultations"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            @for (col of columns; track col.field) {
+              <th [style.width]="col.width">{{ col.label }}</th>
+            }
+            <th style="width: 6rem">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          @if (loading) {
+            <tr>
+              <td *ngFor="let c of columns"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="3rem" height="1rem"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>{{ item.tokenNumber }}</td>
+              <td>{{ item.displayCode }}</td>
+              <td>{{ item.patientName }}</td>
+              <td>{{ item.patientPhone }}</td>
+              <td>{{ item.doctorName }}</td>
+              <td>{{ item.visitDate | date: 'mediumDate' }}</td>
+              <td>{{ item.checkInAt | date: 'short' }}</td>
+              <td>{{ displayStatus(item.status) }}</td>
+              <td>
+                <button class="text-primary" title="View details" (click)="viewDetails(item)">
+                  <i class="fa fa-eye"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td [attr.colspan]="columns.length + 1" class="not-found">
+              <div>
+                <i class="fa fa-magnifying-glass-minus"></i>
+                <p>No consultations match your search or filters.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+
+  <p-dialog [visible]="showDetailsDialog" (visibleChange)="showDetailsDialog = $event" [modal]="true" header="Consultation Details" [style]="{ width: '32rem' }" (onHide)="closeDetailsDialog()">
+    <div *ngIf="detailsLoading" class="flex flex-col gap-2">
+      <p-skeleton width="100%" height="1.2rem"></p-skeleton>
+      <p-skeleton width="100%" height="1.2rem"></p-skeleton>
+      <p-skeleton width="100%" height="1.2rem"></p-skeleton>
+    </div>
+
+    <div *ngIf="!detailsLoading && details" class="grid grid-cols-2 gap-3 text-sm">
+      <div><span class="text-muted-color">Code:</span> {{ details.displayCode }}</div>
+      <div><span class="text-muted-color">Token:</span> {{ details.tokenNumber }}</div>
+      <div><span class="text-muted-color">Status:</span> {{ displayStatus(details.status) }}</div>
+      <div><span class="text-muted-color">Visit Date:</span> {{ details.visitDate | date: 'mediumDate' }}</div>
+      <div><span class="text-muted-color">Check-in:</span> {{ details.checkInAt | date: 'short' }}</div>
+      <div class="col-span-2"><span class="text-muted-color">Patient:</span> {{ details.patientName }} ({{ details.patientPhone }})</div>
+      <div class="col-span-2"><span class="text-muted-color">Doctor:</span> {{ details.doctorName }}</div>
+      <div class="col-span-2"><span class="text-muted-color">Registered By:</span> {{ details.registeredByName }}</div>
+    </div>
+  </p-dialog>
+</section>

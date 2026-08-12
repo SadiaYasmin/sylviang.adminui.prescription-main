@@ -1,0 +1,187 @@
+import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { UI_CONFIG } from '@app/@core/constants';
+import { DateTimeUtility } from '@app/@core/utils/date-time.utility';
+import {
+  ConsultationDateMode,
+  ConsultationStatus,
+  IConsultationDetailsResponse,
+  IConsultationListItem,
+  IConsultationListSummary,
+} from '@core/interfaces/consultations/consultation.interface';
+import { IDoctorSummary } from '@core/interfaces/doctors/doctor.interface';
+import { ConsultationService } from '@core/services/consultations/consultation.service';
+import { DoctorService } from '@core/services/doctors/doctor.service';
+import { ToastService } from '@core/services/misc/toast.service';
+import { ConsultationListColumns } from './consultation-list.component.constants';
+
+@Component({
+  selector: 'app-consultation-list',
+  standalone: false,
+  templateUrl: './consultation-list.component.html',
+  styleUrl: './consultation-list.component.scss',
+})
+export class ConsultationListComponent implements OnInit {
+  constructor(
+    private consultationService: ConsultationService,
+    private doctorService: DoctorService,
+    private cdr: ChangeDetectorRef,
+    private toast: ToastService,
+  ) {}
+
+  consultations: IConsultationListItem[] = [];
+  summary: IConsultationListSummary = { total: 0, waiting: 0, inProgress: 0, completed: 0 };
+  loading = false;
+  totalRecords = 0;
+  UI_CONFIG = UI_CONFIG;
+  rows = UI_CONFIG.defaultPageSize;
+  currentPage = 1;
+
+  columns = ConsultationListColumns;
+
+  searchTerm = '';
+  dateMode: ConsultationDateMode = 'Today';
+  customDate: Date | null = null;
+  fromDate: Date | null = null;
+  toDate: Date | null = null;
+  doctorId: number | null = null;
+  status: ConsultationStatus | null = null;
+
+  doctors: IDoctorSummary[] = [];
+
+  dateModeOptions = [
+    { label: 'Today', value: 'Today' },
+    { label: 'Yesterday', value: 'Yesterday' },
+    { label: 'Custom Date', value: 'Custom' },
+    { label: 'Date Range', value: 'Range' },
+  ];
+
+  statusOptions = [
+    { label: 'All Statuses', value: null },
+    { label: 'Waiting', value: 'Waiting' },
+    { label: 'In Progress', value: 'InConsultation' },
+    { label: 'Completed', value: 'Completed' },
+  ];
+
+  showDetailsDialog = false;
+  detailsLoading = false;
+  details: IConsultationDetailsResponse | null = null;
+
+  get skeletonItems() {
+    return Array(this.rows)
+      .fill({})
+      .map((_, index) => ({ id: index }));
+  }
+
+  get isCustomDateMode(): boolean {
+    return this.dateMode === 'Custom';
+  }
+
+  get isRangeDateMode(): boolean {
+    return this.dateMode === 'Range';
+  }
+
+  ngOnInit(): void {
+    this.loadDoctors();
+    this.loadConsultations();
+  }
+
+  private loadDoctors(): void {
+    this.doctorService.getDoctors({ pageSize: 100 }).subscribe({
+      next: (response) => {
+        if (!response.hasError && response.content) {
+          this.doctors = response.content.doctors || [];
+        }
+      },
+    });
+  }
+
+  applySearch(): void {
+    this.currentPage = 1;
+    this.loadConsultations();
+  }
+
+  resetSearch(): void {
+    this.searchTerm = '';
+    this.dateMode = 'Today';
+    this.customDate = null;
+    this.fromDate = null;
+    this.toDate = null;
+    this.doctorId = null;
+    this.status = null;
+    this.currentPage = 1;
+    this.loadConsultations();
+  }
+
+  loadConsultations(): void {
+    this.loading = true;
+
+    this.consultationService
+      .getConsultations({
+        page: this.currentPage,
+        pageSize: this.rows,
+        searchTerm: this.searchTerm || undefined,
+        dateMode: this.dateMode,
+        date: this.isCustomDateMode ? DateTimeUtility.formatDateForAPI(this.customDate) || undefined : undefined,
+        fromDate: this.isRangeDateMode ? DateTimeUtility.formatDateForAPI(this.fromDate) || undefined : undefined,
+        toDate: this.isRangeDateMode ? DateTimeUtility.formatDateForAPI(this.toDate) || undefined : undefined,
+        doctorId: this.doctorId || undefined,
+        status: this.status || undefined,
+      })
+      .subscribe({
+        next: (response) => {
+          if (!response.hasError && response.content) {
+            this.consultations = response.content.consultations || [];
+            this.totalRecords = response.content.totalCount || 0;
+            this.summary = response.content.summary;
+          } else {
+            this.consultations = [];
+            this.totalRecords = 0;
+          }
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+        error: () => {
+          this.consultations = [];
+          this.totalRecords = 0;
+          this.loading = false;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  onPageChange(event: any): void {
+    this.currentPage = Math.floor(event.first / event.rows) + 1;
+    this.rows = event.rows;
+    this.loadConsultations();
+  }
+
+  displayStatus(status: string): string {
+    return status === 'InConsultation' ? 'In Progress' : status;
+  }
+
+  viewDetails(item: IConsultationListItem): void {
+    this.showDetailsDialog = true;
+    this.detailsLoading = true;
+    this.details = null;
+
+    this.consultationService.getConsultationById(item.consultationId).subscribe({
+      next: (response) => {
+        if (response && !response.hasError && response.content) {
+          this.details = response.content;
+        } else {
+          this.toast.error({ detail: 'Could not load consultation details.' });
+        }
+        this.detailsLoading = false;
+      },
+      error: () => {
+        this.toast.error({ detail: 'Could not load consultation details.' });
+        this.detailsLoading = false;
+      },
+    });
+  }
+
+  closeDetailsDialog(): void {
+    this.showDetailsDialog = false;
+    this.details = null;
+  }
+}

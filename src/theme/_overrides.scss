@@ -185,7 +185,9 @@
   width: 100% !important;
 }
 .p-datepicker-panel {
-  @apply bg-light dark:bg-dark text-black dark:text-white z-50 !important;
+  // Datepickers can be rendered under `body` (for example inside a modal).
+  // Keep the panel above PrimeNG dialog masks/content so its dates remain clickable.
+  @apply bg-light dark:bg-dark text-black dark:text-white z-[1200] !important;
   min-width: auto !important;
 }
 .p-datepicker .p-datepicker-dropdown
@@ -272,6 +274,13 @@
   .p-dialog-content {
     @apply bg-light dark:bg-dark text-black dark:text-white px-5 py-0;
     overflow: auto !important;
+  }
+  // When a dialog has no footer template, PrimeNG never renders `.p-dialog-footer` at
+  // all — content becomes the dialog's visual bottom edge, so it needs the same
+  // bottom rounding + breathing room the footer would otherwise provide. Keeps every
+  // dialog rounded on all 4 corners with proper spacing, footer or not.
+  .p-dialog-content:last-child {
+    @apply rounded-b-xl pb-5 !important;
   }
   .p-dialog-footer {
     @apply bg-light dark:bg-dark text-black dark:text-white rounded-b-xl px-5 py-3 z-20;

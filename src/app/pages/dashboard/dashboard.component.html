@@ -1,4 +1,50 @@
 <section class="page-container">
+  <div *ngIf="isDoctor || isStaff" class="table-container mb-4">
+    <div class="table-title-container">
+      <h3 class="table-title">{{ isDoctor ? "Today's Queue" : 'My Queue' }}</h3>
+    </div>
+
+    <p-table [value]="queue" [loading]="queueLoading" [responsiveLayout]="'scroll'" dataKey="consultationId">
+      <ng-template pTemplate="header">
+        <tr>
+          <th style="width: 8rem">Token</th>
+          <th style="width: 14rem">Patient</th>
+          <th *ngIf="isStaff" style="width: 14rem">Doctor</th>
+          <th style="width: 10rem">Check-in Time</th>
+          <th style="width: 10rem">Status</th>
+          <th *ngIf="isDoctor" style="width: 8rem">Actions</th>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="body" let-item>
+        <tr>
+          <td>{{ item.tokenNumber }}</td>
+          <td>{{ item.patientName }}</td>
+          <td *ngIf="isStaff">{{ item.doctorName }}</td>
+          <td>{{ item.checkInAt | date: 'short' }}</td>
+          <td>{{ displayStatus(item.status) }}</td>
+          <td *ngIf="isDoctor">
+            <button *ngIf="item.status === 'Waiting'" pButton size="small" (click)="openConsultation(item)">
+              <i class="fa fa-play"></i>
+              <span>Open</span>
+            </button>
+          </td>
+        </tr>
+      </ng-template>
+
+      <ng-template pTemplate="emptymessage">
+        <tr>
+          <td [attr.colspan]="5" class="not-found">
+            <div>
+              <i class="fa fa-magnifying-glass-minus"></i>
+              <p>No consultations in the queue right now.</p>
+            </div>
+          </td>
+        </tr>
+      </ng-template>
+    </p-table>
+  </div>
+
   <div class="welcome-message">
     <div class="flex flex-col items-center justify-center gap-4 py-16">
       <div class="flex items-center justify-center w-20 h-20 rounded-full bg-primary/10">

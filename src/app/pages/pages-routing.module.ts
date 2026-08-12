@@ -33,10 +33,22 @@ const routes: Routes = [
       loadChildren: () => import('./staff-management/staff-management.module').then((m) => m.StaffManagementModule),
     },
     {
+      path: 'patients',
+      canActivate: [roleGuard],
+      data: { roles: ['Admin', 'Doctor', 'Staff'] },
+      loadChildren: () => import('./patient-management/patient-management.module').then((m) => m.PatientManagementModule),
+    },
+    {
       path: 'templates',
       canActivate: [roleGuard],
       data: { roles: ['Admin'] },
       loadChildren: () => import('./template-management/template-management.module').then((m) => m.TemplateManagementModule),
+    },
+    {
+      path: 'consultations',
+      canActivate: [roleGuard],
+      data: { roles: ['Admin'] },
+      loadChildren: () => import('./consultation-management/consultation-management.module').then((m) => m.ConsultationManagementModule),
     },
   ]),
 ];

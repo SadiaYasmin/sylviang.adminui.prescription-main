@@ -1,0 +1,11 @@
+:host {
+  display: block;
+}
+
+// Same global `.p-datepicker-input` 54px height hack as manage-patient/manage-doctor —
+// reset it back to normal so Visit Date matches its sibling inputs.
+:host ::ng-deep .p-datepicker .p-datepicker-input,
+:host ::ng-deep .p-datepicker .p-inputtext {
+  height: auto !important;
+  padding: 0.5rem 0.75rem !important;
+}

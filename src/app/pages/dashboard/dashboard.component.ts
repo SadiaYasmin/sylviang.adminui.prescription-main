@@ -1,5 +1,8 @@
-import { Component } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
+import { IQueueItem } from '@core/interfaces/consultations/consultation.interface';
 import { AuthService } from '@core/services/auth/auth.service';
+import { ConsultationService } from '@core/services/consultations/consultation.service';
+import { ToastService } from '@core/services/misc/toast.service';
 
 interface IDashboardCard {
   href: string;
@@ -38,6 +41,13 @@ const DASHBOARD_CARDS: IDashboardCard[] = [
     icon: 'fa-solid fa-hospital',
     roles: ['Admin'],
   },
+  {
+    href: '/consultations/consultation-list',
+    title: 'Consultations Monitor',
+    description: 'Review today\'s and past consultations',
+    icon: 'fa-solid fa-notes-medical',
+    roles: ['Admin'],
+  },
 ];
 
 @Component({
@@ -46,13 +56,88 @@ const DASHBOARD_CARDS: IDashboardCard[] = [
   templateUrl: './dashboard.component.html',
   styleUrl: './dashboard.component.scss',
 })
-export class DashboardComponent {
+export class DashboardComponent implements OnInit {
   currentYear = new Date().getFullYear();
+  role: string | null;
 
-  constructor(private authService: AuthService) {}
+  queue: IQueueItem[] = [];
+  queueLoading = false;
+
+  constructor(
+    private authService: AuthService,
+    private consultationService: ConsultationService,
+    private toast: ToastService,
+  ) {
+    this.role = this.authService.getRole();
+  }
 
   get cards(): IDashboardCard[] {
-    const role = this.authService.getRole();
-    return DASHBOARD_CARDS.filter((card) => !card.roles || card.roles.length === 0 || (role != null && card.roles.includes(role)));
+    return DASHBOARD_CARDS.filter((card) => !card.roles || card.roles.length === 0 || (this.role != null && card.roles.includes(this.role)));
+  }
+
+  get isDoctor(): boolean {
+    return this.role === 'Doctor';
+  }
+
+  get isStaff(): boolean {
+    return this.role === 'Staff';
+  }
+
+  ngOnInit(): void {
+    if (this.isDoctor) {
+      this.loadTodaysQueue();
+    } else if (this.isStaff) {
+      this.loadMyQueue();
+    }
+  }
+
+  loadTodaysQueue(): void {
+    this.queueLoading = true;
+    this.consultationService.getTodaysQueue().subscribe({
+      next: (response) => {
+        this.queue = !response.hasError && response.content ? response.content : [];
+        this.queueLoading = false;
+      },
+      error: () => {
+        this.queue = [];
+        this.queueLoading = false;
+      },
+    });
+  }
+
+  loadMyQueue(): void {
+    this.queueLoading = true;
+    this.consultationService.getMyQueue().subscribe({
+      next: (response) => {
+        this.queue = !response.hasError && response.content ? response.content : [];
+        this.queueLoading = false;
+      },
+      error: () => {
+        this.queue = [];
+        this.queueLoading = false;
+      },
+    });
+  }
+
+  displayStatus(status: string): string {
+    return status === 'InConsultation' ? 'In Progress' : status;
+  }
+
+  // No prescription-authoring page exists yet (Epic D), so opening a consultation
+  // here just marks it InConsultation and refreshes the queue rather than navigating anywhere.
+  openConsultation(item: IQueueItem): void {
+    this.consultationService.openConsultation(item.consultationId).subscribe({
+      next: (response) => {
+        if (response && !response.hasError) {
+          this.toast.success({ detail: `Opened consultation ${item.displayCode} for ${item.patientName}.` });
+          this.loadTodaysQueue();
+        } else if (!response?.decentMessage) {
+          this.toast.error({ detail: 'Could not open this consultation.' });
+        }
+      },
+      error: () => {
+        // ErrorHandlerInterceptor already surfaces the backend's error message as a toast.
+      },
+    });
   }
 }

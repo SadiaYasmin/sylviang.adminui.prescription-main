@@ -1,0 +1,22 @@
+<p-dialog [visible]="visible" (visibleChange)="visibleChange.emit($event)" [modal]="true" [closable]="true" header="Create Consultation" [style]="{ width: '28rem' }" (onHide)="closeDialog()">
+  <div class="flex flex-col gap-4">
+    <div>
+      <label class="block text-xs font-medium mb-1">Patient</label>
+      <input type="text" pInputText class="w-full" [value]="patient?.name" [disabled]="true" />
+    </div>
+
+    <div>
+      <label class="block text-xs font-medium mb-1">Doctor</label>
+      <p-select [options]="doctors" [(ngModel)]="selectedDoctorId" optionLabel="fullName" optionValue="doctorId" styleClass="w-full" placeholder="Select a doctor"></p-select>
+    </div>
+
+    <p class="text-sm text-color-secondary">This consultation will be created for today.</p>
+  </div>
+
+  <ng-template pTemplate="footer">
+    <div class="flex justify-end gap-3">
+      <button type="button" pButton severity="secondary" (click)="closeDialog()">Cancel</button>
+      <button type="button" pButton [disabled]="!selectedDoctorId || submitting" (click)="onSubmit()">Submit</button>
+    </div>
+  </ng-template>
+</p-dialog>
