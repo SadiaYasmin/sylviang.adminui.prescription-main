@@ -1,3 +1,5 @@
+import { ConsultationStatus } from '@core/interfaces/consultations/consultation.interface';
+
 export type PatientGender = 'Male' | 'Female' | 'Other';
 
 export type BloodGroup = 'APositive' | 'ANegative' | 'BPositive' | 'BNegative' | 'ABPositive' | 'ABNegative' | 'OPositive' | 'ONegative';
@@ -48,4 +50,23 @@ export interface IPatientListResponse {
 
 export interface IPatientDetailsResponse {
   profile: IPatientSummary;
+}
+
+export type PatientQueueFilter = 'TodayQueue' | 'AllRegistered' | 'NotConsultedToday' | 'CompletedToday';
+
+export interface IDoctorPatientQueueRequest {
+  queueFilter: PatientQueueFilter;
+  searchTerm?: string;
+}
+
+export interface IDoctorPatientQueueItem extends IPatientSummary {
+  // Null when the patient has no consultation record with this doctor today at all.
+  todayConsultationId?: number | null;
+  todayConsultationStatus?: ConsultationStatus | null;
+  // Only ever set when todayConsultationStatus is 'Completed'.
+  todayPrescriptionId?: number | null;
+}
+
+export interface IDoctorPatientQueueResponse {
+  patients: IDoctorPatientQueueItem[];
 }

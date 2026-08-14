@@ -1,0 +1,6 @@
+<div class="quick-add" *ngIf="presets.length">
+  <button type="button" class="quick-add-toggle" (click)="toggle()">{{ label }} ▾</button>
+  <ul class="quick-add-list" *ngIf="open">
+    <li *ngFor="let p of presets" (mousedown)="choose(p)">{{ p.label }}</li>
+  </ul>
+</div>

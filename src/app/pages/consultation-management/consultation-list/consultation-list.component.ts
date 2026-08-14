@@ -29,7 +29,7 @@ export class ConsultationListComponent implements OnInit {
   ) {}
 
   consultations: IConsultationListItem[] = [];
-  summary: IConsultationListSummary = { total: 0, waiting: 0, inProgress: 0, completed: 0 };
+  summary: IConsultationListSummary = { total: 0, waiting: 0, inProgress: 0, completed: 0, draft: 0 };
   loading = false;
   totalRecords = 0;
   UI_CONFIG = UI_CONFIG;

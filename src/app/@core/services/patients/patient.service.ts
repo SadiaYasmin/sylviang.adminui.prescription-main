@@ -1,7 +1,16 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApiResponse } from '@core/interfaces/ApiResponse';
-import { ICreatePatientRequest, IPatientDetailsResponse, IPatientListRequest, IPatientListResponse, IPatientSummary, IUpdatePatientRequest } from '@core/interfaces/patients/patient.interface';
+import {
+  ICreatePatientRequest,
+  IDoctorPatientQueueRequest,
+  IDoctorPatientQueueResponse,
+  IPatientDetailsResponse,
+  IPatientListRequest,
+  IPatientListResponse,
+  IPatientSummary,
+  IUpdatePatientRequest,
+} from '@core/interfaces/patients/patient.interface';
 import { BASE_URL_Patients } from '@env/environment';
 
 @Injectable({
@@ -19,6 +28,13 @@ export class PatientService {
     if (request.searchTerm?.trim()) params['searchTerm'] = request.searchTerm.trim();
 
     return this.httpClient.get<ApiResponse<IPatientListResponse>>(`${this.API_URL}`, { params });
+  }
+
+  getDoctorQueue(request: IDoctorPatientQueueRequest) {
+    const params: Record<string, string> = { queueFilter: request.queueFilter };
+    if (request.searchTerm?.trim()) params['searchTerm'] = request.searchTerm.trim();
+
+    return this.httpClient.get<ApiResponse<IDoctorPatientQueueResponse>>(`${this.API_URL}/doctor-queue`, { params });
   }
 
   getPatientById(id: number) {

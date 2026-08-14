@@ -33,30 +33,44 @@ export class ShellService {
   }
 
   activeNavTab(items: IMenuItem[], extendedItem: number): void {
+    const urlSegments = this._router.url.split('/').filter((segment) => segment.length > 0);
+    const bestTopHref = this.findBestMatchingHref(items, urlSegments);
+
     items.forEach((item, index) => {
-      if (item.href) {
-        const urlSegments = this._router.url.split('/').filter((segment) => segment.length > 0);
-        const hrefSegments = item.href.split('/').filter((segment) => segment.length > 0);
-        const isActive = hrefSegments.every((segment, i) => segment === urlSegments[i]);
+      const isActive = !!item.href && item.href === bestTopHref;
+      item.active = isActive;
 
-        item.active = isActive;
+      if (isActive && extendedItem) {
+        extendedItem = index;
+      }
 
-        if (isActive && extendedItem) {
-          extendedItem = index;
-        }
-
-        if (item.subItems) {
-          item.subItems.forEach((subItem) => {
-            if (subItem.href) {
-              const subItemHrefSegments = subItem.href.split('/').filter((segment) => segment.length > 0);
-              subItem.active = subItemHrefSegments.every((segment, i) => segment === urlSegments[i]);
-            }
-          });
-        }
-      } else {
-        item.active = false;
+      if (item.subItems) {
+        const bestSubHref = this.findBestMatchingHref(item.subItems, urlSegments);
+        item.subItems.forEach((subItem) => {
+          subItem.active = !!subItem.href && subItem.href === bestSubHref;
+        });
       }
     });
+  }
+
+  /**
+   * Among sibling hrefs, several can match a route as a prefix (e.g. `/prescriptions`
+   * is a prefix of `/prescriptions/preferences`). Only the longest matching href should
+   * be treated as active, otherwise a shorter sibling route falsely lights up alongside it.
+   */
+  private findBestMatchingHref(items: IMenuItem[], urlSegments: string[]): string | undefined {
+    let best: string | undefined;
+    let bestSegmentCount = -1;
+    for (const item of items) {
+      if (!item.href) continue;
+      const hrefSegments = item.href.split('/').filter((segment) => segment.length > 0);
+      const isMatch = hrefSegments.every((segment, i) => segment === urlSegments[i]);
+      if (isMatch && hrefSegments.length > bestSegmentCount) {
+        bestSegmentCount = hrefSegments.length;
+        best = item.href;
+      }
+    }
+    return best;
   }
 
   activateNavItem(index: number, navItems: IMenuItem[]): void {

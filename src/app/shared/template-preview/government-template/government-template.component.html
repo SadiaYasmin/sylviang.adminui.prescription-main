@@ -12,60 +12,113 @@
       <div class="hospital-address">{{ hospitalSettings?.address || '[Hospital Address]' }}</div>
     </div>
     <div class="doctor-info">
-      <div class="doctor-name">[Doctor Name]</div>
-      <div class="doctor-qualification">[Qualification]</div>
-      <div class="doctor-reg">{{ label('bmdcRegNo', 'BM&DC Reg. No') }}: [XXXXX]</div>
+      <div class="doctor-name">{{ document ? document.doctor.fullName : '[Doctor Name]' }}</div>
+      <div class="doctor-qualification">{{ document ? (document.doctor.qualification || '') : '[Qualification]' }}</div>
+      <div class="doctor-reg">{{ label('bmdcRegNo', 'BM&DC Reg. No') }}: {{ document ? (document.doctor.licenseNumber || '—') : '[XXXXX]' }}</div>
     </div>
   </header>
 
   <div class="government-body">
     <app-patient-info-block
-      name="[Patient Name]"
-      age="[Age]"
-      sex="[Sex]"
-      phone="[Phone]"
-      bloodGroup="[Blood Group]"
-      allergies="[Allergies]"
-      date="[Date]"
-      rxNo="[Rx No]"
+      [name]="patientInfo ? patientInfo.name : '[Patient Name]'"
+      [age]="patientInfo ? patientInfo.age : '[Age]'"
+      [sex]="patientInfo ? patientInfo.sex : '[Sex]'"
+      [phone]="patientInfo ? patientInfo.phone : '[Phone]'"
+      [bloodGroup]="patientInfo ? patientInfo.bloodGroup : '[Blood Group]'"
+      [allergies]="patientInfo ? patientInfo.allergies : '[Allergies]'"
+      [date]="patientInfo ? patientInfo.date : '[Date]'"
+      [rxNo]="patientInfo ? patientInfo.rxNo : '[Rx No]'"
       [labels]="config.labels"
     ></app-patient-info-block>
 
     <div class="compact-grid">
-      <div class="compact-cell"><strong>{{ label('chiefComplaint', 'C/C') }}:</strong> <span class="placeholder-text">{{ label('chiefComplaintPlaceholder', 'Fever for 3 days') }}</span></div>
-      <div class="compact-cell"><strong>{{ label('history', 'H/O') }}:</strong> <span class="placeholder-text">[History]</span></div>
-      <div class="compact-cell compact-cell-full"><strong>{{ label('diagnosis', 'Dx') }}:</strong> <span class="placeholder-text">[Diagnosis]</span></div>
+      <div class="compact-cell">
+        <strong>{{ label('chiefComplaint', 'C/C') }}:</strong>
+        <ng-container *ngIf="document; else ccPlaceholder">
+          <app-chip-list-input [items]="content.chiefComplaints" [editable]="editable" placeholder="Add complaint..." (itemsChange)="patchContent({ chiefComplaints: $event })"></app-chip-list-input>
+        </ng-container>
+        <ng-template #ccPlaceholder><span class="placeholder-text">{{ label('chiefComplaintPlaceholder', 'Fever for 3 days') }}</span></ng-template>
+      </div>
+      <div class="compact-cell">
+        <strong>{{ label('history', 'H/O') }}:</strong>
+        <ng-container *ngIf="document; else hoPlaceholder">
+          <app-chip-list-input [items]="content.history" [editable]="editable" placeholder="Add history..." (itemsChange)="patchContent({ history: $event })"></app-chip-list-input>
+        </ng-container>
+        <ng-template #hoPlaceholder><span class="placeholder-text">[History]</span></ng-template>
+      </div>
+      <div class="compact-cell compact-cell-full">
+        <strong>{{ label('diagnosis', 'Dx') }}:</strong>
+        <ng-container *ngIf="document; else dxPlaceholder">
+          <app-diagnosis-list-input [items]="content.diagnoses" [editable]="editable" (itemsChange)="patchContent({ diagnoses: $event })"></app-diagnosis-list-input>
+        </ng-container>
+        <ng-template #dxPlaceholder><span class="placeholder-text">[Diagnosis]</span></ng-template>
+      </div>
     </div>
 
     <div class="oe-block">
       <div class="oe-title"><strong>{{ label('examination', 'O/E') }}</strong></div>
-      <div class="vitals">
-        <div class="vital" *ngFor="let v of vitals">
-          <span class="vital-label">{{ v }}</span>
-          <span class="vital-line"></span>
+      <ng-container *ngIf="document; else oePlaceholder">
+        <app-vitals-input [value]="content.examination" [editable]="editable" [vitalLabels]="examinationLabels" (valueChange)="patchContent({ examination: $event })"></app-vitals-input>
+      </ng-container>
+      <ng-template #oePlaceholder>
+        <div class="vitals">
+          <div class="vital" *ngFor="let v of vitals">
+            <span class="vital-label">{{ v }}</span>
+            <span class="vital-line"></span>
+          </div>
         </div>
-      </div>
+      </ng-template>
     </div>
 
     <section class="rx-section" [ngClass]="'table-' + config.style.tableStyle">
       <h4>{{ label('prescriptionHeading', 'Rx') }}</h4>
-      <p class="placeholder-text">{{ label('medEmptyReadonly', 'No medicines prescribed.') }}</p>
+      <ng-container *ngIf="document; else rxPlaceholder">
+        <app-medicine-list-input
+          [items]="content.medicines"
+          [editable]="editable"
+          [emptyReadonlyText]="label('medEmptyReadonly', 'No medicines prescribed.')"
+          (itemsChange)="patchContent({ medicines: $event })"
+        ></app-medicine-list-input>
+      </ng-container>
+      <ng-template #rxPlaceholder><p class="placeholder-text">{{ label('medEmptyReadonly', 'No medicines prescribed.') }}</p></ng-template>
     </section>
 
     <div class="compact-grid">
-      <div class="compact-cell"><strong>{{ label('investigation', 'Inv') }}:</strong> <span class="placeholder-text">[Investigation]</span></div>
-      <div class="compact-cell"><strong>{{ label('advice', 'Advice') }}:</strong> <span class="placeholder-text">{{ label('advicePlaceholder', 'Write advice here...') }}</span></div>
-      <div class="compact-cell compact-cell-full"><strong>{{ label('followUp', 'Follow-Up') }}:</strong> <span class="placeholder-text">{{ label('followUpPlaceholder', 'e.g. Review after 7 days') }}</span></div>
+      <div class="compact-cell">
+        <strong>{{ label('investigation', 'Inv') }}:</strong>
+        <ng-container *ngIf="document; else invPlaceholder">
+          <app-chip-list-input [items]="content.investigations" [editable]="editable" placeholder="Add investigation..." (itemsChange)="patchContent({ investigations: $event })"></app-chip-list-input>
+        </ng-container>
+        <ng-template #invPlaceholder><span class="placeholder-text">[Investigation]</span></ng-template>
+      </div>
+      <div class="compact-cell">
+        <strong>{{ label('advice', 'Advice') }}:</strong>
+        <ng-container *ngIf="document; else advicePlaceholder">
+          <app-chip-list-input [items]="content.advice" [editable]="editable" placeholder="Add advice..." (itemsChange)="patchContent({ advice: $event })"></app-chip-list-input>
+        </ng-container>
+        <ng-template #advicePlaceholder><span class="placeholder-text">{{ label('advicePlaceholder', 'Write advice here...') }}</span></ng-template>
+      </div>
+      <div class="compact-cell compact-cell-full">
+        <strong>{{ label('followUp', 'Follow-Up') }}:</strong>
+        <ng-container *ngIf="document; else followUpPlaceholder">
+          <ng-container *ngIf="editable; else followUpReadonly">
+            <input type="text" class="follow-up-input" [value]="content.followUp || ''" (blur)="patchContent({ followUp: $any($event.target).value })" />
+          </ng-container>
+          <ng-template #followUpReadonly><span class="placeholder-text">{{ content.followUp || 'Not specified.' }}</span></ng-template>
+        </ng-container>
+        <ng-template #followUpPlaceholder><span class="placeholder-text">{{ label('followUpPlaceholder', 'e.g. Review after 7 days') }}</span></ng-template>
+      </div>
     </div>
 
     <div class="signoff">
       <div class="qr-box">
-        <app-prescription-qr ink="#000" [size]="64"></app-prescription-qr>
+        <app-prescription-qr ink="#000" [size]="64" [qrValue]="verifyUrl"></app-prescription-qr>
         <div class="qr-caption">{{ qrMessage }}</div>
       </div>
       <div class="signature-block">
+        <img *ngIf="document?.doctor?.signatureBase64" [src]="document!.doctor.signatureBase64" class="signature-image" alt="Doctor's signature" />
         <div class="signature-line">
-          <div class="signature-name">[Doctor Name]</div>
+          <div class="signature-name">{{ document ? document.doctor.fullName : '[Doctor Name]' }}</div>
           <div class="signature-caption">{{ label('doctorSignature', "Doctor's Signature") }}</div>
         </div>
       </div>

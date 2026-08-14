@@ -1,6 +1,8 @@
-import { Component, Input } from '@angular/core';
-import { IHospitalSettings } from '@core/interfaces/hospital-settings/hospital-settings.interface';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IHospitalBranding } from '../hospital-branding.interface';
 import { ITemplateConfig } from '@core/interfaces/templates/template.interface';
+import { IPrescriptionContent, IPrescriptionDocument, blankPrescriptionContent } from '@core/interfaces/prescriptions/prescription.interface';
+import { formatPatientInfoBlock } from '../../prescription-sections/prescription-display.util';
 
 /**
  * Government-type prescriptions are, by product rule, always black & white — this is
@@ -19,8 +21,29 @@ import { ITemplateConfig } from '@core/interfaces/templates/template.interface';
 })
 export class GovernmentTemplateComponent {
   @Input() config!: ITemplateConfig;
-  @Input() hospitalSettings: IHospitalSettings | null = null;
+  @Input() hospitalSettings: IHospitalBranding | null = null;
   @Input() language: 'en' | 'bn' = 'en';
+
+  @Input() editable = false;
+  @Input() document: IPrescriptionDocument | null = null;
+  @Output() contentChange = new EventEmitter<IPrescriptionContent>();
+
+  get content(): IPrescriptionContent {
+    return this.document?.content ?? blankPrescriptionContent();
+  }
+
+  patchContent(patch: Partial<IPrescriptionContent>): void {
+    this.contentChange.emit({ ...this.content, ...patch });
+  }
+
+  get patientInfo() {
+    return this.document ? formatPatientInfoBlock(this.document) : null;
+  }
+
+  get verifyUrl(): string | null {
+    if (!this.document || this.document.status !== 'Finalized') return null;
+    return `${window.location.origin}/verify?id=${this.document.displayCode}`;
+  }
 
   label(key: string, fallback: string): string {
     return this.config?.labels?.[key] || fallback;
@@ -35,6 +58,9 @@ export class GovernmentTemplateComponent {
       '--tpl-font-family': this.fontFamilyCss(style.fontFamily),
       '--tpl-section-spacing': `${style.sectionSpacing}px`,
       '--tpl-border-radius': '0px',
+      '--tpl-vitals-columns': '3',
+      '--tpl-vitals-line-color': '#000',
+      '--tpl-vitals-label-color': '#000',
     };
   }
 
@@ -71,6 +97,22 @@ export class GovernmentTemplateComponent {
       this.label('vitalWeightEditable', 'Weight (kg)'),
       this.label('vitalHeightEditable', 'Height (cm)'),
       this.label('vitalBMI', 'BMI'),
+    ];
+  }
+
+  /** See ClassicTemplateComponent.examinationLabels for why this is separate from `vitals`. */
+  get examinationLabels(): string[] {
+    return [
+      this.label('vitalBP', 'BP'),
+      this.label('vitalPulse', 'Pulse'),
+      this.label('vitalTempEditable', 'Temp (°F)'),
+      this.label('vitalRespiratoryRate', 'Resp. Rate'),
+      this.label('vitalSpo2', 'SpO2 (%)'),
+      this.label('vitalWeightEditable', 'Weight (kg)'),
+      this.label('vitalHeightEditable', 'Height (cm)'),
+      this.label('vitalBloodSugar', 'Blood Sugar'),
+      this.label('vitalPainScore', 'Pain Score'),
+      this.label('vitalHeartRate', 'Heart Rate'),
     ];
   }
 

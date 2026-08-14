@@ -18,3 +18,7 @@ export const BASE_URL_Patients = `${BASE_URL_Backend}/patients`;
 export const BASE_URL_Consultations = `${BASE_URL_Backend}/consultations`;
 export const BASE_URL_Templates = `${BASE_URL_Backend}/templates`;
 export const BASE_URL_HospitalSettings = `${BASE_URL_Backend}/hospital-settings`;
+export const BASE_URL_Prescriptions = `${BASE_URL_Backend}/prescriptions`;
+export const BASE_URL_Medicines = `${BASE_URL_Backend}/medicines`;
+export const BASE_URL_QuickAdd = `${BASE_URL_Backend}/quick-add`;
+export const BASE_URL_DoctorPreferences = `${BASE_URL_Backend}/doctors/me/preferences`;

@@ -1,0 +1,40 @@
+<div class="prefs-page">
+  <h2>Prescription Preferences</h2>
+  <p class="hint">These two settings must be set before you can finalize any prescription (US-026).</p>
+
+  <div *ngIf="loading">Loading...</div>
+
+  <div class="prefs-card" *ngIf="!loading">
+    <h3>Preferred Template</h3>
+    <div class="template-options">
+      <button
+        type="button"
+        class="template-option"
+        *ngFor="let t of templates"
+        [class.selected]="preferences?.preferredTemplateId === t.templateId"
+        [disabled]="saving"
+        (click)="selectTemplate(t.templateId)"
+      >
+        {{ t.name }}
+      </button>
+    </div>
+    <p class="empty" *ngIf="!templates.length">No enabled templates available — ask an Admin to enable one.</p>
+  </div>
+
+  <div class="prefs-card" *ngIf="!loading">
+    <h3>Signature</h3>
+    <div class="signature-row">
+      <img *ngIf="signaturePreview" [src]="signaturePreview" class="signature-preview" alt="Current signature" />
+      <span *ngIf="!signaturePreview" class="empty">No signature uploaded yet.</span>
+      <label class="upload-btn">
+        Upload Signature
+        <input type="file" accept="image/*" (change)="onSignatureSelected($event)" [disabled]="saving" hidden />
+      </label>
+    </div>
+  </div>
+
+  <div class="prefs-card" *ngIf="!loading">
+    <h3>Preferred Language</h3>
+    <p>{{ preferences?.preferredLanguage === 'Bn' ? 'বাংলা' : (preferences?.preferredLanguage === 'En' ? 'English' : 'Not yet set — choose it while authoring a prescription.') }}</p>
+  </div>
+</div>

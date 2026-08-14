@@ -61,15 +61,35 @@ export class MenuService {
   }
 
   private updateMenuItemsActiveState(items: IMenuItem[], currentRoute: string): IMenuItem[] {
+    const bestHref = this.findBestMatchingHref(items, currentRoute);
     return items.map((item) => {
       const updatedItem: IMenuItem = { ...item };
-      updatedItem.active = this.isRouteMatch(item.href, currentRoute);
+      updatedItem.active = !!item.href && item.href === bestHref;
       updatedItem.expanded = item.expanded || false;
       if (item.subItems && item.subItems.length > 0) {
         updatedItem.subItems = this.updateMenuItemsActiveState(item.subItems, currentRoute);
       }
       return updatedItem;
     });
+  }
+
+  /**
+   * Among sibling hrefs, several can match a route as a prefix (e.g. `/prescriptions`
+   * is a prefix of `/prescriptions/preferences`). Only the longest matching href should
+   * be treated as active, otherwise a shorter sibling route falsely lights up alongside it.
+   */
+  private findBestMatchingHref(items: IMenuItem[], currentRoute: string): string | undefined {
+    let best: string | undefined;
+    let bestSegmentCount = -1;
+    for (const item of items) {
+      if (!item.href || !this.isRouteMatch(item.href, currentRoute)) continue;
+      const segmentCount = item.href.replace(/^\//, '').split('/').length;
+      if (segmentCount > bestSegmentCount) {
+        bestSegmentCount = segmentCount;
+        best = item.href;
+      }
+    }
+    return best;
   }
 
   private isRouteMatch(menuHref: string | undefined, currentRoute: string): boolean {

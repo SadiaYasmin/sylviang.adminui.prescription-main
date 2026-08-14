@@ -1,5 +1,6 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth/auth.service';
 import { ConsultationService } from '@core/services/consultations/consultation.service';
 import { ToastService } from '@core/services/misc/toast.service';
@@ -12,6 +13,7 @@ describe('DashboardComponent', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let consultationServiceSpy: jasmine.SpyObj<ConsultationService>;
   let toastServiceSpy: jasmine.SpyObj<ToastService>;
+  let routerSpy: jasmine.SpyObj<Router>;
 
   const queueItem = {
     consultationId: 1,
@@ -32,6 +34,7 @@ describe('DashboardComponent', () => {
     consultationServiceSpy.getTodaysQueue.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: [queueItem] } as any));
     consultationServiceSpy.getMyQueue.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: [queueItem] } as any));
     toastServiceSpy = jasmine.createSpyObj('ToastService', ['success', 'error', 'info', 'warn']);
+    routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
     TestBed.configureTestingModule({
       declarations: [DashboardComponent],
@@ -39,6 +42,7 @@ describe('DashboardComponent', () => {
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ConsultationService, useValue: consultationServiceSpy },
         { provide: ToastService, useValue: toastServiceSpy },
+        { provide: Router, useValue: routerSpy },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -92,17 +96,17 @@ describe('DashboardComponent', () => {
     expect(component.displayStatus('Completed')).toBe('Completed');
   });
 
-  it('should open a consultation and refresh the queue on success', () => {
+  it('should navigate straight into prescription authoring for the clicked consultation', () => {
+    // Epic D: opening a consultation from the queue lands in live authoring — the
+    // Waiting -> InConsultation transition now happens there (StartOrResumePrescriptionHandler),
+    // not via a separate openConsultation() call from the dashboard.
     configure('Doctor');
     fixture.detectChanges();
-    consultationServiceSpy.openConsultation.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: null } as any));
-    consultationServiceSpy.getTodaysQueue.calls.reset();
 
     component.openConsultation(queueItem as any);
 
-    expect(consultationServiceSpy.openConsultation).toHaveBeenCalledWith(1);
-    expect(toastServiceSpy.success).toHaveBeenCalled();
-    expect(consultationServiceSpy.getTodaysQueue).toHaveBeenCalled();
+    expect(routerSpy.navigate).toHaveBeenCalledWith(['/prescriptions'], { queryParams: { consultationId: 1 } });
+    expect(consultationServiceSpy.openConsultation).not.toHaveBeenCalled();
   });
 
   it('should filter dashboard cards by role', () => {

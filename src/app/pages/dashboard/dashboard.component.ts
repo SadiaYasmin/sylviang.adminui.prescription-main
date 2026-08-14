@@ -1,4 +1,5 @@
 import { Component, OnInit } from '@angular/core';
+import { Router } from '@angular/router';
 import { IQueueItem } from '@core/interfaces/consultations/consultation.interface';
 import { AuthService } from '@core/services/auth/auth.service';
 import { ConsultationService } from '@core/services/consultations/consultation.service';
@@ -25,7 +26,14 @@ const DASHBOARD_CARDS: IDashboardCard[] = [
     title: 'Staff Management',
     description: 'Manage staff & doctor assignments',
     icon: 'fa-solid fa-users',
-    roles: ['Admin', 'Doctor'],
+    roles: ['Admin'],
+  },
+  {
+    href: '/staff/staff-list',
+    title: 'Your Assigned Staff',
+    description: 'View staff assigned to you',
+    icon: 'fa-solid fa-users',
+    roles: ['Doctor'],
   },
   {
     href: '/templates/template-list',
@@ -48,6 +56,34 @@ const DASHBOARD_CARDS: IDashboardCard[] = [
     icon: 'fa-solid fa-notes-medical',
     roles: ['Admin'],
   },
+  {
+    href: '/prescriptions',
+    title: 'Start a Prescription',
+    description: 'Quick-create for a walk-in patient',
+    icon: 'fa-solid fa-file-pen',
+    roles: ['Doctor'],
+  },
+  {
+    href: '/prescriptions/drafts',
+    title: 'Draft Prescriptions',
+    description: 'Resume your in-progress prescriptions',
+    icon: 'fa-solid fa-file-circle-question',
+    roles: ['Doctor'],
+  },
+  {
+    href: '/prescriptions/finalized',
+    title: 'Finalized Prescriptions',
+    description: 'Review your completed prescriptions',
+    icon: 'fa-solid fa-file-circle-check',
+    roles: ['Doctor'],
+  },
+  {
+    href: '/prescriptions/preferences',
+    title: 'Prescription Preferences',
+    description: 'Set your preferred template & signature',
+    icon: 'fa-solid fa-gear',
+    roles: ['Doctor'],
+  },
 ];
 
 @Component({
@@ -67,6 +103,7 @@ export class DashboardComponent implements OnInit {
     private authService: AuthService,
     private consultationService: ConsultationService,
     private toast: ToastService,
+    private router: Router,
   ) {
     this.role = this.authService.getRole();
   }
@@ -123,21 +160,10 @@ export class DashboardComponent implements OnInit {
     return status === 'InConsultation' ? 'In Progress' : status;
   }
 
-  // No prescription-authoring page exists yet (Epic D), so opening a consultation
-  // here just marks it InConsultation and refreshes the queue rather than navigating anywhere.
+  // Opening a consultation now lands directly in prescription authoring (Epic D) — the
+  // Waiting -> InConsultation transition happens there (StartOrResumePrescriptionHandler),
+  // not here, so there's no separate "open" call before navigating.
   openConsultation(item: IQueueItem): void {
-    this.consultationService.openConsultation(item.consultationId).subscribe({
-      next: (response) => {
-        if (response && !response.hasError) {
-          this.toast.success({ detail: `Opened consultation ${item.displayCode} for ${item.patientName}.` });
-          this.loadTodaysQueue();
-        } else if (!response?.decentMessage) {
-          this.toast.error({ detail: 'Could not open this consultation.' });
-        }
-      },
-      error: () => {
-        // ErrorHandlerInterceptor already surfaces the backend's error message as a toast.
-      },
-    });
+    this.router.navigate(['/prescriptions'], { queryParams: { consultationId: item.consultationId } });
   }
 }

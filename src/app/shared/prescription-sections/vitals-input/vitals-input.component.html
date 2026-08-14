@@ -1,0 +1,12 @@
+<div class="vitals">
+  <div class="vital" *ngFor="let f of fields">
+    <span class="vital-label">{{ f.label }}</span>
+    <ng-container *ngIf="editable; else readonlyVital">
+      <input type="text" class="vital-input" [value]="value[f.key] || ''" (blur)="update(f.key, $any($event.target).value)" />
+    </ng-container>
+    <ng-template #readonlyVital>
+      <span class="vital-line" *ngIf="!value[f.key]"></span>
+      <span class="vital-value" *ngIf="value[f.key]">{{ value[f.key] }}</span>
+    </ng-template>
+  </div>
+</div>

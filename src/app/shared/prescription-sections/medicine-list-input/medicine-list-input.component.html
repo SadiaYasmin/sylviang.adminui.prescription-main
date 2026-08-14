@@ -1,0 +1,58 @@
+<ng-container *ngIf="editable; else readonlyView">
+  <div class="medicine-editable">
+    <div class="medicine-card" *ngFor="let m of items; let i = index" [class.duplicate]="duplicateRowIndex === i">
+      <div class="med-row">
+        <div class="med-field med-name">
+          <input
+            type="text"
+            placeholder="Medicine name"
+            [value]="m.medicine"
+            (input)="onFieldChange(i, 'medicine', $any($event.target).value)"
+            (focus)="activeSuggestionRow = i"
+          />
+          <ul class="suggestions" *ngIf="activeSuggestionRow === i && suggestions.length">
+            <li *ngFor="let s of suggestions" (mousedown)="selectSuggestion(i, s)">
+              {{ s.brandName }} <span class="suggestion-generic" *ngIf="s.genericName">({{ s.genericName }})</span>
+            </li>
+          </ul>
+        </div>
+        <input type="text" class="med-field" placeholder="Strength" [value]="m.strength" (blur)="onFieldChange(i, 'strength', $any($event.target).value)" />
+        <button type="button" class="med-remove" (click)="remove(i)" aria-label="Remove">&times;</button>
+      </div>
+      <div class="med-row">
+        <input type="text" class="med-field" placeholder="Dosage" [value]="m.dosage" (blur)="onFieldChange(i, 'dosage', $any($event.target).value)" />
+        <input type="text" class="med-field" placeholder="Frequency" [value]="m.frequency" (blur)="onFieldChange(i, 'frequency', $any($event.target).value)" />
+        <input type="text" class="med-field" placeholder="Duration" [value]="m.duration" (blur)="onFieldChange(i, 'duration', $any($event.target).value)" />
+      </div>
+      <input
+        type="text"
+        class="med-field med-instructions"
+        placeholder="Instructions"
+        [value]="m.instructions"
+        (blur)="onFieldChange(i, 'instructions', $any($event.target).value)"
+      />
+      <p class="duplicate-warning" *ngIf="duplicateRowIndex === i">
+        This medicine + strength is already on the prescription — edit the existing line instead.
+      </p>
+    </div>
+    <button type="button" class="med-add" (click)="addBlank()">+ Add medicine</button>
+  </div>
+</ng-container>
+<ng-template #readonlyView>
+  <ng-container *ngIf="items.length; else emptyReadonly">
+    <table class="rx-table">
+      <tbody>
+        <tr *ngFor="let m of items">
+          <td class="rx-med-name">{{ m.medicine }} <span *ngIf="m.strength">({{ m.strength }})</span></td>
+          <td>{{ m.dosage }}</td>
+          <td>{{ m.frequency }}</td>
+          <td>{{ m.duration }}</td>
+          <td>{{ m.instructions }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </ng-container>
+  <ng-template #emptyReadonly>
+    <p class="rx-empty">{{ emptyReadonlyText }}</p>
+  </ng-template>
+</ng-template>

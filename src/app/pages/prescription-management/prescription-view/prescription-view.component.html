@@ -1,0 +1,25 @@
+<div class="view-page">
+  <div *ngIf="loading">Loading...</div>
+
+  <div class="view-toolbar no-print" *ngIf="document">
+    <div class="view-meta">
+      <strong>{{ document.displayCode }}</strong>
+      <span class="status-badge" [class.finalized]="document.status === 'Finalized'">{{ document.status }}</span>
+    </div>
+    <div class="view-actions">
+      <button type="button" (click)="print()">Print</button>
+      <button type="button" [disabled]="downloading" (click)="download()">{{ downloading ? 'Preparing...' : 'Download PDF' }}</button>
+    </div>
+  </div>
+
+  <div class="rx-print-root" *ngIf="document">
+    <app-template-preview
+      [type]="document.templateType"
+      [config]="document.templateConfig"
+      [hospitalSettings]="document.hospitalSettings"
+      [language]="document.language === 'Bn' ? 'bn' : 'en'"
+      [editable]="false"
+      [document]="document"
+    ></app-template-preview>
+  </div>
+</div>

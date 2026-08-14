@@ -1,0 +1,49 @@
+// This component is rendered inside each template's own view (classic/corporate/
+// government), which each define their own `.vitals`/`.vital` rules for their *static
+// placeholder* preview (`#oePlaceholder` in their own template, unaffected by this file).
+// Angular's view encapsulation means those parent-scoped rules never reach elements
+// rendered by this child component's own template, so the same grid must be defined
+// here too — themed via the `--tpl-*` custom properties set on each template's root,
+// which (unlike class selectors) do inherit across the encapsulation boundary.
+.vitals {
+  display: grid;
+  grid-template-columns: repeat(var(--tpl-vitals-columns, 2), 1fr);
+  gap: 5px 20px;
+  margin-top: 4px;
+}
+
+.vital {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  font-size: 0.85em;
+}
+
+.vital-label {
+  color: var(--tpl-vitals-label-color, #475569);
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.vital-line {
+  flex: 1;
+  border-bottom: 1px dotted var(--tpl-vitals-line-color, #d1d5db);
+  height: 1em;
+}
+
+.vital-input {
+  border: none;
+  border-bottom: 1px dashed var(--tpl-vitals-line-color, #cbd5e1);
+  background: transparent;
+  font: inherit;
+  width: 100%;
+  outline: none;
+
+  &:focus {
+    border-bottom-color: var(--tpl-accent-color, #0f766e);
+  }
+}
+
+.vital-value {
+  font-weight: 500;
+}
