@@ -1,0 +1,17 @@
+<ng-container *ngIf="editable; else readonlyView">
+  <textarea
+    class="diagnosis-textarea"
+    rows="3"
+    placeholder="One diagnosis per line, e.g. Acute Pharyngitis (J02.9)"
+    [value]="textValue"
+    (blur)="onBlur($any($event.target).value)"
+  ></textarea>
+</ng-container>
+<ng-template #readonlyView>
+  <ng-container *ngIf="items.length; else emptyReadonly">
+    <p class="placeholder-text" *ngFor="let d of items">{{ d.text }}<span *ngIf="d.icd10"> ({{ d.icd10 }})</span></p>
+  </ng-container>
+  <ng-template #emptyReadonly>
+    <p class="placeholder-text placeholder-empty">{{ emptyReadonlyText }}</p>
+  </ng-template>
+</ng-template>

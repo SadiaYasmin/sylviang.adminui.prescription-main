@@ -1,7 +1,9 @@
-import { Component, Input } from '@angular/core';
-import { IHospitalSettings } from '@core/interfaces/hospital-settings/hospital-settings.interface';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IHospitalBranding } from '../hospital-branding.interface';
 import { ITemplateConfig } from '@core/interfaces/templates/template.interface';
+import { IPrescriptionContent, IPrescriptionDocument, blankPrescriptionContent } from '@core/interfaces/prescriptions/prescription.interface';
 import { lineTint, softTint } from '../template-theme.util';
+import { formatPatientInfoBlock } from '../../prescription-sections/prescription-display.util';
 
 @Component({
   selector: 'app-corporate-template',
@@ -11,8 +13,29 @@ import { lineTint, softTint } from '../template-theme.util';
 })
 export class CorporateTemplateComponent {
   @Input() config!: ITemplateConfig;
-  @Input() hospitalSettings: IHospitalSettings | null = null;
+  @Input() hospitalSettings: IHospitalBranding | null = null;
   @Input() language: 'en' | 'bn' = 'en';
+
+  @Input() editable = false;
+  @Input() document: IPrescriptionDocument | null = null;
+  @Output() contentChange = new EventEmitter<IPrescriptionContent>();
+
+  get content(): IPrescriptionContent {
+    return this.document?.content ?? blankPrescriptionContent();
+  }
+
+  patchContent(patch: Partial<IPrescriptionContent>): void {
+    this.contentChange.emit({ ...this.content, ...patch });
+  }
+
+  get patientInfo() {
+    return this.document ? formatPatientInfoBlock(this.document) : null;
+  }
+
+  get verifyUrl(): string | null {
+    if (!this.document || this.document.status !== 'Finalized') return null;
+    return `${window.location.origin}/verify?id=${this.document.displayCode}`;
+  }
 
   /** Traditional prescription "Rx" red, kept fixed regardless of the branding accent. */
   readonly rxColor = '#B42318';
@@ -63,6 +86,22 @@ export class CorporateTemplateComponent {
       this.label('vitalWeightEditable', 'Weight (kg)'),
       this.label('vitalHeightEditable', 'Height (cm)'),
       this.label('vitalBMI', 'BMI'),
+    ];
+  }
+
+  /** See ClassicTemplateComponent.examinationLabels for why this is separate from `vitals`. */
+  get examinationLabels(): string[] {
+    return [
+      this.label('vitalBP', 'BP'),
+      this.label('vitalPulse', 'Pulse'),
+      this.label('vitalTempEditable', 'Temp (°F)'),
+      this.label('vitalRespiratoryRate', 'Resp. Rate'),
+      this.label('vitalSpo2', 'SpO2 (%)'),
+      this.label('vitalWeightEditable', 'Weight (kg)'),
+      this.label('vitalHeightEditable', 'Height (cm)'),
+      this.label('vitalBloodSugar', 'Blood Sugar'),
+      this.label('vitalPainScore', 'Pain Score'),
+      this.label('vitalHeartRate', 'Heart Rate'),
     ];
   }
 

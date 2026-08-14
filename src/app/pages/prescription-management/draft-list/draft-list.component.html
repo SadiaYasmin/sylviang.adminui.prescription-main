@@ -1,0 +1,104 @@
+<section class="page-container">
+  <div class="page-header">
+    <div class="page-header-icon"><i class="fa-solid fa-file-circle-question"></i></div>
+    <div class="page-header-text">
+      <h2 class="page-header-title">Saved Draft Prescriptions</h2>
+      <p class="page-header-subtitle">Continue editing, finalize, or delete your saved drafts</p>
+    </div>
+    <button type="button" class="btn-primary" (click)="newPrescription()"><i class="fa fa-plus"></i><span>New Prescription</span></button>
+  </div>
+
+  <div class="table-container p-4">
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_200px] gap-4 items-end">
+      <div>
+        <label class="filter-label" for="draftSearch">Search</label>
+        <input
+          id="draftSearch"
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="Search by patient name, prescription ID, or phone number"
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchTermChange($event)"
+        />
+      </div>
+      <div>
+        <label class="filter-label" for="draftDate">Date</label>
+        <p-datepicker id="draftDate" class="w-full" [(ngModel)]="date" dateFormat="mm/dd/yy" [appendTo]="'body'" (onSelect)="applyDateFilter()"></p-datepicker>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container mt-4">
+    <div class="table-title-container">
+      <h3 class="table-title">
+        Draft Prescriptions
+        <span class="table-title-info" *ngIf="totalRecords > 0"> ({{ totalRecords }} total)</span>
+      </h3>
+    </div>
+
+    <div class="transition-all duration-500 ease-in-out">
+      <p-table
+        [value]="loading ? skeletonItems : drafts"
+        dataKey="prescriptionId"
+        [paginator]="true"
+        [rows]="rows"
+        [first]="(currentPage - 1) * rows"
+        [rowsPerPageOptions]="UI_CONFIG.pageSizeOptions"
+        [totalRecords]="totalRecords"
+        (onPage)="onPageChange($event)"
+        [lazy]="true"
+        [loading]="false"
+        scrollHeight="flex"
+        [responsiveLayout]="'scroll'"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} drafts"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 10rem">ID</th>
+            <th style="width: 12rem">Patient</th>
+            <th style="width: 8rem">Date</th>
+            <th style="width: 8rem">Medicines</th>
+            <th style="width: 8rem">Investigations</th>
+            <th style="width: 10rem">Diagnosis</th>
+            <th style="width: 6rem">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          @if (loading) {
+            <tr>
+              <td *ngFor="let c of [1, 2, 3, 4, 5, 6]"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="3rem" height="1rem"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td class="font-medium">{{ item.displayCode }}</td>
+              <td>{{ item.patientName }}</td>
+              <td>{{ item.savedAt | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ item.medicineCount }} medicine(s)</td>
+              <td>{{ item.investigationCount }}</td>
+              <td>{{ item.diagnosisCount }}</td>
+              <td class="actions">
+                <button class="text-primary" title="Continue Editing" (click)="continueDraft(item)"><i class="fa fa-edit"></i></button>
+                <button class="text-primary" title="View" (click)="view(item)"><i class="fa fa-eye"></i></button>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="7" class="not-found">
+              <div>
+                <i class="fa fa-magnifying-glass-minus"></i>
+                <p>No draft prescriptions match your search or filters.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</section>

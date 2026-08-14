@@ -1,0 +1,77 @@
+.prefs-page {
+  padding: 1rem;
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.hint {
+  color: #64748b;
+  font-size: 0.9em;
+}
+
+.prefs-card {
+  background: #fff;
+  border-radius: 0.75rem;
+  padding: 1.25rem;
+  margin-bottom: 1rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  h3 {
+    margin-top: 0;
+  }
+}
+
+.template-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.template-option {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid #cbd5e1;
+  background: #fff;
+  cursor: pointer;
+
+  &.selected {
+    border-color: #0f766e;
+    background: #f0fdfa;
+    color: #0f766e;
+    font-weight: 600;
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: default;
+  }
+}
+
+.signature-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.signature-preview {
+  height: 60px;
+  max-width: 200px;
+  object-fit: contain;
+  border: 1px dashed #cbd5e1;
+  border-radius: 0.375rem;
+  padding: 0.25rem;
+}
+
+.upload-btn {
+  padding: 0.4rem 1rem;
+  border-radius: 0.375rem;
+  border: 1px solid #0f766e;
+  color: #0f766e;
+  background: #fff;
+  cursor: pointer;
+}
+
+.empty {
+  color: #94a3b8;
+  font-size: 0.9em;
+}

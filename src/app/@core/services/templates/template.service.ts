@@ -18,8 +18,11 @@ export class TemplateService {
 
   API_URL = BASE_URL_Templates;
 
-  getList() {
-    return this.httpClient.get<ApiResponse<ITemplateListResponse>>(`${this.API_URL}`);
+  /** enabledOnly: true for the doctor preferred-template picker (Epic D/K stub) — never shows a disabled template as choosable. */
+  getList(enabledOnly = false) {
+    const params: Record<string, string> = {};
+    if (enabledOnly) params['enabledOnly'] = 'true';
+    return this.httpClient.get<ApiResponse<ITemplateListResponse>>(`${this.API_URL}`, { params });
   }
 
   getById(id: number) {

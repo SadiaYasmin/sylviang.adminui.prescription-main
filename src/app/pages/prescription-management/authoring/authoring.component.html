@@ -1,0 +1,131 @@
+<div class="authoring-page" [class.authoring-page--wide]="needsPatientPick && !loading">
+  <div *ngIf="loading" class="state-card">Loading...</div>
+
+  <section *ngIf="needsPatientPick && !loading" class="page-container">
+    <div class="page-header">
+      <div class="page-header-icon"><i class="fa-solid fa-file-pen"></i></div>
+      <div>
+        <h2 class="page-header-title">Create Prescription</h2>
+        <p class="page-header-subtitle">Pick a patient to start a walk-in consultation, or open one from Today's Consultation Queue on your dashboard.</p>
+      </div>
+    </div>
+
+    <div class="table-container p-4">
+      <div class="grid grid-cols-1 md:grid-cols-[1fr_260px] gap-4 items-end">
+        <div>
+          <label class="filter-label" for="patientSearch">Select Patient</label>
+          <input
+            id="patientSearch"
+            type="text"
+            pInputText
+            class="w-full"
+            placeholder="Search patient by name, phone, or ID"
+            [ngModel]="patientSearchTerm"
+            (ngModelChange)="onPatientSearchTermChange($event)"
+          />
+        </div>
+        <div>
+          <label class="filter-label" for="patientFilter">Patient Filter</label>
+          <p-select
+            id="patientFilter"
+            class="w-full"
+            [options]="queueFilterOptions"
+            [(ngModel)]="queueFilter"
+            optionLabel="label"
+            optionValue="value"
+            (onChange)="onQueueFilterChange()"
+          ></p-select>
+        </div>
+      </div>
+    </div>
+
+    <div class="table-container mt-4">
+      <div class="transition-all duration-500 ease-in-out">
+        <p-table [value]="patientResultsLoading ? [] : patientResults" dataKey="patientId" [responsiveLayout]="'scroll'">
+          <ng-template pTemplate="body" let-patient>
+            <tr class="patient-row" (click)="selectPatientRow(patient)">
+              <td>
+                <div class="patient-name">{{ patient.name }}</div>
+                <div class="patient-meta">{{ patient.age ?? '-' }}{{ patient.gender ? ', ' + patient.gender : '' }} · {{ patient.phone }}</div>
+              </td>
+              <td class="status-cell">
+                <span class="status-badge" [ngClass]="statusBadge(patient).modifierClass">
+                  <span class="status-badge-dot"></span>{{ statusBadge(patient).label }}
+                </span>
+              </td>
+              <td class="action-cell">
+                <button type="button" class="btn-primary" (click)="$event.stopPropagation(); selectPatientRow(patient)">
+                  <i class="fa-solid fa-file-pen"></i>
+                  <span>{{ rowActionLabel(patient) }}</span>
+                </button>
+              </td>
+            </tr>
+          </ng-template>
+
+          <ng-template pTemplate="emptymessage">
+            <tr>
+              <td colspan="3" class="not-found">
+                <div *ngIf="!patientResultsLoading">
+                  <i class="fa fa-magnifying-glass-minus"></i>
+                  <p>{{ emptyQueueMessage }}</p>
+                </div>
+                <div *ngIf="patientResultsLoading">
+                  <p>Loading patients…</p>
+                </div>
+              </td>
+            </tr>
+          </ng-template>
+        </p-table>
+      </div>
+    </div>
+  </section>
+
+  <div *ngIf="duplicateActive" class="state-card warning">
+    <h3>Active Consultation Already Exists</h3>
+    <p>This patient already has an active consultation today (Token {{ duplicateActive.tokenNumber }}, {{ duplicateActive.status }}).</p>
+    <button type="button" class="proceed-anyway" (click)="continueExisting()">Continue to that consultation</button>
+  </div>
+
+  <div *ngIf="unfinishedDrafts" class="state-card warning">
+    <h3>Unfinished Draft Found</h3>
+    <p>This patient has an unfinished draft prescription with you:</p>
+    <ul class="draft-list">
+      <li *ngFor="let d of unfinishedDrafts">
+        <span>{{ d.displayCode }} — saved {{ d.savedAt | date: 'medium' }}</span>
+        <button type="button" (click)="resumeDraft(d)">Resume this draft</button>
+      </li>
+    </ul>
+    <button type="button" class="proceed-anyway" (click)="proceedAnyway()">Start a new prescription anyway</button>
+  </div>
+
+  <div *ngIf="document" class="authoring-content">
+    <div class="authoring-toolbar">
+      <div class="lang-toggle">
+        <button type="button" [class.active]="document.language === 'En'" (click)="setLanguage('En')">English</button>
+        <button type="button" [class.active]="document.language === 'Bn'" (click)="setLanguage('Bn')">বাংলা</button>
+      </div>
+    </div>
+
+    <div class="finalize-checklist" *ngIf="finalizeMissing.length">
+      <strong>Cannot finalize — missing:</strong>
+      <ul>
+        <li *ngFor="let m of finalizeMissing">{{ m }}</li>
+      </ul>
+    </div>
+
+    <app-template-preview
+      [type]="document.templateType"
+      [config]="document.templateConfig"
+      [hospitalSettings]="document.hospitalSettings"
+      [language]="document.language === 'Bn' ? 'bn' : 'en'"
+      [editable]="true"
+      [document]="document"
+      (contentChange)="onContentChange($event)"
+    ></app-template-preview>
+
+    <div class="authoring-bottom-actions">
+      <button type="button" class="btn-secondary" [disabled]="saving" (click)="saveDraft()">Save as Draft</button>
+      <button type="button" class="btn-primary" [disabled]="saving" (click)="finalize()">Finalize</button>
+    </div>
+  </div>
+</div>

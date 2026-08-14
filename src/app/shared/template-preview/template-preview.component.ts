@@ -1,6 +1,7 @@
-import { Component, Input } from '@angular/core';
-import { IHospitalSettings } from '@core/interfaces/hospital-settings/hospital-settings.interface';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IHospitalBranding } from './hospital-branding.interface';
 import { ITemplateConfig, TemplateType } from '@core/interfaces/templates/template.interface';
+import { IPrescriptionContent, IPrescriptionDocument } from '@core/interfaces/prescriptions/prescription.interface';
 
 // Fixed design width the preview is authored against; when `scale` < 1 the whole
 // preview is rendered at this width then CSS-scaled down, so it reads correctly
@@ -17,9 +18,13 @@ export const TEMPLATE_PREVIEW_DESIGN_HEIGHT = 1123; // ~A4 height at 96dpi, used
 export class TemplatePreviewComponent {
   @Input() config!: ITemplateConfig;
   @Input() type: TemplateType = 'Classic';
-  @Input() hospitalSettings: IHospitalSettings | null = null;
+  @Input() hospitalSettings: IHospitalBranding | null = null;
   @Input() scale = 1;
   @Input() language: 'en' | 'bn' = 'en';
+
+  @Input() editable = false;
+  @Input() document: IPrescriptionDocument | null = null;
+  @Output() contentChange = new EventEmitter<IPrescriptionContent>();
 
   readonly designWidth = TEMPLATE_PREVIEW_DESIGN_WIDTH;
   readonly designHeight = TEMPLATE_PREVIEW_DESIGN_HEIGHT;

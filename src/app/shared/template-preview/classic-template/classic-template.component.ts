@@ -1,7 +1,9 @@
-import { Component, Input } from '@angular/core';
-import { IHospitalSettings } from '@core/interfaces/hospital-settings/hospital-settings.interface';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IHospitalBranding } from '../hospital-branding.interface';
 import { ITemplateConfig } from '@core/interfaces/templates/template.interface';
+import { IPrescriptionContent, IPrescriptionDocument, blankPrescriptionContent } from '@core/interfaces/prescriptions/prescription.interface';
 import { lineTint, softTint } from '../template-theme.util';
+import { formatPatientInfoBlock } from '../../prescription-sections/prescription-display.util';
 
 @Component({
   selector: 'app-classic-template',
@@ -11,8 +13,34 @@ import { lineTint, softTint } from '../template-theme.util';
 })
 export class ClassicTemplateComponent {
   @Input() config!: ITemplateConfig;
-  @Input() hospitalSettings: IHospitalSettings | null = null;
+  @Input() hospitalSettings: IHospitalBranding | null = null;
   @Input() language: 'en' | 'bn' = 'en';
+
+  /**
+   * Three render modes driven by these two inputs (Epic D): editable=false + document=null
+   * is Epic H's original placeholder preview (unchanged); editable=true + document is live
+   * authoring; editable=false + document is read-only finalized view/print/verify.
+   */
+  @Input() editable = false;
+  @Input() document: IPrescriptionDocument | null = null;
+  @Output() contentChange = new EventEmitter<IPrescriptionContent>();
+
+  get content(): IPrescriptionContent {
+    return this.document?.content ?? blankPrescriptionContent();
+  }
+
+  patchContent(patch: Partial<IPrescriptionContent>): void {
+    this.contentChange.emit({ ...this.content, ...patch });
+  }
+
+  get patientInfo() {
+    return this.document ? formatPatientInfoBlock(this.document) : null;
+  }
+
+  get verifyUrl(): string | null {
+    if (!this.document || this.document.status !== 'Finalized') return null;
+    return `${window.location.origin}/verify?id=${this.document.displayCode}`;
+  }
 
   /** Traditional prescription "Rx" red, kept fixed regardless of the branding accent. */
   readonly rxColor = '#B42318';
@@ -65,6 +93,27 @@ export class ClassicTemplateComponent {
       this.label('vitalWeightEditable', 'Weight (kg)'),
       this.label('vitalHeightEditable', 'Height (cm)'),
       this.label('vitalBMI', 'BMI'),
+    ];
+  }
+
+  /**
+   * Labels for the real 10-field IExamination shape, in the exact key order
+   * VitalsInputComponent.fields iterates — deliberately separate from `vitals` above
+   * (a 6-item BMI-inclusive list used only by the static Epic H placeholder preview,
+   * where BMI is shown but isn't an actual stored/editable field here).
+   */
+  get examinationLabels(): string[] {
+    return [
+      this.label('vitalBP', 'BP'),
+      this.label('vitalPulse', 'Pulse'),
+      this.label('vitalTempEditable', 'Temp (°F)'),
+      this.label('vitalRespiratoryRate', 'Resp. Rate'),
+      this.label('vitalSpo2', 'SpO2 (%)'),
+      this.label('vitalWeightEditable', 'Weight (kg)'),
+      this.label('vitalHeightEditable', 'Height (cm)'),
+      this.label('vitalBloodSugar', 'Blood Sugar'),
+      this.label('vitalPainScore', 'Pain Score'),
+      this.label('vitalHeartRate', 'Heart Rate'),
     ];
   }
 

@@ -1,0 +1,75 @@
+:host {
+  display: block;
+}
+
+// The global `.p-datepicker-input` height hack (54px, added for a floating-label
+// time picker elsewhere) makes the date filter taller than the search input beside
+// it and breaks the grid alignment — reset it back to normal here.
+:host ::ng-deep .p-datepicker .p-datepicker-input,
+:host ::ng-deep .p-datepicker .p-inputtext {
+  height: auto !important;
+  padding: 0.5rem 0.75rem !important;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.85rem;
+  margin-bottom: 1rem;
+}
+
+.page-header-icon {
+  flex-shrink: 0;
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 0.75rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(16, 185, 129, 0.12);
+  color: #0f766e;
+  font-size: 1.1rem;
+}
+
+.page-header-text {
+  flex: 1;
+}
+
+.page-header-title {
+  margin: 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+}
+
+.page-header-subtitle {
+  margin: 0.15rem 0 0;
+  color: var(--text-color-secondary, #6b7280);
+  font-size: 0.9rem;
+}
+
+.filter-label {
+  display: block;
+  margin-bottom: 0.3rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-color-secondary, #6b7280);
+}
+
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  padding: 0.5rem 1rem;
+  border-radius: 0.375rem;
+  border: none;
+  background: #0f766e;
+  color: #fff;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.actions {
+  display: flex;
+  gap: 0.5rem;
+}

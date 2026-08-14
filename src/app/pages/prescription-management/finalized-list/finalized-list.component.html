@@ -1,0 +1,119 @@
+<section class="page-container">
+  <div class="page-header">
+    <div class="page-header-icon"><i class="fa-solid fa-file-circle-check"></i></div>
+    <div>
+      <h2 class="page-header-title">My Finalized Prescriptions</h2>
+      <p class="page-header-subtitle">Search, print, or download prescriptions you have finalized</p>
+    </div>
+  </div>
+
+  <div *ngIf="justFinalizedItem" class="finalized-banner">
+    <div class="finalized-banner-text">
+      <i class="fa-solid fa-circle-check"></i>
+      <span>Prescription finalized successfully — <strong>{{ justFinalizedItem.displayCode }}</strong> ({{ justFinalizedItem.patientName }}).</span>
+    </div>
+    <div class="finalized-banner-actions">
+      <button type="button" class="btn-outline" (click)="view(justFinalizedItem)"><i class="fa fa-eye"></i><span>View</span></button>
+      <button type="button" class="btn-outline" (click)="print(justFinalizedItem)"><i class="fa fa-print"></i><span>Print</span></button>
+      <button type="button" class="btn-outline" (click)="download(justFinalizedItem)"><i class="fa fa-download"></i><span>Download</span></button>
+      <button type="button" class="btn-dismiss" (click)="dismissBanner()"><i class="fa fa-times"></i></button>
+    </div>
+  </div>
+
+  <div class="table-container p-4">
+    <div class="grid grid-cols-1 md:grid-cols-[1fr_180px_180px] gap-4 items-end">
+      <div>
+        <label class="filter-label" for="finalizedSearch">Search by patient or Rx number</label>
+        <input
+          id="finalizedSearch"
+          type="text"
+          pInputText
+          class="w-full"
+          placeholder="Search by patient name or Rx number"
+          [ngModel]="searchTerm"
+          (ngModelChange)="onSearchTermChange($event)"
+        />
+      </div>
+      <div>
+        <label class="filter-label" for="fromDate">From date</label>
+        <p-datepicker id="fromDate" class="w-full" [(ngModel)]="fromDate" dateFormat="mm/dd/yy" [appendTo]="'body'" (onSelect)="applyDateFilter()"></p-datepicker>
+      </div>
+      <div>
+        <label class="filter-label" for="toDate">To date</label>
+        <p-datepicker id="toDate" class="w-full" [(ngModel)]="toDate" dateFormat="mm/dd/yy" [appendTo]="'body'" (onSelect)="applyDateFilter()"></p-datepicker>
+      </div>
+    </div>
+  </div>
+
+  <div class="table-container mt-4">
+    <div class="table-title-container">
+      <h3 class="table-title">
+        Finalized Prescriptions
+        <span class="table-title-info" *ngIf="totalRecords > 0"> ({{ totalRecords }} total)</span>
+      </h3>
+    </div>
+
+    <div class="transition-all duration-500 ease-in-out">
+      <p-table
+        [value]="loading ? skeletonItems : finalized"
+        dataKey="prescriptionId"
+        [paginator]="true"
+        [rows]="rows"
+        [first]="(currentPage - 1) * rows"
+        [rowsPerPageOptions]="UI_CONFIG.pageSizeOptions"
+        [totalRecords]="totalRecords"
+        (onPage)="onPageChange($event)"
+        [lazy]="true"
+        [loading]="false"
+        scrollHeight="flex"
+        [responsiveLayout]="'scroll'"
+        [showCurrentPageReport]="true"
+        currentPageReportTemplate="Showing {first} to {last} of {totalRecords} prescriptions"
+      >
+        <ng-template pTemplate="header">
+          <tr>
+            <th style="width: 10rem">Rx No.</th>
+            <th style="width: 12rem">Patient</th>
+            <th style="width: 10rem">Issued On</th>
+            <th style="width: 10rem">Diagnosis</th>
+            <th style="width: 8rem">Medicines</th>
+            <th style="width: 8rem">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-item>
+          @if (loading) {
+            <tr>
+              <td *ngFor="let c of [1, 2, 3, 4, 5]"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td><p-skeleton width="4rem" height="1rem"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr [class.highlight-row]="item.prescriptionId === justFinalizedId">
+              <td class="font-medium">{{ item.displayCode }}</td>
+              <td>{{ item.patientName }}</td>
+              <td>{{ item.finalizedAt | date: 'yyyy-MM-dd' }}</td>
+              <td>{{ item.diagnosisCount }}</td>
+              <td>{{ item.medicineCount }}</td>
+              <td class="actions">
+                <button class="text-primary" title="View" (click)="view(item)"><i class="fa fa-eye"></i></button>
+                <button class="text-primary" title="Print" (click)="print(item)"><i class="fa fa-print"></i></button>
+                <button class="text-primary" title="Download" (click)="download(item)"><i class="fa fa-download"></i></button>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td colspan="6" class="not-found">
+              <div>
+                <i class="fa fa-magnifying-glass-minus"></i>
+                <p>No finalized prescriptions match your search or filters.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</section>

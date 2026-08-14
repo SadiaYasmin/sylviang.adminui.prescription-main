@@ -26,7 +26,46 @@ export const webSidebarMenuItems: IMenuItem[] = [
     title: 'Staff Management',
     active: false,
     icon: 'fa-solid fa-users',
-    roles: ['Admin', 'Doctor'],
+    roles: ['Admin'],
+  },
+  {
+    href: '/staff/staff-list',
+    title: 'Your Assigned Staff',
+    active: false,
+    icon: 'fa-solid fa-users',
+    roles: ['Doctor'],
+  },
+  {
+    title: 'Prescriptions',
+    active: false,
+    icon: 'fa-solid fa-file-prescription',
+    roles: ['Doctor'],
+    subItems: [
+      {
+        href: '/prescriptions',
+        title: 'Start a Prescription',
+        active: false,
+        icon: 'fa-solid fa-file-pen',
+      },
+      {
+        href: '/prescriptions/drafts',
+        title: 'Draft Prescriptions',
+        active: false,
+        icon: 'fa-solid fa-file-circle-question',
+      },
+      {
+        href: '/prescriptions/finalized',
+        title: 'Finalized Prescriptions',
+        active: false,
+        icon: 'fa-solid fa-file-circle-check',
+      },
+      {
+        href: '/prescriptions/preferences',
+        title: 'Prescription Preferences',
+        active: false,
+        icon: 'fa-solid fa-gear',
+      },
+    ],
   },
   {
     href: '/consultations/consultation-list',

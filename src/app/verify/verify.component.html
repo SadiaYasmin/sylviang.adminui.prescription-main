@@ -1,0 +1,30 @@
+<div class="verify-page">
+  <header class="verify-header">
+    <h1>Prescription Verification</h1>
+    <p>PrescriptionMS — read-only authenticity check</p>
+  </header>
+
+  <div class="verify-body">
+    <div *ngIf="loading" class="state-card">Checking...</div>
+
+    <div *ngIf="!loading && notFound" class="state-card not-found">
+      <h2>Not Found</h2>
+      <p>No finalized prescription matches this code. It may be invalid, in-progress, or the link may be broken.</p>
+    </div>
+
+    <div *ngIf="!loading && document" class="verified-content">
+      <div class="verified-banner">
+        <span class="check-icon">&#10003;</span>
+        <span>This prescription is genuine and finalized.</span>
+      </div>
+      <app-template-preview
+        [type]="document.templateType"
+        [config]="document.templateConfig"
+        [hospitalSettings]="document.hospitalSettings"
+        [language]="document.language === 'Bn' ? 'bn' : 'en'"
+        [editable]="false"
+        [document]="document"
+      ></app-template-preview>
+    </div>
+  </div>
+</div>

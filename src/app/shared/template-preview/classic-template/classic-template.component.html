@@ -2,9 +2,9 @@
   <!-- Header: doctor info left / hospital info right -->
   <header class="classic-header" [ngStyle]="headerStyle">
     <div class="doctor-info">
-      <div class="doctor-name">[Doctor Name]</div>
-      <div class="doctor-qualification">[Qualification]</div>
-      <div class="doctor-reg">{{ label('bmdcRegNo', 'BM&DC Reg. No') }}: [XXXXX]</div>
+      <div class="doctor-name">{{ document ? document.doctor.fullName : '[Doctor Name]' }}</div>
+      <div class="doctor-qualification">{{ document ? (document.doctor.qualification || '') : '[Qualification]' }}</div>
+      <div class="doctor-reg">{{ label('bmdcRegNo', 'BM&DC Reg. No') }}: {{ document ? (document.doctor.licenseNumber || '—') : '[XXXXX]' }}</div>
     </div>
     <div class="hospital-info">
       <img *ngIf="config.visibility.logo && hospitalSettings?.logoBase64" [src]="hospitalSettings?.logoBase64" [ngStyle]="logoStyle" class="hospital-logo" alt="Hospital logo" />
@@ -19,14 +19,14 @@
   <div class="classic-body">
     <app-patient-info-block
       class="patient-block"
-      name="[Patient Name]"
-      age="[Age]"
-      sex="[Sex]"
-      phone="[Phone]"
-      bloodGroup="[Blood Group]"
-      allergies="[Allergies]"
-      date="[Date]"
-      rxNo="[Rx No]"
+      [name]="patientInfo ? patientInfo.name : '[Patient Name]'"
+      [age]="patientInfo ? patientInfo.age : '[Age]'"
+      [sex]="patientInfo ? patientInfo.sex : '[Sex]'"
+      [phone]="patientInfo ? patientInfo.phone : '[Phone]'"
+      [bloodGroup]="patientInfo ? patientInfo.bloodGroup : '[Blood Group]'"
+      [allergies]="patientInfo ? patientInfo.allergies : '[Allergies]'"
+      [date]="patientInfo ? patientInfo.date : '[Date]'"
+      [rxNo]="patientInfo ? patientInfo.rxNo : '[Rx No]'"
       [labels]="config.labels"
     ></app-patient-info-block>
 
@@ -34,64 +34,139 @@
       <div class="col col-left">
         <section class="section">
           <h4>{{ label('chiefComplaint', 'C/C') }}</h4>
-          <p class="placeholder-text">{{ label('chiefComplaintPlaceholder', 'Fever for 3 days') }}</p>
-          <div class="fill-line"></div>
+          <ng-container *ngIf="document; else ccPlaceholder">
+            <app-chip-list-input
+              [items]="content.chiefComplaints"
+              [editable]="editable"
+              placeholder="Add complaint..."
+              emptyReadonlyText="None recorded."
+              (itemsChange)="patchContent({ chiefComplaints: $event })"
+            ></app-chip-list-input>
+          </ng-container>
+          <ng-template #ccPlaceholder>
+            <p class="placeholder-text">{{ label('chiefComplaintPlaceholder', 'Fever for 3 days') }}</p>
+            <div class="fill-line"></div>
+          </ng-template>
         </section>
         <section class="section">
           <h4>{{ label('history', 'H/O') }}</h4>
-          <p class="placeholder-text">[History]</p>
-          <div class="fill-line"></div>
+          <ng-container *ngIf="document; else hoPlaceholder">
+            <app-chip-list-input
+              [items]="content.history"
+              [editable]="editable"
+              placeholder="Add history..."
+              emptyReadonlyText="None recorded."
+              (itemsChange)="patchContent({ history: $event })"
+            ></app-chip-list-input>
+          </ng-container>
+          <ng-template #hoPlaceholder>
+            <p class="placeholder-text">[History]</p>
+            <div class="fill-line"></div>
+          </ng-template>
         </section>
         <section class="section">
           <h4>{{ label('examination', 'O/E') }}</h4>
-          <div class="vitals">
-            <div class="vital" *ngFor="let v of vitals">
-              <span class="vital-label">{{ v }}</span>
-              <span class="vital-line"></span>
+          <ng-container *ngIf="document; else oePlaceholder">
+            <app-vitals-input [value]="content.examination" [editable]="editable" [vitalLabels]="examinationLabels" (valueChange)="patchContent({ examination: $event })"></app-vitals-input>
+          </ng-container>
+          <ng-template #oePlaceholder>
+            <div class="vitals">
+              <div class="vital" *ngFor="let v of vitals">
+                <span class="vital-label">{{ v }}</span>
+                <span class="vital-line"></span>
+              </div>
             </div>
-          </div>
+          </ng-template>
         </section>
         <section class="section">
           <h4>{{ label('investigation', 'Inv') }}</h4>
-          <p class="placeholder-text">[Investigation]</p>
-          <div class="fill-line"></div>
+          <ng-container *ngIf="document; else invPlaceholder">
+            <app-chip-list-input
+              [items]="content.investigations"
+              [editable]="editable"
+              placeholder="Add investigation..."
+              emptyReadonlyText="None recorded."
+              (itemsChange)="patchContent({ investigations: $event })"
+            ></app-chip-list-input>
+          </ng-container>
+          <ng-template #invPlaceholder>
+            <p class="placeholder-text">[Investigation]</p>
+            <div class="fill-line"></div>
+          </ng-template>
         </section>
       </div>
 
       <div class="col col-right">
         <section class="section">
           <h4>{{ label('diagnosis', 'Dx') }}</h4>
-          <p class="placeholder-text">[Diagnosis]</p>
-          <div class="fill-line"></div>
+          <ng-container *ngIf="document; else dxPlaceholder">
+            <app-diagnosis-list-input [items]="content.diagnoses" [editable]="editable" (itemsChange)="patchContent({ diagnoses: $event })"></app-diagnosis-list-input>
+          </ng-container>
+          <ng-template #dxPlaceholder>
+            <p class="placeholder-text">[Diagnosis]</p>
+            <div class="fill-line"></div>
+          </ng-template>
         </section>
         <section class="section rx-section" [ngClass]="'table-' + config.style.tableStyle">
           <div class="rx-heading">{{ label('prescriptionHeading', 'Rx') }}</div>
-          <p class="rx-empty">{{ label('medEmptyReadonly', 'No medicines prescribed.') }}</p>
+          <ng-container *ngIf="document; else rxPlaceholder">
+            <app-medicine-list-input
+              [items]="content.medicines"
+              [editable]="editable"
+              [emptyReadonlyText]="label('medEmptyReadonly', 'No medicines prescribed.')"
+              (itemsChange)="patchContent({ medicines: $event })"
+            ></app-medicine-list-input>
+          </ng-container>
+          <ng-template #rxPlaceholder>
+            <p class="rx-empty">{{ label('medEmptyReadonly', 'No medicines prescribed.') }}</p>
+          </ng-template>
         </section>
         <section class="section">
           <h4>{{ label('advice', 'Advice') }}</h4>
-          <p class="placeholder-text">{{ label('advicePlaceholder', 'Write advice here...') }}</p>
-          <div class="fill-line"></div>
+          <ng-container *ngIf="document; else advicePlaceholder">
+            <app-chip-list-input
+              [items]="content.advice"
+              [editable]="editable"
+              placeholder="Add advice..."
+              emptyReadonlyText="None recorded."
+              (itemsChange)="patchContent({ advice: $event })"
+            ></app-chip-list-input>
+          </ng-container>
+          <ng-template #advicePlaceholder>
+            <p class="placeholder-text">{{ label('advicePlaceholder', 'Write advice here...') }}</p>
+            <div class="fill-line"></div>
+          </ng-template>
         </section>
         <section class="section">
           <h4>{{ label('followUp', 'Follow-Up') }}</h4>
-          <p class="placeholder-text">{{ label('followUpPlaceholder', 'e.g. Review after 7 days') }}</p>
-          <div class="fill-line"></div>
+          <ng-container *ngIf="document; else followUpPlaceholder">
+            <ng-container *ngIf="editable; else followUpReadonly">
+              <input type="text" class="follow-up-input" [value]="content.followUp || ''" (blur)="patchContent({ followUp: $any($event.target).value })" />
+            </ng-container>
+            <ng-template #followUpReadonly>
+              <p class="placeholder-text">{{ content.followUp || 'Not specified.' }}</p>
+            </ng-template>
+          </ng-container>
+          <ng-template #followUpPlaceholder>
+            <p class="placeholder-text">{{ label('followUpPlaceholder', 'e.g. Review after 7 days') }}</p>
+            <div class="fill-line"></div>
+          </ng-template>
         </section>
       </div>
     </div>
 
     <div class="signoff">
       <div class="qr-box">
-        <app-prescription-qr></app-prescription-qr>
+        <app-prescription-qr [qrValue]="verifyUrl"></app-prescription-qr>
         <div class="qr-caption">{{ qrMessage }}</div>
       </div>
       <div class="signature-block">
-        <svg class="signature-scribble" viewBox="0 0 160 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <img *ngIf="document?.doctor?.signatureBase64" [src]="document!.doctor.signatureBase64" class="signature-image" alt="Doctor's signature" />
+        <svg *ngIf="!document?.doctor?.signatureBase64" class="signature-scribble" viewBox="0 0 160 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M6 24 C 20 6, 30 6, 34 20 S 46 30, 54 16 C 60 6, 70 8, 72 20 C 74 28, 84 26, 92 14 C 100 4, 118 6, 124 18 C 128 26, 140 24, 154 12" stroke="#334155" stroke-width="1.6" stroke-linecap="round" />
         </svg>
         <div class="signature-line">
-          <div class="signature-name">[Doctor Name]</div>
+          <div class="signature-name">{{ document ? document.doctor.fullName : '[Doctor Name]' }}</div>
           <div class="signature-caption">{{ label('doctorSignature', "Doctor's Signature") }}</div>
         </div>
       </div>

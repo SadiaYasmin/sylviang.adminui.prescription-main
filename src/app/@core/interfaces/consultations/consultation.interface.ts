@@ -1,4 +1,6 @@
-export type ConsultationStatus = 'Waiting' | 'InConsultation' | 'Completed';
+import { IPrescriptionListItem } from '@core/interfaces/prescriptions/prescription.interface';
+
+export type ConsultationStatus = 'Waiting' | 'InConsultation' | 'Completed' | 'Draft';
 
 export type ConsultationDateMode = 'Today' | 'Yesterday' | 'Custom' | 'Range';
 
@@ -21,6 +23,8 @@ export interface ICreateConsultationResponse {
   duplicateFound: boolean;
   consultation?: IConsultationSummary | null;
   existingConsultation?: IConsultationSummary | null;
+  unfinishedDraftFound: boolean;
+  unfinishedDrafts: IPrescriptionListItem[];
 }
 
 export interface IOpenConsultationResponse {
@@ -83,6 +87,7 @@ export interface IConsultationListSummary {
   waiting: number;
   inProgress: number;
   completed: number;
+  draft: number;
 }
 
 export interface IConsultationListResponse {
