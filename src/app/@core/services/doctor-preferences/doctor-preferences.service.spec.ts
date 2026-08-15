@@ -1,6 +1,6 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
-import { BASE_URL_DoctorPreferences } from '@env/environment';
+import { BASE_URL_DoctorPreferences, BASE_URL_DoctorProfile } from '@env/environment';
 import { DoctorPreferencesService } from './doctor-preferences.service';
 
 describe('DoctorPreferencesService', () => {
@@ -44,6 +44,40 @@ describe('DoctorPreferencesService', () => {
 
     const req = httpMock.expectOne(`${BASE_URL_DoctorPreferences}/signature`);
     expect(req.request.method).toBe('PUT');
+    req.flush({ hasError: false, decentMessage: 'ok', content: {} });
+  });
+
+  it('should get the profile', () => {
+    service.getProfile().subscribe();
+
+    const req = httpMock.expectOne(`${BASE_URL_DoctorProfile}/profile`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ hasError: false, decentMessage: 'ok', content: {} });
+  });
+
+  it('should put to update the profile', () => {
+    const request = { fullName: 'Dr. Jane', qualification: null, department: null, licenseNumber: null, phone: '01712345678', email: null };
+    service.updateProfile(request).subscribe();
+
+    const req = httpMock.expectOne(`${BASE_URL_DoctorProfile}/profile`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(request);
+    req.flush({ hasError: false, decentMessage: 'ok', content: {} });
+  });
+
+  it('should put to update the photo', () => {
+    service.updatePhoto({ photoBase64: 'data:image/png;base64,abc' }).subscribe();
+
+    const req = httpMock.expectOne(`${BASE_URL_DoctorProfile}/photo`);
+    expect(req.request.method).toBe('PUT');
+    req.flush({ hasError: false, decentMessage: 'ok', content: {} });
+  });
+
+  it('should delete to remove the photo', () => {
+    service.removePhoto().subscribe();
+
+    const req = httpMock.expectOne(`${BASE_URL_DoctorProfile}/photo`);
+    expect(req.request.method).toBe('DELETE');
     req.flush({ hasError: false, decentMessage: 'ok', content: {} });
   });
 });

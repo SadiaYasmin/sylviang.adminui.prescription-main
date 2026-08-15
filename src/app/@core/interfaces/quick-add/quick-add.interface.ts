@@ -12,3 +12,11 @@ export interface IAddQuickAddPresetRequest {
   label: string;
   payloadJson: string;
 }
+
+/** SectionType is immutable on edit — see backend UpdateQuickAddPresetRequest for why. */
+export interface IUpdateQuickAddPresetRequest {
+  label: string;
+  payloadJson: string;
+}
+
+export type IAdvicePhraseDictionary = Record<string, string>;

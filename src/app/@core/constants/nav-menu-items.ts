@@ -15,6 +15,13 @@ export const webSidebarMenuItems: IMenuItem[] = [
     roles: ['Admin', 'Doctor', 'Staff'],
   },
   {
+    href: '/medicines/medicine-list',
+    title: 'Medicines',
+    active: false,
+    icon: 'fa-solid fa-pills',
+    roles: ['Admin', 'Doctor', 'Staff'],
+  },
+  {
     href: '/doctors/doctor-list',
     title: 'Doctor Management',
     active: false,
@@ -64,6 +71,12 @@ export const webSidebarMenuItems: IMenuItem[] = [
         title: 'Prescription Preferences',
         active: false,
         icon: 'fa-solid fa-gear',
+      },
+      {
+        href: '/quick-add/medicine',
+        title: 'Quick Add Presets',
+        active: false,
+        icon: 'fa-solid fa-bolt',
       },
     ],
   },

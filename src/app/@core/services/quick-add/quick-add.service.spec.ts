@@ -45,4 +45,22 @@ describe('QuickAddService', () => {
     expect(req.request.method).toBe('DELETE');
     req.flush({ hasError: false, decentMessage: 'ok', content: null });
   });
+
+  it('should put to update a preset', () => {
+    const request = { label: 'URTI', payloadJson: '{}' };
+    service.update(5, request).subscribe();
+
+    const req = httpMock.expectOne(`${BASE_URL_QuickAdd}/5`);
+    expect(req.request.method).toBe('PUT');
+    expect(req.request.body).toEqual(request);
+    req.flush({ hasError: false, decentMessage: 'ok', content: {} });
+  });
+
+  it('should get the advice phrase dictionary', () => {
+    service.getAdvicePhraseDictionary().subscribe();
+
+    const req = httpMock.expectOne(`${BASE_URL_QuickAdd}/advice-phrase-dictionary`);
+    expect(req.request.method).toBe('GET');
+    req.flush({ hasError: false, decentMessage: 'ok', content: {} });
+  });
 });
