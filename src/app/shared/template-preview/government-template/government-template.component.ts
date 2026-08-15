@@ -28,6 +28,9 @@ export class GovernmentTemplateComponent {
   @Input() document: IPrescriptionDocument | null = null;
   @Output() contentChange = new EventEmitter<IPrescriptionContent>();
 
+  /** US-070: opt-in Bangla phonetic typing for the Follow-Up field. */
+  followUpBanglaMode = false;
+
   get content(): IPrescriptionContent {
     return this.document?.content ?? blankPrescriptionContent();
   }
@@ -37,7 +40,7 @@ export class GovernmentTemplateComponent {
   }
 
   get patientInfo() {
-    return this.document ? formatPatientInfoBlock(this.document) : null;
+    return this.document ? formatPatientInfoBlock(this.document, this.language) : null;
   }
 
   get verifyUrl(): string | null {

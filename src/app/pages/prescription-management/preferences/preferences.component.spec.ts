@@ -16,11 +16,11 @@ describe('PreferencesComponent', () => {
   let templateServiceSpy: jasmine.SpyObj<TemplateService>;
   let toastServiceSpy: jasmine.SpyObj<ToastService>;
 
-  const preferencesResponse = { hasError: false, decentMessage: 'ok', content: { preferredTemplateId: 1, signatureBase64: null, preferredLanguage: null } };
+  const preferencesResponse = { hasError: false, decentMessage: 'ok', content: { preferredTemplateId: 1, signatureUrl: null, preferredLanguage: null } };
   const profileResponse = {
     hasError: false,
     decentMessage: 'ok',
-    content: { doctorId: 1, fullName: 'Dr. Jane', qualification: null, department: null, licenseNumber: null, phone: '01712345678', email: null, photoBase64: null },
+    content: { doctorId: 1, fullName: 'Dr. Jane', qualification: null, department: null, licenseNumber: null, phone: '01712345678', email: null, photoUrl: null },
   };
 
   beforeEach(() => {
@@ -99,7 +99,7 @@ describe('PreferencesComponent', () => {
     const resultBlob = new Blob(['png'], { type: 'image/png' });
     signatureProcessingServiceSpy.removeBackground.and.resolveTo(resultBlob);
     signatureProcessingServiceSpy.blobToDataUrl.and.resolveTo('data:image/png;base64,xyz');
-    doctorPreferencesServiceSpy.updateSignature.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { ...preferencesResponse.content, signatureBase64: 'data:image/png;base64,xyz' } } as any));
+    doctorPreferencesServiceSpy.updateSignature.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { ...preferencesResponse.content, signatureUrl: 'data:image/png;base64,xyz' } } as any));
 
     const file = new File(['abc'], 'sig.png', { type: 'image/png' });
     const event = { target: { files: [file], value: '' } } as unknown as Event;
@@ -146,24 +146,24 @@ describe('PreferencesComponent', () => {
 
   it('should upload a photo', async () => {
     fixture.detectChanges();
-    doctorPreferencesServiceSpy.updatePhoto.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { ...profileResponse.content, photoBase64: 'data:image/png;base64,xyz' } } as any));
+    doctorPreferencesServiceSpy.updatePhoto.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { ...profileResponse.content, photoUrl: 'data:image/png;base64,xyz' } } as any));
     const file = new File(['abc'], 'photo.png', { type: 'image/png' });
     const event = { target: { files: [file], value: '' } } as unknown as Event;
 
     await component.onPhotoSelected(event);
 
     expect(doctorPreferencesServiceSpy.updatePhoto).toHaveBeenCalled();
-    expect(component.profile?.photoBase64).toBe('data:image/png;base64,xyz');
+    expect(component.profile?.photoUrl).toBe('data:image/png;base64,xyz');
   });
 
   it('should remove a photo', () => {
     fixture.detectChanges();
-    doctorPreferencesServiceSpy.removePhoto.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { ...profileResponse.content, photoBase64: null } } as any));
+    doctorPreferencesServiceSpy.removePhoto.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { ...profileResponse.content, photoUrl: null } } as any));
 
     component.removePhoto();
 
     expect(doctorPreferencesServiceSpy.removePhoto).toHaveBeenCalled();
-    expect(component.profile?.photoBase64).toBeNull();
+    expect(component.profile?.photoUrl).toBeNull();
   });
 
   it('should stop loading even if the preferences call fails', () => {

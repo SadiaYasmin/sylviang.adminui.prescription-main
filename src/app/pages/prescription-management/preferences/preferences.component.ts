@@ -7,6 +7,7 @@ import { ToastService } from '@core/services/misc/toast.service';
 import { SignatureProcessingService } from '@core/services/signature-processing/signature-processing.service';
 import { TemplateService } from '@core/services/templates/template.service';
 import { readImageAsDataUrl, validateImageFile } from '@app/shared/utils/image-upload.util';
+import { resolveAssetUrl } from '@app/shared/utils/asset-url.util';
 
 const BD_PHONE_REGEX = /^01[3-9]\d{8}$/;
 
@@ -40,6 +41,8 @@ export class PreferencesComponent implements OnInit {
   photoBusy = false;
   photoError = '';
 
+  readonly resolveAssetUrl = resolveAssetUrl;
+
   constructor(
     private fb: FormBuilder,
     private doctorPreferencesService: DoctorPreferencesService,
@@ -56,7 +59,7 @@ export class PreferencesComponent implements OnInit {
     this.doctorPreferencesService.get().subscribe({
       next: (res) => {
         this.preferences = res.content;
-        this.signaturePreview = res.content.signatureBase64;
+        this.signaturePreview = resolveAssetUrl(res.content.signatureUrl);
         this.loading = false;
       },
       error: () => (this.loading = false),
@@ -213,7 +216,7 @@ export class PreferencesComponent implements OnInit {
         this.doctorPreferencesService.updateSignature({ signatureBase64: base64 }).subscribe({
           next: (res) => {
             this.preferences = res.content;
-            this.signaturePreview = res.content.signatureBase64;
+            this.signaturePreview = resolveAssetUrl(res.content.signatureUrl);
             this.saving = false;
             this.signatureState = 'success';
             this.pendingSignatureFile = null;

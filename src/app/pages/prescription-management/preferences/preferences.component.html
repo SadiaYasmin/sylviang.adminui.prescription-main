@@ -8,14 +8,14 @@
     <h3>Profile</h3>
 
     <div class="photo-row">
-      <img *ngIf="profile?.photoBase64" [src]="profile?.photoBase64" class="photo-preview" alt="Profile photo" />
-      <div *ngIf="!profile?.photoBase64" class="photo-preview photo-placeholder"><i class="fa fa-user"></i></div>
+      <img *ngIf="profile?.photoUrl" [src]="resolveAssetUrl(profile?.photoUrl)" class="photo-preview" alt="Profile photo" />
+      <div *ngIf="!profile?.photoUrl" class="photo-preview photo-placeholder"><i class="fa fa-user"></i></div>
       <div class="photo-actions">
         <label class="upload-btn">
-          {{ profile?.photoBase64 ? 'Change Photo' : 'Upload Photo' }}
+          {{ profile?.photoUrl ? 'Change Photo' : 'Upload Photo' }}
           <input type="file" accept="image/*" (change)="onPhotoSelected($event)" [disabled]="photoBusy" hidden />
         </label>
-        <button type="button" class="remove-btn" *ngIf="profile?.photoBase64" [disabled]="photoBusy" (click)="removePhoto()">Remove</button>
+        <button type="button" class="remove-btn" *ngIf="profile?.photoUrl" [disabled]="photoBusy" (click)="removePhoto()">Remove</button>
       </div>
     </div>
     <p class="error-text" *ngIf="photoError">{{ photoError }}</p>

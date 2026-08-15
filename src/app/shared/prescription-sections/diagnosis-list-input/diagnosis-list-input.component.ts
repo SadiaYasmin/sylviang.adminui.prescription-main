@@ -21,6 +21,9 @@ export class DiagnosisListInputComponent {
   draft = '';
   private draftInitialized = false;
 
+  /** US-070: opt-in per field — off by default so doctors can type plain English notes. */
+  banglaMode = false;
+
   private ensureDraft(): void {
     if (!this.draftInitialized) {
       this.draft = this.toText(this.items);

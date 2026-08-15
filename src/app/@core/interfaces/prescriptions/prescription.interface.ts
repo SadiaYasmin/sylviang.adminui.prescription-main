@@ -85,13 +85,13 @@ export interface IDoctorSnapshot {
   qualification: string | null;
   department: string | null;
   licenseNumber: string | null;
-  signatureBase64: string | null;
+  signatureUrl: string | null;
   preferredTemplateId: number | null;
 }
 
 export interface IHospitalSettingsSnapshot {
   name: string;
-  logoBase64: string | null;
+  logoUrl: string | null;
   address: string;
   phone: string;
   emergencyNumber: string | null;
@@ -99,7 +99,7 @@ export interface IHospitalSettingsSnapshot {
   slogan: string | null;
   sloganBn: string | null;
   licenseNumber: string | null;
-  sealBase64: string | null;
+  sealUrl: string | null;
 }
 
 export interface IPrescriptionDocument {

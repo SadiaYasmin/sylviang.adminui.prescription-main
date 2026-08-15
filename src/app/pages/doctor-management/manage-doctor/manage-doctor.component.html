@@ -4,16 +4,16 @@
       <label class="block text-xs font-medium mb-2">Profile Photo</label>
       <div class="flex items-center gap-4">
         <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 flex items-center justify-center">
-          <img *ngIf="f['photoBase64'].value" [src]="f['photoBase64'].value" alt="Doctor profile" class="h-full w-full object-cover" />
-          <i *ngIf="!f['photoBase64'].value" class="fa fa-user-doctor text-2xl text-muted-color"></i>
+          <img *ngIf="currentPhotoUrl" [src]="currentPhotoUrl" alt="Doctor profile" class="h-full w-full object-cover" />
+          <i *ngIf="!currentPhotoUrl" class="fa fa-user-doctor text-2xl text-muted-color"></i>
         </div>
         <div class="flex flex-col gap-1.5">
           <label class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-surface-300 px-3 py-1.5 text-xs font-medium">
             <i class="fa fa-camera"></i>
-            {{ f['photoBase64'].value ? 'Change Photo' : 'Upload Photo' }}
+            {{ currentPhotoUrl ? 'Change Photo' : 'Upload Photo' }}
             <input type="file" accept="image/*" class="hidden" (change)="onPhotoSelected($event)" [disabled]="photoBusy" />
           </label>
-          <button *ngIf="f['photoBase64'].value" type="button" (click)="removePhoto()" class="text-xs text-muted-color w-fit">
+          <button *ngIf="currentPhotoUrl" type="button" (click)="removePhoto()" class="text-xs text-muted-color w-fit">
             <i class="fa fa-times"></i> Remove photo
           </button>
         </div>

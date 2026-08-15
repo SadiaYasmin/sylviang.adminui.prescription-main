@@ -249,7 +249,7 @@ export class AuthoringComponent implements OnInit, OnDestroy {
     const missing: string[] = [];
     if (this.document.content.diagnoses.length === 0) missing.push('At least one diagnosis');
     if (this.document.content.medicines.length === 0) missing.push('At least one medicine');
-    if (!this.document.doctor.signatureBase64) missing.push('Your signature (set it in Prescription Preferences)');
+    if (!this.document.doctor.signatureUrl) missing.push('Your signature (set it in Prescription Preferences)');
     if (!this.document.doctor.preferredTemplateId) missing.push('A preferred template (set it in Prescription Preferences)');
 
     if (missing.length > 0) {

@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { AllergySelectOptions, OTHER_ALLERGY_OPTION } from '@app/@core/constants/allergy-presets';
+import { ALLERGY_OTHER_SUGGESTIONS } from '@app/@core/constants/allergy-other-suggestions';
 import { BloodGroupOptions } from '@app/@core/constants/blood-group-options';
 import { BreadcrumbService } from '@app/@core/services';
 import { AllergyPresetId, PatientGender } from '@core/interfaces/patients/patient.interface';
@@ -41,6 +42,7 @@ export class ManagePatientComponent implements OnInit {
   bloodGroupOptions = BloodGroupOptions;
   allergySelectOptions = AllergySelectOptions;
   readonly otherAllergyOption = OTHER_ALLERGY_OPTION;
+  readonly allergyOtherSuggestions = ALLERGY_OTHER_SUGGESTIONS;
 
   ngOnInit(): void {
     this.initForm();
