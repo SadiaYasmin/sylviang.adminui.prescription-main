@@ -36,7 +36,7 @@ describe('DashboardComponent', () => {
     consultationServiceSpy.getTodaysQueue.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: [queueItem] } as any));
     consultationServiceSpy.getMyQueue.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: [queueItem] } as any));
     doctorPreferencesServiceSpy = jasmine.createSpyObj('DoctorPreferencesService', ['get']);
-    doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: 1, signatureBase64: null, preferredLanguage: null } } as any));
+    doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: 1, signatureUrl: null, preferredLanguage: null } } as any));
     toastServiceSpy = jasmine.createSpyObj('ToastService', ['success', 'error', 'info', 'warn']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -116,7 +116,7 @@ describe('DashboardComponent', () => {
 
   it('should show the template-choice nudge for a Doctor with no preferred template', () => {
     configure('Doctor');
-    doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: null, signatureBase64: null, preferredLanguage: null } } as any));
+    doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: null, signatureUrl: null, preferredLanguage: null } } as any));
 
     fixture.detectChanges();
 

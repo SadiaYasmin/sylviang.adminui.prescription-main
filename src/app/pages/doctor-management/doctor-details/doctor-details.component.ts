@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { IDoctorDetailsResponse } from '@core/interfaces/doctors/doctor.interface';
 import { DoctorService } from '@core/services/doctors/doctor.service';
 import { ToastService } from '@core/services/misc/toast.service';
+import { resolveAssetUrl } from '@app/shared/utils/asset-url.util';
 
 @Component({
   selector: 'app-doctor-details',
@@ -20,6 +21,8 @@ export class DoctorDetailsComponent implements OnInit {
 
   details: IDoctorDetailsResponse | null = null;
   loading = true;
+
+  readonly resolveAssetUrl = resolveAssetUrl;
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');

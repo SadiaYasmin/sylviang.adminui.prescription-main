@@ -2,7 +2,7 @@ import { PrescriptionLanguage } from '@core/interfaces/prescriptions/prescriptio
 
 export interface IDoctorPreferences {
   preferredTemplateId: number | null;
-  signatureBase64: string | null;
+  signatureUrl: string | null;
   preferredLanguage: PrescriptionLanguage | null;
 }
 
@@ -24,7 +24,7 @@ export interface IDoctorProfile {
   licenseNumber: string | null;
   phone: string;
   email: string | null;
-  photoBase64: string | null;
+  photoUrl: string | null;
 }
 
 export interface IUpdateDoctorProfileRequest {

@@ -30,6 +30,13 @@ export class MedicineListInputComponent implements OnDestroy {
   activeSuggestionRow: number | null = null;
   duplicateRowIndex: number | null = null;
 
+  /**
+   * US-070: opt-in, one toggle for the whole component (not per-field/per-row) — covers
+   * Dosage/Frequency/Duration/Instructions across every medicine card. Medicine name and
+   * strength are catalog lookups/proper nouns, not free-text phrases, so they're excluded.
+   */
+  banglaMode = false;
+
   private searchTerms = new Subject<string>();
 
   constructor(private medicineService: MedicineService) {

@@ -49,7 +49,10 @@
 
       <div *ngIf="isOtherAllergySelected">
         <label class="block text-xs font-medium mb-1">Specify Allergy</label>
-        <input type="text" pInputText class="w-full" formControlName="allergyOtherText" placeholder="e.g. Shellfish" />
+        <input type="text" pInputText class="w-full" formControlName="allergyOtherText" placeholder="e.g. Shellfish" list="allergy-other-suggestions" />
+        <datalist id="allergy-other-suggestions">
+          <option *ngFor="let s of allergyOtherSuggestions" [value]="s.en"></option>
+        </datalist>
         <div *ngIf="hasError('allergyOtherText')" class="text-xs text-red-600 mt-1">Please specify the allergy.</div>
       </div>
     </div>

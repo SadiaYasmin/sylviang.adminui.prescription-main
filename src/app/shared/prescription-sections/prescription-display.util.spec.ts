@@ -30,7 +30,7 @@ function makeDoc(overrides: Partial<IPrescriptionDocument['patient']> = {}): IPr
       qualification: null,
       department: null,
       licenseNumber: null,
-      signatureBase64: null,
+      signatureUrl: null,
       preferredTemplateId: null,
     },
     templateId: 1,
@@ -69,5 +69,39 @@ describe('formatPatientInfoBlock', () => {
   it('uses the prescription display code as the Rx number', () => {
     const result = formatPatientInfoBlock(makeDoc());
     expect(result.rxNo).toBe('RX-2026-0001');
+  });
+
+  describe('Bangla language (US-067/068/069)', () => {
+    it('renders age in Bangla numerals', () => {
+      const result = formatPatientInfoBlock(makeDoc({ age: 34 }), 'bn');
+      expect(result.age).toBe('৩৪y');
+    });
+
+    it('renders the date in Bangla numerals', () => {
+      const result = formatPatientInfoBlock(makeDoc(), 'bn');
+      expect(result.date).not.toMatch(/[0-9]/);
+    });
+
+    it('localizes gender to Bangla', () => {
+      const result = formatPatientInfoBlock(makeDoc({ gender: 'Male' }), 'bn');
+      expect(result.sex).toBe('পুরুষ');
+    });
+
+    it('resolves a known allergy preset id to its Bangla label', () => {
+      const result = formatPatientInfoBlock(makeDoc({ allergyPresetId: 2 }), 'bn');
+      expect(result.allergies).toBe('পেনিসিলিন');
+    });
+
+    it('never converts identifiers like rxNo or leaves free-text allergy untranslated', () => {
+      const result = formatPatientInfoBlock(makeDoc({ allergyPresetId: null, allergyOtherText: 'Sulfa drugs' }), 'bn');
+      expect(result.rxNo).toBe('RX-2026-0001');
+      expect(result.allergies).toBe('Sulfa drugs');
+    });
+
+    it('defaults to English display when no language is passed', () => {
+      const result = formatPatientInfoBlock(makeDoc({ age: 34, gender: 'Male' }));
+      expect(result.age).toBe('34y');
+      expect(result.sex).toBe('Male');
+    });
   });
 });

@@ -38,7 +38,8 @@
               }
             ],
             "styles": ["src/styles.scss"],
-            "scripts": []
+            "scripts": [],
+            "allowedCommonJsDependencies": ["nodejs-avro-phonetic"]
           },
           "configurations": {
             "production": {

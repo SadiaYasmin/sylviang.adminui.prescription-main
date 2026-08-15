@@ -4,14 +4,27 @@
       <span class="chip-text">{{ item }}</span>
       <button type="button" class="chip-remove" (click)="remove(i)" aria-label="Remove">&times;</button>
     </div>
-    <input
-      type="text"
-      class="chip-input"
-      [(ngModel)]="draft"
-      [placeholder]="placeholder"
-      (keydown.enter)="$event.preventDefault(); add()"
-      (blur)="add()"
-    />
+    <div class="chip-input-row">
+      <input
+        type="text"
+        class="chip-input"
+        [(ngModel)]="draft"
+        [placeholder]="placeholder"
+        [appBanglaPhoneticInput]="banglaMode"
+        (keydown.enter)="$event.preventDefault(); add()"
+        (blur)="add()"
+      />
+      <button
+        type="button"
+        class="bangla-toggle"
+        [class.active]="banglaMode"
+        (click)="banglaMode = !banglaMode"
+        [attr.aria-pressed]="banglaMode"
+        title="Toggle Bangla phonetic typing"
+      >
+        বাং
+      </button>
+    </div>
   </div>
 </ng-container>
 <ng-template #readonlyView>

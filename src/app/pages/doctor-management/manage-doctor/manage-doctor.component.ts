@@ -8,6 +8,7 @@ import { DoctorService } from '@core/services/doctors/doctor.service';
 import { ToastService } from '@core/services/misc/toast.service';
 import { ConfirmationService } from 'primeng/api';
 import { GenderOptions } from './manage-doctor.component.constants';
+import { resolveAssetUrl } from '@app/shared/utils/asset-url.util';
 
 const BD_PHONE_REGEX = /^01[3-9]\d{8}$/;
 
@@ -37,6 +38,11 @@ export class ManageDoctorComponent implements OnInit {
   photoBusy = false;
   photoError = '';
 
+  // US-083: GET returns a stored photoUrl, not the base64 the update request needs — the
+  // preview is tracked separately from the form's photoBase64 control, which stays null
+  // ("leave unchanged") until the admin actually picks a new file.
+  currentPhotoUrl: string | null = null;
+
   createdUsername: string | null = null;
   createdEmail: string | null = null;
   createdTemporaryPassword: string | null = null;
@@ -64,6 +70,7 @@ export class ManageDoctorComponent implements OnInit {
                 ...profile,
                 joiningDate: profile.joiningDate ? profile.joiningDate.substring(0, 10) : null,
               });
+              this.currentPhotoUrl = resolveAssetUrl(profile.photoUrl);
             } else {
               this.toast.error({ detail: 'Could not load this doctor.' });
               this.router.navigate(['/doctors/doctor-list']);
@@ -126,6 +133,7 @@ export class ManageDoctorComponent implements OnInit {
     try {
       const dataUrl = await this.readImageAsDataUrl(file);
       this.doctorForm.patchValue({ photoBase64: dataUrl });
+      this.currentPhotoUrl = dataUrl;
     } catch {
       this.photoError = 'Could not read that image — please try another file.';
     } finally {
@@ -134,7 +142,12 @@ export class ManageDoctorComponent implements OnInit {
   }
 
   removePhoto(): void {
-    this.doctorForm.patchValue({ photoBase64: null });
+    // '' (not null) is the explicit "remove" signal — null means "leave unchanged" so an
+    // edit save that doesn't touch the photo can't accidentally wipe it (see
+    // UpdateDoctorHandler). Not relevant on create (isEditMode false), where there's no
+    // existing photo to preserve either way.
+    this.doctorForm.patchValue({ photoBase64: this.isEditMode ? '' : null });
+    this.currentPhotoUrl = null;
   }
 
   private readImageAsDataUrl(file: File): Promise<string> {

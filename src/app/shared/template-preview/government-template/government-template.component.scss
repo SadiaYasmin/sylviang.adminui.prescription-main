@@ -177,6 +177,13 @@
   filter: grayscale(1);
 }
 
+.follow-up-row {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  width: 100%;
+}
+
 .follow-up-input {
   width: 100%;
   border: none;
@@ -185,6 +192,25 @@
   font: inherit;
   padding: 0.1rem 0.2rem;
   outline: none;
+}
+
+// Ink-only styling (never tpl-accent-color) — see this component's class-level doc comment
+// on why Government prescriptions structurally never read color config.
+.bangla-toggle {
+  flex-shrink: 0;
+  border: 1px solid #000;
+  border-radius: 0.2rem;
+  background: transparent;
+  color: #000;
+  font-size: 0.7rem;
+  line-height: 1;
+  padding: 0.2rem 0.35rem;
+  cursor: pointer;
+
+  &.active {
+    background: #000;
+    color: #fff;
+  }
 }
 
 .signature-line {

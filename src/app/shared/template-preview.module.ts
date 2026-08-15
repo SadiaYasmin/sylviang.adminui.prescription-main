@@ -12,6 +12,9 @@ import { DiagnosisListInputComponent } from './prescription-sections/diagnosis-l
 import { VitalsInputComponent } from './prescription-sections/vitals-input/vitals-input.component';
 import { MedicineListInputComponent } from './prescription-sections/medicine-list-input/medicine-list-input.component';
 import { QuickAddSelectComponent } from './prescription-sections/quick-add-select/quick-add-select.component';
+import { AssetUrlPipe } from './pipes/asset-url.pipe';
+import { BanglaDigitsPipe } from './pipes/bangla-digits.pipe';
+import { BanglaPhoneticInputDirective } from './directives/bangla-phonetic-input.directive';
 
 const PRESCRIPTION_SECTION_COMPONENTS = [
   ChipListInputComponent,
@@ -30,6 +33,9 @@ const PRESCRIPTION_SECTION_COMPONENTS = [
     GovernmentTemplateComponent,
     PrescriptionQrComponent,
     ...PRESCRIPTION_SECTION_COMPONENTS,
+    AssetUrlPipe,
+    BanglaDigitsPipe,
+    BanglaPhoneticInputDirective,
   ],
   imports: [CommonModule, FormsModule],
   exports: [
@@ -40,6 +46,9 @@ const PRESCRIPTION_SECTION_COMPONENTS = [
     GovernmentTemplateComponent,
     PrescriptionQrComponent,
     ...PRESCRIPTION_SECTION_COMPONENTS,
+    AssetUrlPipe,
+    BanglaDigitsPipe,
+    BanglaPhoneticInputDirective,
   ],
 })
 export class TemplatePreviewModule {}

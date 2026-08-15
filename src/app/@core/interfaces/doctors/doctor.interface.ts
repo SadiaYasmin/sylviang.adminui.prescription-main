@@ -10,12 +10,17 @@ export interface IDoctorProfileFields {
   experienceYears?: number | null;
   gender?: DoctorGender | null;
   joiningDate?: string | null;
-  photoBase64?: string | null;
 }
 
+/**
+ * US-083: photo is base64 on the way in (a new upload), but a stored URL on the way out —
+ * so it's added separately to the request/response interfaces below rather than living on
+ * the shared IDoctorProfileFields.
+ */
 export interface ICreateDoctorRequest extends IDoctorProfileFields {
   username: string;
   email?: string | null;
+  photoBase64?: string | null;
 }
 
 export interface ICreateDoctorResponse {
@@ -28,6 +33,7 @@ export interface ICreateDoctorResponse {
 export interface IUpdateDoctorRequest extends IDoctorProfileFields {
   email?: string | null;
   isActive: boolean;
+  photoBase64?: string | null;
 }
 
 export interface IDoctorSummary extends IDoctorProfileFields {
@@ -36,6 +42,7 @@ export interface IDoctorSummary extends IDoctorProfileFields {
   username: string;
   email?: string | null;
   isActive: boolean;
+  photoUrl?: string | null;
 }
 
 export interface IDoctorListRequest {

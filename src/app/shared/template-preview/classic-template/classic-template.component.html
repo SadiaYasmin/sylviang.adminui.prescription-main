@@ -7,7 +7,7 @@
       <div class="doctor-reg">{{ label('bmdcRegNo', 'BM&DC Reg. No') }}: {{ document ? (document.doctor.licenseNumber || '—') : '[XXXXX]' }}</div>
     </div>
     <div class="hospital-info">
-      <img *ngIf="config.visibility.logo && hospitalSettings?.logoBase64" [src]="hospitalSettings?.logoBase64" [ngStyle]="logoStyle" class="hospital-logo" alt="Hospital logo" />
+      <img *ngIf="config.visibility.logo && hospitalSettings?.logoUrl" [src]="hospitalSettings?.logoUrl | assetUrl" [ngStyle]="logoStyle" class="hospital-logo" alt="Hospital logo" />
       <div class="hospital-text">
         <div class="hospital-name">{{ hospitalSettings?.name || '[Hospital Name]' }}</div>
         <div class="hospital-address">{{ hospitalSettings?.address || '[Hospital Address]' }}</div>
@@ -141,7 +141,25 @@
           <h4>{{ label('followUp', 'Follow-Up') }}</h4>
           <ng-container *ngIf="document; else followUpPlaceholder">
             <ng-container *ngIf="editable; else followUpReadonly">
-              <input type="text" class="follow-up-input" [value]="content.followUp || ''" (blur)="patchContent({ followUp: $any($event.target).value })" />
+              <div class="follow-up-row">
+                <input
+                  type="text"
+                  class="follow-up-input"
+                  [value]="content.followUp || ''"
+                  [appBanglaPhoneticInput]="followUpBanglaMode"
+                  (blur)="patchContent({ followUp: $any($event.target).value })"
+                />
+                <button
+                  type="button"
+                  class="bangla-toggle"
+                  [class.active]="followUpBanglaMode"
+                  (click)="followUpBanglaMode = !followUpBanglaMode"
+                  [attr.aria-pressed]="followUpBanglaMode"
+                  title="Toggle Bangla phonetic typing"
+                >
+                  বাং
+                </button>
+              </div>
             </ng-container>
             <ng-template #followUpReadonly>
               <p class="placeholder-text">{{ content.followUp || 'Not specified.' }}</p>
@@ -161,8 +179,8 @@
         <div class="qr-caption">{{ qrMessage }}</div>
       </div>
       <div class="signature-block">
-        <img *ngIf="document?.doctor?.signatureBase64" [src]="document!.doctor.signatureBase64" class="signature-image" alt="Doctor's signature" />
-        <svg *ngIf="!document?.doctor?.signatureBase64" class="signature-scribble" viewBox="0 0 160 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+        <img *ngIf="document?.doctor?.signatureUrl" [src]="document!.doctor.signatureUrl | assetUrl" class="signature-image" alt="Doctor's signature" />
+        <svg *ngIf="!document?.doctor?.signatureUrl" class="signature-scribble" viewBox="0 0 160 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <path d="M6 24 C 20 6, 30 6, 34 20 S 46 30, 54 16 C 60 6, 70 8, 72 20 C 74 28, 84 26, 92 14 C 100 4, 118 6, 124 18 C 128 26, 140 24, 154 12" stroke="#334155" stroke-width="1.6" stroke-linecap="round" />
         </svg>
         <div class="signature-line">

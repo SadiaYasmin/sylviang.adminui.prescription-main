@@ -3,6 +3,7 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { BreadcrumbService } from '@app/@core/services';
 import { HospitalSettingsService } from '@core/services/hospital-settings/hospital-settings.service';
 import { ToastService } from '@core/services/misc/toast.service';
+import { resolveAssetUrl } from '@app/shared/utils/asset-url.util';
 
 @Component({
   selector: 'app-hospital-settings',
@@ -27,6 +28,13 @@ export class HospitalSettingsComponent implements OnInit {
   logoError = '';
   sealBusy = false;
   sealError = '';
+
+  // US-083: the GET response now returns a stored URL (logoUrl/sealUrl), not the base64
+  // the update request needs — so the preview is tracked separately from the form's
+  // logoBase64/sealBase64 controls, which stay null ("leave unchanged") until the user
+  // actually picks a new file.
+  currentLogoUrl: string | null = null;
+  currentSealUrl: string | null = null;
 
   ngOnInit(): void {
     this.initForm();
@@ -70,6 +78,8 @@ export class HospitalSettingsComponent implements OnInit {
         this.loading = false;
         if (response && !response.hasError && response.content) {
           this.settingsForm.patchValue(response.content);
+          this.currentLogoUrl = resolveAssetUrl(response.content.logoUrl);
+          this.currentSealUrl = resolveAssetUrl(response.content.sealUrl);
         } else if (!response?.decentMessage) {
           this.toast.error({ detail: 'Could not load hospital settings.' });
         }
@@ -97,6 +107,7 @@ export class HospitalSettingsComponent implements OnInit {
     try {
       const dataUrl = await this.readImageAsDataUrl(file);
       this.settingsForm.patchValue({ logoBase64: dataUrl });
+      this.currentLogoUrl = dataUrl;
       this.settingsForm.markAsDirty();
     } catch {
       this.logoError = 'Could not read that image — please try another file.';
@@ -106,7 +117,11 @@ export class HospitalSettingsComponent implements OnInit {
   }
 
   removeLogo(): void {
-    this.settingsForm.patchValue({ logoBase64: null });
+    // '' (not null) is the explicit "remove" signal — null means "leave unchanged" so a
+    // form save that doesn't touch the logo can't accidentally wipe it (see
+    // UpdateHospitalSettingsHandler).
+    this.settingsForm.patchValue({ logoBase64: '' });
+    this.currentLogoUrl = null;
     this.settingsForm.markAsDirty();
   }
 
@@ -126,6 +141,7 @@ export class HospitalSettingsComponent implements OnInit {
     try {
       const dataUrl = await this.readImageAsDataUrl(file);
       this.settingsForm.patchValue({ sealBase64: dataUrl });
+      this.currentSealUrl = dataUrl;
       this.settingsForm.markAsDirty();
     } catch {
       this.sealError = 'Could not read that image — please try another file.';
@@ -135,7 +151,8 @@ export class HospitalSettingsComponent implements OnInit {
   }
 
   removeSeal(): void {
-    this.settingsForm.patchValue({ sealBase64: null });
+    this.settingsForm.patchValue({ sealBase64: '' });
+    this.currentSealUrl = null;
     this.settingsForm.markAsDirty();
   }
 

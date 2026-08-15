@@ -1,5 +1,15 @@
 <ng-container *ngIf="editable; else readonlyView">
   <div class="medicine-editable">
+    <button
+      type="button"
+      class="bangla-toggle"
+      [class.active]="banglaMode"
+      (click)="banglaMode = !banglaMode"
+      [attr.aria-pressed]="banglaMode"
+      title="Toggle Bangla phonetic typing for dosage/frequency/duration/instructions"
+    >
+      বাং Dosage/Frequency/Duration/Instructions
+    </button>
     <div class="medicine-card" *ngFor="let m of items; let i = index" [class.duplicate]="duplicateRowIndex === i">
       <div class="med-row">
         <div class="med-field med-name">
@@ -20,15 +30,16 @@
         <button type="button" class="med-remove" (click)="remove(i)" aria-label="Remove">&times;</button>
       </div>
       <div class="med-row">
-        <input type="text" class="med-field" placeholder="Dosage" [value]="m.dosage" (blur)="onFieldChange(i, 'dosage', $any($event.target).value)" />
-        <input type="text" class="med-field" placeholder="Frequency" [value]="m.frequency" (blur)="onFieldChange(i, 'frequency', $any($event.target).value)" />
-        <input type="text" class="med-field" placeholder="Duration" [value]="m.duration" (blur)="onFieldChange(i, 'duration', $any($event.target).value)" />
+        <input type="text" class="med-field" placeholder="Dosage" [value]="m.dosage" [appBanglaPhoneticInput]="banglaMode" (blur)="onFieldChange(i, 'dosage', $any($event.target).value)" />
+        <input type="text" class="med-field" placeholder="Frequency" [value]="m.frequency" [appBanglaPhoneticInput]="banglaMode" (blur)="onFieldChange(i, 'frequency', $any($event.target).value)" />
+        <input type="text" class="med-field" placeholder="Duration" [value]="m.duration" [appBanglaPhoneticInput]="banglaMode" (blur)="onFieldChange(i, 'duration', $any($event.target).value)" />
       </div>
       <input
         type="text"
         class="med-field med-instructions"
         placeholder="Instructions"
         [value]="m.instructions"
+        [appBanglaPhoneticInput]="banglaMode"
         (blur)="onFieldChange(i, 'instructions', $any($event.target).value)"
       />
       <p class="duplicate-warning" *ngIf="duplicateRowIndex === i">

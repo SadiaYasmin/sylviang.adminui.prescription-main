@@ -17,7 +17,7 @@ describe('HospitalSettingsComponent', () => {
   const existingSettings: IHospitalSettings = {
     hospitalSettingsId: 1,
     name: 'City Hospital',
-    logoBase64: null,
+    logoUrl: null,
     address: '123 Main St',
     phone: '01712345678',
     emergencyNumber: '01799999999',
@@ -26,7 +26,7 @@ describe('HospitalSettingsComponent', () => {
     slogan: 'Care first',
     sloganBn: 'যত্নই প্রথম',
     licenseNumber: 'LIC-001',
-    sealBase64: null,
+    sealUrl: null,
   };
 
   function configure(getResponse?: any) {
@@ -85,9 +85,12 @@ describe('HospitalSettingsComponent', () => {
     configure();
     fixture.detectChanges();
     component.settingsForm.patchValue({ logoBase64: 'data:image/png;base64,xyz' });
+    component.currentLogoUrl = 'data:image/png;base64,xyz';
 
     component.removeLogo();
 
-    expect(component.settingsForm.get('logoBase64')?.value).toBeNull();
+    // '' (not null) is the explicit "remove" signal — null means "leave unchanged".
+    expect(component.settingsForm.get('logoBase64')?.value).toBe('');
+    expect(component.currentLogoUrl).toBeNull();
   });
 });

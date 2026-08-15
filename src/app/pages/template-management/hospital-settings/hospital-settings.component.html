@@ -8,16 +8,16 @@
           <label class="block text-xs font-medium mb-2">Hospital Logo</label>
           <div class="flex items-center gap-4">
             <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 flex items-center justify-center">
-              <img *ngIf="f['logoBase64'].value" [src]="f['logoBase64'].value" alt="Hospital logo" class="h-full w-full object-contain" />
-              <i *ngIf="!f['logoBase64'].value" class="fa fa-hospital text-2xl text-muted-color"></i>
+              <img *ngIf="currentLogoUrl" [src]="currentLogoUrl" alt="Hospital logo" class="h-full w-full object-contain" />
+              <i *ngIf="!currentLogoUrl" class="fa fa-hospital text-2xl text-muted-color"></i>
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-surface-300 px-3 py-1.5 text-xs font-medium">
                 <i class="fa fa-upload"></i>
-                {{ f['logoBase64'].value ? 'Change Logo' : 'Upload Logo' }}
+                {{ currentLogoUrl ? 'Change Logo' : 'Upload Logo' }}
                 <input type="file" accept="image/*" class="hidden" (change)="onLogoSelected($event)" [disabled]="logoBusy" />
               </label>
-              <button *ngIf="f['logoBase64'].value" type="button" (click)="removeLogo()" class="text-xs text-muted-color w-fit">
+              <button *ngIf="currentLogoUrl" type="button" (click)="removeLogo()" class="text-xs text-muted-color w-fit">
                 <i class="fa fa-times"></i> Remove logo
               </button>
             </div>
@@ -29,16 +29,16 @@
           <label class="block text-xs font-medium mb-2">Hospital Seal</label>
           <div class="flex items-center gap-4">
             <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 flex items-center justify-center">
-              <img *ngIf="f['sealBase64'].value" [src]="f['sealBase64'].value" alt="Hospital seal" class="h-full w-full object-contain" />
-              <i *ngIf="!f['sealBase64'].value" class="fa fa-stamp text-2xl text-muted-color"></i>
+              <img *ngIf="currentSealUrl" [src]="currentSealUrl" alt="Hospital seal" class="h-full w-full object-contain" />
+              <i *ngIf="!currentSealUrl" class="fa fa-stamp text-2xl text-muted-color"></i>
             </div>
             <div class="flex flex-col gap-1.5">
               <label class="inline-flex w-fit cursor-pointer items-center gap-2 rounded-lg border border-surface-300 px-3 py-1.5 text-xs font-medium">
                 <i class="fa fa-upload"></i>
-                {{ f['sealBase64'].value ? 'Change Seal' : 'Upload Seal' }}
+                {{ currentSealUrl ? 'Change Seal' : 'Upload Seal' }}
                 <input type="file" accept="image/*" class="hidden" (change)="onSealSelected($event)" [disabled]="sealBusy" />
               </label>
-              <button *ngIf="f['sealBase64'].value" type="button" (click)="removeSeal()" class="text-xs text-muted-color w-fit">
+              <button *ngIf="currentSealUrl" type="button" (click)="removeSeal()" class="text-xs text-muted-color w-fit">
                 <i class="fa fa-times"></i> Remove seal
               </button>
             </div>

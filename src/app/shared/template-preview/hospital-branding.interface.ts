@@ -6,7 +6,7 @@
  */
 export interface IHospitalBranding {
   name: string;
-  logoBase64: string | null;
+  logoUrl: string | null;
   address: string;
   phone: string;
   emergencyNumber: string | null;

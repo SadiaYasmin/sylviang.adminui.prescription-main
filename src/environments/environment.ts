@@ -11,6 +11,11 @@ export const BASE_URL_Payroll = `${Base_URL}/payroll`;
 // Real PrescriptionMS backend (SylviaNG.Prescription), distinct from the legacy
 // Base_URL above which points at an unrelated placeholder service on port 5112.
 export const BASE_URL_Backend = 'http://localhost:5208/prescription';
+
+// US-083: the backend's static-file host, serving wwwroot/uploads/* at the app root —
+// NOT under /prescription like the API. Uploaded-image relative URLs (e.g. "/uploads/
+// doctor-photos/xyz.png") are resolved against this, not BASE_URL_Backend.
+export const BASE_URL_Host = 'http://localhost:5208';
 export const BASE_URL_Auth = `${BASE_URL_Backend}/auth`;
 export const BASE_URL_Doctors = `${BASE_URL_Backend}/doctors`;
 export const BASE_URL_Staff = `${BASE_URL_Backend}/staff`;

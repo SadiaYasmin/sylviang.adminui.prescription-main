@@ -20,6 +20,9 @@ export class ChipListInputComponent {
 
   draft = '';
 
+  /** US-070: opt-in per field — off by default so doctors can type plain English notes. */
+  banglaMode = false;
+
   add(): void {
     const value = this.draft.trim();
     if (!value) return;
