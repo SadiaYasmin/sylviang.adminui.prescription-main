@@ -1,8 +1,59 @@
 <div class="prefs-page">
-  <h2>Prescription Preferences</h2>
-  <p class="hint">These two settings must be set before you can finalize any prescription (US-026).</p>
+  <h2>My Profile &amp; Preferences</h2>
+  <p class="hint">Preferred template and signature must be set before you can finalize any prescription (US-026).</p>
 
   <div *ngIf="loading">Loading...</div>
+
+  <form *ngIf="!loading" [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate class="prefs-card">
+    <h3>Profile</h3>
+
+    <div class="photo-row">
+      <img *ngIf="profile?.photoBase64" [src]="profile?.photoBase64" class="photo-preview" alt="Profile photo" />
+      <div *ngIf="!profile?.photoBase64" class="photo-preview photo-placeholder"><i class="fa fa-user"></i></div>
+      <div class="photo-actions">
+        <label class="upload-btn">
+          {{ profile?.photoBase64 ? 'Change Photo' : 'Upload Photo' }}
+          <input type="file" accept="image/*" (change)="onPhotoSelected($event)" [disabled]="photoBusy" hidden />
+        </label>
+        <button type="button" class="remove-btn" *ngIf="profile?.photoBase64" [disabled]="photoBusy" (click)="removePhoto()">Remove</button>
+      </div>
+    </div>
+    <p class="error-text" *ngIf="photoError">{{ photoError }}</p>
+
+    <div class="profile-grid">
+      <div>
+        <label class="block text-xs font-medium mb-1">Full Name</label>
+        <input type="text" pInputText class="w-full" formControlName="fullName" />
+        <small class="error-text" *ngIf="hasError('fullName')">Full name is required.</small>
+      </div>
+      <div>
+        <label class="block text-xs font-medium mb-1">Phone</label>
+        <input type="text" pInputText class="w-full" formControlName="phone" />
+        <small class="error-text" *ngIf="hasError('phone')">Enter a valid Bangladesh mobile number.</small>
+      </div>
+      <div>
+        <label class="block text-xs font-medium mb-1">Email</label>
+        <input type="text" pInputText class="w-full" formControlName="email" />
+        <small class="error-text" *ngIf="hasError('email')">Enter a valid email address.</small>
+      </div>
+      <div>
+        <label class="block text-xs font-medium mb-1">Qualification</label>
+        <input type="text" pInputText class="w-full" formControlName="qualification" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium mb-1">Department</label>
+        <input type="text" pInputText class="w-full" formControlName="department" />
+      </div>
+      <div>
+        <label class="block text-xs font-medium mb-1">License Number</label>
+        <input type="text" pInputText class="w-full" formControlName="licenseNumber" />
+      </div>
+    </div>
+
+    <div class="flex justify-end mt-3">
+      <button type="submit" pButton [loading]="savingProfile">Save Profile</button>
+    </div>
+  </form>
 
   <div class="prefs-card" *ngIf="!loading">
     <h3>Preferred Template</h3>
@@ -23,13 +74,25 @@
 
   <div class="prefs-card" *ngIf="!loading">
     <h3>Signature</h3>
+    <p class="hint">Upload a photo of your signature — its background is removed automatically.</p>
+
     <div class="signature-row">
-      <img *ngIf="signaturePreview" [src]="signaturePreview" class="signature-preview" alt="Current signature" />
-      <span *ngIf="!signaturePreview" class="empty">No signature uploaded yet.</span>
-      <label class="upload-btn">
+      <img *ngIf="signaturePreview && signatureState !== 'processing'" [src]="signaturePreview" class="signature-preview" alt="Current signature" />
+      <span *ngIf="!signaturePreview && signatureState === 'idle'" class="empty">No signature uploaded yet.</span>
+
+      <span *ngIf="signatureState === 'processing'" class="signature-status">
+        <i class="fa fa-spinner fa-spin"></i> Removing background...
+      </span>
+
+      <label class="upload-btn" *ngIf="signatureState !== 'processing'">
         Upload Signature
         <input type="file" accept="image/*" (change)="onSignatureSelected($event)" [disabled]="saving" hidden />
       </label>
+    </div>
+
+    <div class="signature-error" *ngIf="signatureState === 'error'">
+      <p class="error-text">{{ signatureError }}</p>
+      <button type="button" class="retry-btn" (click)="retrySignature()"><i class="fa fa-rotate-right"></i> Retry</button>
     </div>
   </div>
 

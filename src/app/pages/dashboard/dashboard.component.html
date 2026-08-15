@@ -1,4 +1,15 @@
 <section class="page-container">
+  <div *ngIf="needsTemplateChoice" class="template-nudge-banner mb-4">
+    <div class="template-nudge-text">
+      <i class="fa-solid fa-triangle-exclamation"></i>
+      <span>You haven't picked a preferred prescription template yet — you won't be able to finalize a prescription until you do.</span>
+    </div>
+    <button type="button" class="template-nudge-action" [routerLink]="['/prescriptions/preferences']">
+      <i class="fa fa-gear"></i>
+      <span>Choose Template</span>
+    </button>
+  </div>
+
   <div *ngIf="isDoctor || isStaff" class="table-container mb-4">
     <div class="table-title-container">
       <h3 class="table-title">{{ isDoctor ? "Today's Queue" : 'My Queue' }}</h3>

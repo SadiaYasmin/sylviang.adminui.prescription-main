@@ -14,3 +14,28 @@ export interface IUpdateDoctorPreferencesRequest {
 export interface IUpdateDoctorSignatureRequest {
   signatureBase64: string;
 }
+
+/** Epic K (US-061/062): a doctor's own self-editable profile. */
+export interface IDoctorProfile {
+  doctorId: number;
+  fullName: string;
+  qualification: string | null;
+  department: string | null;
+  licenseNumber: string | null;
+  phone: string;
+  email: string | null;
+  photoBase64: string | null;
+}
+
+export interface IUpdateDoctorProfileRequest {
+  fullName: string;
+  qualification: string | null;
+  department: string | null;
+  licenseNumber: string | null;
+  phone: string;
+  email: string | null;
+}
+
+export interface IUpdateDoctorPhotoRequest {
+  photoBase64: string | null;
+}

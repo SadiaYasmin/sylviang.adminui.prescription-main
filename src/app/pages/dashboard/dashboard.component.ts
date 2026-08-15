@@ -3,6 +3,7 @@ import { Router } from '@angular/router';
 import { IQueueItem } from '@core/interfaces/consultations/consultation.interface';
 import { AuthService } from '@core/services/auth/auth.service';
 import { ConsultationService } from '@core/services/consultations/consultation.service';
+import { DoctorPreferencesService } from '@core/services/doctor-preferences/doctor-preferences.service';
 import { ToastService } from '@core/services/misc/toast.service';
 
 interface IDashboardCard {
@@ -98,10 +99,12 @@ export class DashboardComponent implements OnInit {
 
   queue: IQueueItem[] = [];
   queueLoading = false;
+  needsTemplateChoice = false;
 
   constructor(
     private authService: AuthService,
     private consultationService: ConsultationService,
+    private doctorPreferencesService: DoctorPreferencesService,
     private toast: ToastService,
     private router: Router,
   ) {
@@ -123,9 +126,24 @@ export class DashboardComponent implements OnInit {
   ngOnInit(): void {
     if (this.isDoctor) {
       this.loadTodaysQueue();
+      this.checkTemplateChoice();
     } else if (this.isStaff) {
       this.loadMyQueue();
     }
+  }
+
+  // US-064: nudges a doctor who has never picked (or whose picked template has since been
+  // disabled/deleted) a preferred template — finalize already hard-blocks on this
+  // (FinalizePrescriptionHandler's checklist), this is just the proactive dashboard prompt.
+  checkTemplateChoice(): void {
+    this.doctorPreferencesService.get().subscribe({
+      next: (response) => {
+        this.needsTemplateChoice = !response.hasError && !response.content?.preferredTemplateId;
+      },
+      error: () => {
+        // Non-critical — leave the nudge hidden if this call fails.
+      },
+    });
   }
 
   loadTodaysQueue(): void {

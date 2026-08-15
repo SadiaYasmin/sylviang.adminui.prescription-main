@@ -3,6 +3,7 @@ import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AuthService } from '@core/services/auth/auth.service';
 import { ConsultationService } from '@core/services/consultations/consultation.service';
+import { DoctorPreferencesService } from '@core/services/doctor-preferences/doctor-preferences.service';
 import { ToastService } from '@core/services/misc/toast.service';
 import { of, throwError } from 'rxjs';
 import { DashboardComponent } from './dashboard.component';
@@ -12,6 +13,7 @@ describe('DashboardComponent', () => {
   let fixture: ComponentFixture<DashboardComponent>;
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let consultationServiceSpy: jasmine.SpyObj<ConsultationService>;
+  let doctorPreferencesServiceSpy: jasmine.SpyObj<DoctorPreferencesService>;
   let toastServiceSpy: jasmine.SpyObj<ToastService>;
   let routerSpy: jasmine.SpyObj<Router>;
 
@@ -33,6 +35,8 @@ describe('DashboardComponent', () => {
     consultationServiceSpy = jasmine.createSpyObj('ConsultationService', ['getTodaysQueue', 'getMyQueue', 'openConsultation']);
     consultationServiceSpy.getTodaysQueue.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: [queueItem] } as any));
     consultationServiceSpy.getMyQueue.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: [queueItem] } as any));
+    doctorPreferencesServiceSpy = jasmine.createSpyObj('DoctorPreferencesService', ['get']);
+    doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: 1, signatureBase64: null, preferredLanguage: null } } as any));
     toastServiceSpy = jasmine.createSpyObj('ToastService', ['success', 'error', 'info', 'warn']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -41,6 +45,7 @@ describe('DashboardComponent', () => {
       providers: [
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ConsultationService, useValue: consultationServiceSpy },
+        { provide: DoctorPreferencesService, useValue: doctorPreferencesServiceSpy },
         { provide: ToastService, useValue: toastServiceSpy },
         { provide: Router, useValue: routerSpy },
       ],
@@ -107,6 +112,29 @@ describe('DashboardComponent', () => {
 
     expect(routerSpy.navigate).toHaveBeenCalledWith(['/prescriptions'], { queryParams: { consultationId: 1 } });
     expect(consultationServiceSpy.openConsultation).not.toHaveBeenCalled();
+  });
+
+  it('should show the template-choice nudge for a Doctor with no preferred template', () => {
+    configure('Doctor');
+    doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: null, signatureBase64: null, preferredLanguage: null } } as any));
+
+    fixture.detectChanges();
+
+    expect(component.needsTemplateChoice).toBeTrue();
+  });
+
+  it('should not show the template-choice nudge for a Doctor who already picked one', () => {
+    configure('Doctor');
+    fixture.detectChanges();
+
+    expect(component.needsTemplateChoice).toBeFalse();
+  });
+
+  it('should not check template choice for non-Doctor roles', () => {
+    configure('Staff');
+    fixture.detectChanges();
+
+    expect(doctorPreferencesServiceSpy.get).not.toHaveBeenCalled();
   });
 
   it('should filter dashboard cards by role', () => {

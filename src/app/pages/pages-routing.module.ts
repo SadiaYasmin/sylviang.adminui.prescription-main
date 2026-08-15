@@ -21,6 +21,12 @@ const routes: Routes = [
       loadChildren: () => import('./payroll-management/payroll-management.module').then((m) => m.PayrollManagementModule),
     },
     {
+      path: 'medicines',
+      canActivate: [roleGuard],
+      data: { roles: ['Admin', 'Doctor', 'Staff'] },
+      loadChildren: () => import('./medicine-management/medicine-management.module').then((m) => m.MedicineManagementModule),
+    },
+    {
       path: 'doctors',
       canActivate: [roleGuard],
       data: { roles: ['Admin'] },
@@ -55,6 +61,12 @@ const routes: Routes = [
       canActivate: [roleGuard],
       data: { roles: ['Admin', 'Doctor', 'Staff'] },
       loadChildren: () => import('./prescription-management/prescription-management.module').then((m) => m.PrescriptionManagementModule),
+    },
+    {
+      path: 'quick-add',
+      canActivate: [roleGuard],
+      data: { roles: ['Doctor'] },
+      loadChildren: () => import('./quick-add-management/quick-add-management.module').then((m) => m.QuickAddManagementModule),
     },
   ]),
 ];

@@ -1,0 +1,98 @@
+<section class="page-container">
+  <div class="flex flex-wrap justify-between items-end gap-3">
+    <div class="flex flex-wrap items-end gap-3">
+      <p-floatlabel variant="in">
+        <input type="text" pInputText id="searchInput" [(ngModel)]="searchTerm" name="searchInput" (keyup.enter)="applySearch()" />
+        <label for="searchInput">Search brand or generic name</label>
+      </p-floatlabel>
+
+      <button pButton (click)="applySearch()">
+        <i class="fa fa-search"></i>
+        <span>Search</span>
+      </button>
+
+      <button *ngIf="searchTerm" severity="secondary" pButton (click)="resetSearch()">
+        <i class="fa fa-times"></i>
+        <span>Reset</span>
+      </button>
+    </div>
+
+    <button *ngIf="canManage" [routerLink]="['/medicines/manage-medicine']" pButton>
+      <i class="fa fa-plus"></i>
+      <span>Add Medicine</span>
+    </button>
+  </div>
+
+  <div class="table-container mt-4">
+    <div class="table-title-container">
+      <h3 class="table-title">
+        Medicine Catalog
+        <span class="table-title-info" *ngIf="!loading"> ({{ medicines.length }} total)</span>
+      </h3>
+    </div>
+
+    <div class="transition-all duration-500 ease-in-out">
+      <p-table [value]="loading ? skeletonItems : medicines" dataKey="medicineId" [responsiveLayout]="'scroll'">
+        <ng-template pTemplate="header">
+          <tr>
+            @for (col of columns; track col.field) {
+              <th [style.width]="col.width">{{ col.label }}</th>
+            }
+            <th *ngIf="showAnalytics" style="width: 10rem">Total Prescribed</th>
+            <th *ngIf="canManage" style="width: 8rem">Status</th>
+            <th *ngIf="canManage" style="width: 8rem">Actions</th>
+          </tr>
+        </ng-template>
+
+        <ng-template pTemplate="body" let-medicine>
+          @if (loading) {
+            <tr>
+              <td *ngFor="let col of columns"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td *ngIf="showAnalytics"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td *ngIf="canManage"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td *ngIf="canManage"><p-skeleton width="3rem" height="1rem"></p-skeleton></td>
+            </tr>
+          } @else {
+            <tr>
+              <td>{{ medicine.brandName }}</td>
+              <td>{{ medicine.genericName || '-' }}</td>
+              <td>{{ medicine.strength || '-' }}</td>
+              <td>{{ medicine.dosageForm || '-' }}</td>
+              <td>{{ medicine.category || '-' }}</td>
+              <td *ngIf="showAnalytics">{{ asCatalogEntry(medicine).totalPrescribed }}</td>
+              <td *ngIf="canManage">
+                <span [class]="asCatalogEntry(medicine).active ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
+                  {{ asCatalogEntry(medicine).active ? 'Active' : 'Inactive' }}
+                </span>
+              </td>
+              <td *ngIf="canManage">
+                <button [routerLink]="['/medicines/manage-medicine', medicine.medicineId]" class="text-primary mr-2" title="Edit">
+                  <i class="fa fa-edit"></i>
+                </button>
+                <button
+                  *ngIf="asCatalogEntry(medicine).active"
+                  class="text-danger"
+                  title="Deactivate"
+                  (click)="deactivateMedicine(asCatalogEntry(medicine), $event)"
+                >
+                  <i class="fa fa-ban"></i>
+                </button>
+              </td>
+            </tr>
+          }
+        </ng-template>
+
+        <ng-template pTemplate="emptymessage">
+          <tr>
+            <td [attr.colspan]="columns.length + (showAnalytics ? 1 : 0) + (canManage ? 2 : 0)" class="not-found">
+              <div>
+                <i class="fa fa-magnifying-glass-minus"></i>
+                <p>No medicines match your search.</p>
+              </div>
+            </td>
+          </tr>
+        </ng-template>
+      </p-table>
+    </div>
+  </div>
+</section>
