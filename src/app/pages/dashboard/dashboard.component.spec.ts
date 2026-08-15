@@ -1,6 +1,7 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { AnalyticsService } from '@core/services/analytics/analytics.service';
 import { AuthService } from '@core/services/auth/auth.service';
 import { ConsultationService } from '@core/services/consultations/consultation.service';
 import { DoctorPreferencesService } from '@core/services/doctor-preferences/doctor-preferences.service';
@@ -14,6 +15,7 @@ describe('DashboardComponent', () => {
   let authServiceSpy: jasmine.SpyObj<AuthService>;
   let consultationServiceSpy: jasmine.SpyObj<ConsultationService>;
   let doctorPreferencesServiceSpy: jasmine.SpyObj<DoctorPreferencesService>;
+  let analyticsServiceSpy: jasmine.SpyObj<AnalyticsService>;
   let toastServiceSpy: jasmine.SpyObj<ToastService>;
   let routerSpy: jasmine.SpyObj<Router>;
 
@@ -37,6 +39,17 @@ describe('DashboardComponent', () => {
     consultationServiceSpy.getMyQueue.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: [queueItem] } as any));
     doctorPreferencesServiceSpy = jasmine.createSpyObj('DoctorPreferencesService', ['get']);
     doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: 1, signatureUrl: null, preferredLanguage: null } } as any));
+    analyticsServiceSpy = jasmine.createSpyObj('AnalyticsService', ['getMyDoctorStats', 'getMyStaffStats']);
+    analyticsServiceSpy.getMyDoctorStats.and.returnValue(
+      of({
+        hasError: false,
+        decentMessage: 'ok',
+        content: { ownPatientCount: 5, patientsConsulted: 3, draftPrescriptionCount: 1, finalizedPrescriptionCount: 2, assignedStaffCount: 1, topMedicines: [] },
+      } as any),
+    );
+    analyticsServiceSpy.getMyStaffStats.and.returnValue(
+      of({ hasError: false, decentMessage: 'ok', content: { patientsRegisteredByMe: 4, assignedDoctors: [] } } as any),
+    );
     toastServiceSpy = jasmine.createSpyObj('ToastService', ['success', 'error', 'info', 'warn']);
     routerSpy = jasmine.createSpyObj('Router', ['navigate']);
 
@@ -46,6 +59,7 @@ describe('DashboardComponent', () => {
         { provide: AuthService, useValue: authServiceSpy },
         { provide: ConsultationService, useValue: consultationServiceSpy },
         { provide: DoctorPreferencesService, useValue: doctorPreferencesServiceSpy },
+        { provide: AnalyticsService, useValue: analyticsServiceSpy },
         { provide: ToastService, useValue: toastServiceSpy },
         { provide: Router, useValue: routerSpy },
       ],
@@ -143,5 +157,43 @@ describe('DashboardComponent', () => {
 
     expect(component.cards.length).toBeGreaterThan(0);
     expect(component.cards.every((c) => !c.roles || c.roles.includes('Admin'))).toBeTrue();
+  });
+
+  it('should load own scoped stats for Doctor role without disturbing the queue', () => {
+    configure('Doctor');
+    fixture.detectChanges();
+
+    expect(analyticsServiceSpy.getMyDoctorStats).toHaveBeenCalled();
+    expect(analyticsServiceSpy.getMyStaffStats).not.toHaveBeenCalled();
+    expect(component.myDoctorStats?.ownPatientCount).toBe(5);
+    expect(component.queue.length).toBe(1); // Today's Queue still renders normally
+  });
+
+  it('should load own scoped stats for Staff role without disturbing the queue', () => {
+    configure('Staff');
+    fixture.detectChanges();
+
+    expect(analyticsServiceSpy.getMyStaffStats).toHaveBeenCalled();
+    expect(analyticsServiceSpy.getMyDoctorStats).not.toHaveBeenCalled();
+    expect(component.myStaffStats?.patientsRegisteredByMe).toBe(4);
+    expect(component.queue.length).toBe(1); // My Queue still renders normally
+  });
+
+  it('should swallow a failed own-stats load without breaking the rest of the dashboard', () => {
+    configure('Doctor');
+    analyticsServiceSpy.getMyDoctorStats.and.returnValue(throwError(() => new Error('network error')));
+
+    fixture.detectChanges();
+
+    expect(component.myDoctorStats).toBeNull();
+    expect(component.queue.length).toBe(1);
+  });
+
+  it('should not load any own-stats for Admin role', () => {
+    configure('Admin');
+    fixture.detectChanges();
+
+    expect(analyticsServiceSpy.getMyDoctorStats).not.toHaveBeenCalled();
+    expect(analyticsServiceSpy.getMyStaffStats).not.toHaveBeenCalled();
   });
 });

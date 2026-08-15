@@ -1,0 +1,44 @@
+<section class="page-container">
+  <h2 class="text-xl font-semibold mb-4">Analytics &amp; Reports</h2>
+
+  <p-tabs [value]="activeTab" (valueChange)="onTabChange($event)">
+    <p-tablist>
+      <p-tab value="summary">Executive Summary</p-tab>
+      <p-tab value="medicines">Medicine &amp; Prescription</p-tab>
+      <p-tab value="doctors">Doctor Performance</p-tab>
+      <p-tab value="trends">Prescription Trends</p-tab>
+      <p-tab value="patients">Patient Analytics</p-tab>
+    </p-tablist>
+
+    <p-tabpanels>
+      <p-tabpanel value="summary">
+        <app-executive-summary-tab [summary]="summary" [loading]="summaryLoading"></app-executive-summary-tab>
+      </p-tabpanel>
+
+      <p-tabpanel value="medicines">
+        <app-medicine-prescription-tab
+          [analytics]="medicineAnalytics"
+          [trend]="medicineTrend"
+          [loading]="medicineLoading"
+        ></app-medicine-prescription-tab>
+      </p-tabpanel>
+
+      <p-tabpanel value="doctors">
+        <app-doctor-performance-tab [leaderboard]="leaderboard" [loading]="leaderboardLoading"></app-doctor-performance-tab>
+      </p-tabpanel>
+
+      <p-tabpanel value="trends">
+        <app-prescription-trends-tab
+          [trend]="trend"
+          [granularity]="trendGranularity"
+          [loading]="trendLoading"
+          (granularityChange)="onTrendGranularityChange($event)"
+        ></app-prescription-trends-tab>
+      </p-tabpanel>
+
+      <p-tabpanel value="patients">
+        <app-patient-analytics-tab [analytics]="patientAnalytics" [loading]="patientLoading"></app-patient-analytics-tab>
+      </p-tabpanel>
+    </p-tabpanels>
+  </p-tabs>
+</section>

@@ -1,0 +1,74 @@
+<div *ngIf="loading" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+  <p-skeleton height="16rem" *ngFor="let i of [1, 2, 3, 4]"></p-skeleton>
+</div>
+
+<div *ngIf="!loading && !analytics" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
+
+<ng-container *ngIf="!loading && analytics as a">
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Top Prescribed Medicines</div>
+      <div style="height: 16rem" *ngIf="topMedicinesChartData">
+        <p-chart type="bar" [data]="topMedicinesChartData" [options]="chartOptions"></p-chart>
+      </div>
+      <div *ngIf="a.topPrescribedMedicines.length === 0" class="text-sm text-muted-color py-8 text-center">No finalized prescriptions yet.</div>
+    </div>
+
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Category Breakdown</div>
+      <div style="height: 16rem" *ngIf="categoryChartData">
+        <p-chart type="bar" [data]="categoryChartData" [options]="chartOptions"></p-chart>
+      </div>
+      <div *ngIf="a.categoryBreakdown.length === 0" class="text-sm text-muted-color py-8 text-center">No finalized prescriptions yet.</div>
+    </div>
+  </div>
+
+  <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm mb-4" *ngIf="trendChartData">
+    <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Prescriptions — Last 30 Days</div>
+    <div style="height: 12rem"><p-chart type="line" [data]="trendChartData" [options]="chartOptions"></p-chart></div>
+  </div>
+
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+    <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-hidden">
+      <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50">Rarely Used Medicines</div>
+      <table class="w-full text-sm">
+        <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+          <tr>
+            <th class="px-4 py-2 text-left font-medium">Medicine</th>
+            <th class="px-4 py-2 text-right font-medium">Times Prescribed</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let m of a.rarelyUsedMedicines">
+            <td class="px-4 py-2">{{ m.name }}</td>
+            <td class="px-4 py-2 text-right font-medium">{{ m.count }}</td>
+          </tr>
+          <tr *ngIf="a.rarelyUsedMedicines.length === 0">
+            <td colspan="2" class="px-4 py-6 text-center text-muted-color">Nothing rarely used.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-hidden">
+      <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50">Co-Prescribed Medicine Pairs</div>
+      <table class="w-full text-sm">
+        <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+          <tr>
+            <th class="px-4 py-2 text-left font-medium">Pair</th>
+            <th class="px-4 py-2 text-right font-medium">Prescriptions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of a.coPrescribedPairs">
+            <td class="px-4 py-2">{{ p.pairLabel }}</td>
+            <td class="px-4 py-2 text-right font-medium">{{ p.count }}</td>
+          </tr>
+          <tr *ngIf="a.coPrescribedPairs.length === 0">
+            <td colspan="2" class="px-4 py-6 text-center text-muted-color">No co-prescription patterns yet.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</ng-container>

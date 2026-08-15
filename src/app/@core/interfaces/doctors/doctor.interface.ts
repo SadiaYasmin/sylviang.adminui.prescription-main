@@ -96,6 +96,13 @@ export interface IDoctorPerformanceStats {
   topMedicines: IDoctorTopMedicine[];
   recentPrescriptions: IDoctorRecentPrescription[];
   activityTrend: IDoctorActivityTrendPoint[];
+  /** US-073: 24-hour histogram (Hour 0–23) of this doctor's consultation check-in times, UTC. */
+  busiestHours: IHourBucket[];
+}
+
+export interface IHourBucket {
+  hour: number;
+  count: number;
 }
 
 export interface IDoctorDetailsResponse {

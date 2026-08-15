@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { IMyDoctorAnalyticsResponse, IMyStaffAnalyticsResponse } from '@core/interfaces/analytics/analytics.interface';
 import { IQueueItem } from '@core/interfaces/consultations/consultation.interface';
+import { AnalyticsService } from '@core/services/analytics/analytics.service';
 import { AuthService } from '@core/services/auth/auth.service';
 import { ConsultationService } from '@core/services/consultations/consultation.service';
 import { DoctorPreferencesService } from '@core/services/doctor-preferences/doctor-preferences.service';
@@ -101,10 +103,14 @@ export class DashboardComponent implements OnInit {
   queueLoading = false;
   needsTemplateChoice = false;
 
+  myDoctorStats: IMyDoctorAnalyticsResponse | null = null;
+  myStaffStats: IMyStaffAnalyticsResponse | null = null;
+
   constructor(
     private authService: AuthService,
     private consultationService: ConsultationService,
     private doctorPreferencesService: DoctorPreferencesService,
+    private analyticsService: AnalyticsService,
     private toast: ToastService,
     private router: Router,
   ) {
@@ -127,8 +133,10 @@ export class DashboardComponent implements OnInit {
     if (this.isDoctor) {
       this.loadTodaysQueue();
       this.checkTemplateChoice();
+      this.loadMyDoctorStats();
     } else if (this.isStaff) {
       this.loadMyQueue();
+      this.loadMyStaffStats();
     }
   }
 
@@ -170,6 +178,31 @@ export class DashboardComponent implements OnInit {
       error: () => {
         this.queue = [];
         this.queueLoading = false;
+      },
+    });
+  }
+
+  // US-077: a doctor's own scoped stats card, alongside Today's Queue. Fetch failures are
+  // non-critical (matches checkTemplateChoice's pattern) — the queue table still renders.
+  loadMyDoctorStats(): void {
+    this.analyticsService.getMyDoctorStats().subscribe({
+      next: (response) => {
+        this.myDoctorStats = !response.hasError && response.content ? response.content : null;
+      },
+      error: () => {
+        this.myDoctorStats = null;
+      },
+    });
+  }
+
+  // US-078: a staff member's own scoped stats card, alongside My Queue.
+  loadMyStaffStats(): void {
+    this.analyticsService.getMyStaffStats().subscribe({
+      next: (response) => {
+        this.myStaffStats = !response.hasError && response.content ? response.content : null;
+      },
+      error: () => {
+        this.myStaffStats = null;
       },
     });
   }
