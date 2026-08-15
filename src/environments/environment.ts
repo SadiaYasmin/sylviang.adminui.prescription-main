@@ -28,3 +28,4 @@ export const BASE_URL_Medicines = `${BASE_URL_Backend}/medicines`;
 export const BASE_URL_QuickAdd = `${BASE_URL_Backend}/quick-add`;
 export const BASE_URL_DoctorPreferences = `${BASE_URL_Backend}/doctors/me/preferences`;
 export const BASE_URL_DoctorProfile = `${BASE_URL_Backend}/doctors/me`;
+export const BASE_URL_Analytics = `${BASE_URL_Backend}/analytics`;

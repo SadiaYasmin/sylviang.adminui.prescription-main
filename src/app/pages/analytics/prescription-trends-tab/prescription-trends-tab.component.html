@@ -1,0 +1,22 @@
+<div class="flex items-center justify-between mb-3">
+  <div class="text-xs font-semibold uppercase tracking-wide text-muted-color">Prescription Volume</div>
+  <div class="inline-flex rounded-lg border border-surface-200 overflow-hidden text-xs">
+    <button
+      type="button"
+      *ngFor="let opt of granularityOptions"
+      (click)="selectGranularity(opt.value)"
+      class="px-3 py-1.5 font-medium"
+      [class]="opt.value === granularity ? 'bg-primary text-primary-contrast' : 'bg-surface-0 text-muted-color hover:bg-surface-50'"
+    >
+      {{ opt.label }}
+    </button>
+  </div>
+</div>
+
+<div *ngIf="loading"><p-skeleton height="20rem"></p-skeleton></div>
+
+<div *ngIf="!loading && !trend" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
+
+<div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm" *ngIf="!loading && chartData" style="height: 22rem">
+  <p-chart type="line" [data]="chartData" [options]="chartOptions"></p-chart>
+</div>

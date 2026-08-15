@@ -40,7 +40,13 @@ describe('DoctorDetailsComponent', () => {
         decentMessage: 'ok',
         content: {
           profile: { doctorId: 1, userId: 1, fullName: 'Dr. Jane Doe', username: 'jane', phone: '01712345678', isActive: true },
-          performance: { totalPrescriptions: 0, topMedicines: [], recentPrescriptions: [], activityTrend: [] },
+          performance: {
+            totalPrescriptions: 0,
+            topMedicines: [],
+            recentPrescriptions: [],
+            activityTrend: [],
+            busiestHours: Array.from({ length: 24 }, (_, hour) => ({ hour, count: 0 })),
+          },
         },
       } as any),
     );
@@ -50,6 +56,34 @@ describe('DoctorDetailsComponent', () => {
     expect(component.loading).toBeFalse();
     expect(component.details?.profile.fullName).toBe('Dr. Jane Doe');
     expect(component.details?.performance.topMedicines).toEqual([]);
+    expect(component.activityTrendChartData).toBeNull();
+    expect(component.busiestHoursChartData).toBeNull(); // all-zero histogram — nothing to chart
+  });
+
+  it('should build chart data once activity trend and busiest hours have real values', () => {
+    configure('1');
+    doctorServiceSpy.getDoctorById.and.returnValue(
+      of({
+        hasError: false,
+        decentMessage: 'ok',
+        content: {
+          profile: { doctorId: 1, userId: 1, fullName: 'Dr. Jane Doe', username: 'jane', phone: '01712345678', isActive: true },
+          performance: {
+            totalPrescriptions: 2,
+            topMedicines: [],
+            recentPrescriptions: [],
+            activityTrend: [{ period: '2026-01-05T00:00:00', count: 2 }],
+            busiestHours: Array.from({ length: 24 }, (_, hour) => ({ hour, count: hour === 9 ? 3 : 0 })),
+          },
+        },
+      } as any),
+    );
+
+    fixture.detectChanges();
+
+    expect(component.activityTrendChartData?.labels).toEqual(['2026-01-05']);
+    expect(component.activityTrendChartData?.datasets[0].data).toEqual([2]);
+    expect(component.busiestHoursChartData?.labels).toContain('9:00');
   });
 
   it('should navigate back to the list when no id is present in the route', () => {

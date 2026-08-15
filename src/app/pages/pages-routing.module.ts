@@ -68,6 +68,12 @@ const routes: Routes = [
       data: { roles: ['Doctor'] },
       loadChildren: () => import('./quick-add-management/quick-add-management.module').then((m) => m.QuickAddManagementModule),
     },
+    {
+      path: 'analytics',
+      canActivate: [roleGuard],
+      data: { roles: ['Admin'] },
+      loadChildren: () => import('./analytics/analytics.module').then((m) => m.AnalyticsModule),
+    },
   ]),
 ];
 

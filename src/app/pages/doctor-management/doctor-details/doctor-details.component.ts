@@ -4,6 +4,9 @@ import { IDoctorDetailsResponse } from '@core/interfaces/doctors/doctor.interfac
 import { DoctorService } from '@core/services/doctors/doctor.service';
 import { ToastService } from '@core/services/misc/toast.service';
 import { resolveAssetUrl } from '@app/shared/utils/asset-url.util';
+import { buildHourBarChartData, buildLineChartData } from '@app/shared/utils/analytics-chart.util';
+
+const CHART_OPTIONS = { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
 
 @Component({
   selector: 'app-doctor-details',
@@ -23,6 +26,22 @@ export class DoctorDetailsComponent implements OnInit {
   loading = true;
 
   readonly resolveAssetUrl = resolveAssetUrl;
+  chartOptions = CHART_OPTIONS;
+
+  get activityTrendChartData() {
+    const trend = this.details?.performance.activityTrend;
+    if (!trend || trend.length === 0) return null;
+    return buildLineChartData(
+      trend.map((p) => ({ bucketKey: p.period.slice(0, 10), count: p.count })),
+      'Prescriptions per day',
+    );
+  }
+
+  get busiestHoursChartData() {
+    const hours = this.details?.performance.busiestHours;
+    if (!hours || hours.every((h) => h.count === 0)) return null;
+    return buildHourBarChartData(hours, 'Consultations checked in (UTC hour)');
+  }
 
   ngOnInit(): void {
     const idParam = this.route.snapshot.paramMap.get('id');

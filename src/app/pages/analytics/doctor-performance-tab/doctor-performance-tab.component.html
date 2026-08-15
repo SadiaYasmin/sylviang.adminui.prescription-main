@@ -1,0 +1,35 @@
+<div *ngIf="loading" class="space-y-2">
+  <p-skeleton height="2.5rem" *ngFor="let i of [1, 2, 3, 4, 5]"></p-skeleton>
+</div>
+
+<div *ngIf="!loading && !leaderboard" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
+
+<div *ngIf="!loading && leaderboard" class="rounded-2xl border border-surface-200 bg-surface-0 overflow-x-auto">
+  <table class="w-full text-sm">
+    <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+      <tr>
+        <th class="px-4 py-2.5 text-left font-medium">Doctor</th>
+        <th class="px-4 py-2.5 text-right font-medium">Patients Consulted</th>
+        <th class="px-4 py-2.5 text-right font-medium">Prescriptions Created</th>
+        <th class="px-4 py-2.5 text-right font-medium">Medicines Prescribed</th>
+        <th class="px-4 py-2.5 text-right font-medium">Avg Rx / Consultation</th>
+        <th class="px-4 py-2.5 text-right font-medium">Avg Meds / Rx</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let d of leaderboard" class="border-t border-surface-100 hover:bg-surface-50">
+        <td class="px-4 py-2.5">
+          <a [routerLink]="['/doctors/doctor-details', d.doctorId]" class="font-medium text-primary hover:underline">{{ d.fullName }}</a>
+        </td>
+        <td class="px-4 py-2.5 text-right">{{ d.patientsConsulted }}</td>
+        <td class="px-4 py-2.5 text-right">{{ d.prescriptionsCreated }}</td>
+        <td class="px-4 py-2.5 text-right">{{ d.medicinesPrescribed }}</td>
+        <td class="px-4 py-2.5 text-right">{{ d.avgRxPerConsultation }}</td>
+        <td class="px-4 py-2.5 text-right">{{ d.avgMedsPerRx }}</td>
+      </tr>
+      <tr *ngIf="leaderboard.length === 0">
+        <td colspan="6" class="px-4 py-6 text-center text-muted-color">No doctors registered yet.</td>
+      </tr>
+    </tbody>
+  </table>
+</div>

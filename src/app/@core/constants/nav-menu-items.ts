@@ -8,6 +8,13 @@ export const webSidebarMenuItems: IMenuItem[] = [
     icon: 'fa-solid fa-chart-line',
   },
   {
+    href: '/analytics',
+    title: 'Analytics & Reports',
+    active: false,
+    icon: 'fa-solid fa-chart-pie',
+    roles: ['Admin'],
+  },
+  {
     href: '/patients/patient-list',
     title: 'Patients',
     active: false,
