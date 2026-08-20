@@ -19,7 +19,7 @@ export interface IRefreshTokenResponse {
 
 export interface ICreateUserAccountRequest {
   username: string;
-  email?: string;
+  email: string;
   firstName?: string;
   lastName?: string;
   role: 'Admin' | 'Doctor' | 'Staff';
@@ -28,14 +28,53 @@ export interface ICreateUserAccountRequest {
 export interface ICreateUserAccountResponse {
   userId: number;
   username: string;
-  temporaryPassword: string;
-}
-
-export interface IResetPasswordResponse {
-  temporaryPassword: string;
 }
 
 export interface ICurrentUser {
   username: string;
   role: string;
+}
+
+/** GET /auth/me — the shared My Profile page's identity header, any authenticated role. */
+export interface ICurrentUserDetails {
+  userId: number;
+  username: string;
+  email: string | null;
+  role: string;
+}
+
+// ===== Forgot password (anonymous, OTP) =====
+
+export interface IForgotPasswordRequest {
+  email: string;
+}
+
+export interface IVerifyForgotPasswordOtpRequest {
+  email: string;
+  code: string;
+}
+
+export interface IVerifyForgotPasswordOtpResponse {
+  valid: boolean;
+}
+
+export interface IResetPasswordWithOtpRequest {
+  email: string;
+  code: string;
+  newPassword: string;
+}
+
+// ===== Self-service change email / password (logged in, verify-before-apply) =====
+
+export interface IRequestEmailChangeRequest {
+  newEmail: string;
+}
+
+export interface IConfirmEmailChangeRequest {
+  code: string;
+}
+
+export interface IConfirmPasswordChangeRequest {
+  code: string;
+  newPassword: string;
 }

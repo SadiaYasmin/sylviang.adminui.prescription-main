@@ -88,7 +88,7 @@
           } @else {
             <tr>
               <td>{{ member.fullName }}</td>
-              <td>{{ member.department || '-' }}</td>
+              <td>{{ member.departments?.length ? member.departments.join(', ') : '-' }}</td>
               <td>{{ member.phone }}</td>
               <td>
                 <span *ngIf="isDoctorView" class="doctor-chip"><i class="fa fa-user-md"></i> Assigned to you</span>

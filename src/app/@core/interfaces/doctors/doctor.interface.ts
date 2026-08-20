@@ -19,7 +19,7 @@ export interface IDoctorProfileFields {
  */
 export interface ICreateDoctorRequest extends IDoctorProfileFields {
   username: string;
-  email?: string | null;
+  email: string;
   photoBase64?: string | null;
 }
 
@@ -27,7 +27,6 @@ export interface ICreateDoctorResponse {
   doctorId: number;
   userId: number;
   username: string;
-  temporaryPassword: string;
 }
 
 export interface IUpdateDoctorRequest extends IDoctorProfileFields {

@@ -53,7 +53,10 @@ export class ManageMedicineComponent implements OnInit {
       strength: [null],
       manufacturer: [null],
       dosageForm: [null],
+      route: [null],
       category: [null],
+      unitPrice: [null],
+      dgdaRegistered: [false],
     });
   }
 

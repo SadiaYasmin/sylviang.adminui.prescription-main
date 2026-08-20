@@ -11,6 +11,10 @@ const routes: Routes = [
     {
       path: 'dashboard',
       component: DashboardComponent,
+      // Admin doesn't get a Dashboard — Analytics & Reports already covers the same ground
+      // with real numbers, a separate shortcuts-only page for Admin was pure duplication.
+      canActivate: [roleGuard],
+      data: { roles: ['Doctor', 'Staff'] },
     },
     {
       path: 'attendance',
@@ -73,6 +77,16 @@ const routes: Routes = [
       canActivate: [roleGuard],
       data: { roles: ['Admin'] },
       loadChildren: () => import('./analytics/analytics.module').then((m) => m.AnalyticsModule),
+    },
+    {
+      path: 'departments',
+      canActivate: [roleGuard],
+      data: { roles: ['Admin'] },
+      loadChildren: () => import('./department-management/department-management.module').then((m) => m.DepartmentManagementModule),
+    },
+    {
+      path: 'my-profile',
+      loadChildren: () => import('./my-profile/my-profile.module').then((m) => m.MyProfileModule),
     },
   ]),
 ];

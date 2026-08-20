@@ -5,20 +5,24 @@
 
     <div *ngIf="loginError" class="login-error">{{ loginError }}</div>
 
-    <!-- Username -->
+    <!-- Login identifier: sent to the backend as "username" (Keycloak's OAuth grant field
+         name), but every real account's username is just its email — doctors/staff never
+         pick a separate one (see CreateDoctorHandler/CreateStaffHandler). Only the seeded
+         dev admin account isn't email-shaped, which is why this still isn't an
+         email-Validators-enforced field, just relabeled to match what users actually type. -->
     <div>
       <p-floatlabel variant="in">
         <input
           pInputText
-          inputId="username"
+          inputId="email"
           formControlName="username"
           class="w-full"
-          autocomplete="username"
+          autocomplete="email"
           [class.ng-invalid]="hasError('username')"
           [class.ng-dirty]="hasError('username')"
           (blur)="f['username'].markAsTouched()"
         />
-        <label for="username">Username</label>
+        <label for="email">Email</label>
       </p-floatlabel>
       <div *ngIf="hasError('username')" class="invalid">{{ getErrorMessage('username') }}</div>
     </div>
@@ -48,5 +52,7 @@
       <i class="fas fa-spinner fa-spin" *ngIf="isSubmitting"></i>
       <span>{{ isSubmitting ? 'Signing in...' : 'Sign In' }}</span>
     </button>
+
+    <a routerLink="/login/forgot-password" class="forgot-link">Forgot password?</a>
   </form>
 </div>

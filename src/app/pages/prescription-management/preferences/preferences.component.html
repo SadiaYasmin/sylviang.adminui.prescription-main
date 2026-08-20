@@ -1,103 +1,27 @@
-<div class="prefs-page">
-  <h2>My Profile &amp; Preferences</h2>
-  <p class="hint">Preferred template and signature must be set before you can finalize any prescription (US-026).</p>
+<section class="page-container">
+  <div *ngIf="loading" class="text-muted-color">Loading...</div>
 
-  <div *ngIf="loading">Loading...</div>
+  <div class="flex flex-col gap-4 max-w-4xl" *ngIf="!loading">
+    <div class="prefs-card">
+      <h3>Preferred Template</h3>
+      <p class="empty" *ngIf="!templates.length">No enabled templates available — ask an Admin to enable one.</p>
 
-  <form *ngIf="!loading" [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate class="prefs-card">
-    <h3>Profile</h3>
-
-    <div class="photo-row">
-      <img *ngIf="profile?.photoUrl" [src]="resolveAssetUrl(profile?.photoUrl)" class="photo-preview" alt="Profile photo" />
-      <div *ngIf="!profile?.photoUrl" class="photo-preview photo-placeholder"><i class="fa fa-user"></i></div>
-      <div class="photo-actions">
-        <label class="upload-btn">
-          {{ profile?.photoUrl ? 'Change Photo' : 'Upload Photo' }}
-          <input type="file" accept="image/*" (change)="onPhotoSelected($event)" [disabled]="photoBusy" hidden />
-        </label>
-        <button type="button" class="remove-btn" *ngIf="profile?.photoUrl" [disabled]="photoBusy" (click)="removePhoto()">Remove</button>
+      <div class="template-options-grid">
+        <button
+          type="button"
+          class="template-option"
+          *ngFor="let t of templates"
+          [class.selected]="preferences?.preferredTemplateId === t.templateId"
+          [disabled]="saving"
+          (click)="selectTemplate(t.templateId)"
+        >
+          <div class="template-option-preview">
+            <app-template-preview [config]="t.config" [type]="t.type" [hospitalSettings]="hospitalSettings" [language]="langCode(t.language)" [scale]="0.28"></app-template-preview>
+          </div>
+          <span class="template-option-name">{{ t.name }}</span>
+          <i class="fa fa-circle-check template-option-check" *ngIf="preferences?.preferredTemplateId === t.templateId"></i>
+        </button>
       </div>
-    </div>
-    <p class="error-text" *ngIf="photoError">{{ photoError }}</p>
-
-    <div class="profile-grid">
-      <div>
-        <label class="block text-xs font-medium mb-1">Full Name</label>
-        <input type="text" pInputText class="w-full" formControlName="fullName" />
-        <small class="error-text" *ngIf="hasError('fullName')">Full name is required.</small>
-      </div>
-      <div>
-        <label class="block text-xs font-medium mb-1">Phone</label>
-        <input type="text" pInputText class="w-full" formControlName="phone" />
-        <small class="error-text" *ngIf="hasError('phone')">Enter a valid Bangladesh mobile number.</small>
-      </div>
-      <div>
-        <label class="block text-xs font-medium mb-1">Email</label>
-        <input type="text" pInputText class="w-full" formControlName="email" />
-        <small class="error-text" *ngIf="hasError('email')">Enter a valid email address.</small>
-      </div>
-      <div>
-        <label class="block text-xs font-medium mb-1">Qualification</label>
-        <input type="text" pInputText class="w-full" formControlName="qualification" />
-      </div>
-      <div>
-        <label class="block text-xs font-medium mb-1">Department</label>
-        <input type="text" pInputText class="w-full" formControlName="department" />
-      </div>
-      <div>
-        <label class="block text-xs font-medium mb-1">License Number</label>
-        <input type="text" pInputText class="w-full" formControlName="licenseNumber" />
-      </div>
-    </div>
-
-    <div class="flex justify-end mt-3">
-      <button type="submit" pButton [loading]="savingProfile">Save Profile</button>
-    </div>
-  </form>
-
-  <div class="prefs-card" *ngIf="!loading">
-    <h3>Preferred Template</h3>
-    <div class="template-options">
-      <button
-        type="button"
-        class="template-option"
-        *ngFor="let t of templates"
-        [class.selected]="preferences?.preferredTemplateId === t.templateId"
-        [disabled]="saving"
-        (click)="selectTemplate(t.templateId)"
-      >
-        {{ t.name }}
-      </button>
-    </div>
-    <p class="empty" *ngIf="!templates.length">No enabled templates available — ask an Admin to enable one.</p>
-  </div>
-
-  <div class="prefs-card" *ngIf="!loading">
-    <h3>Signature</h3>
-    <p class="hint">Upload a photo of your signature — its background is removed automatically.</p>
-
-    <div class="signature-row">
-      <img *ngIf="signaturePreview && signatureState !== 'processing'" [src]="signaturePreview" class="signature-preview" alt="Current signature" />
-      <span *ngIf="!signaturePreview && signatureState === 'idle'" class="empty">No signature uploaded yet.</span>
-
-      <span *ngIf="signatureState === 'processing'" class="signature-status">
-        <i class="fa fa-spinner fa-spin"></i> Removing background...
-      </span>
-
-      <label class="upload-btn" *ngIf="signatureState !== 'processing'">
-        Upload Signature
-        <input type="file" accept="image/*" (change)="onSignatureSelected($event)" [disabled]="saving" hidden />
-      </label>
-    </div>
-
-    <div class="signature-error" *ngIf="signatureState === 'error'">
-      <p class="error-text">{{ signatureError }}</p>
-      <button type="button" class="retry-btn" (click)="retrySignature()"><i class="fa fa-rotate-right"></i> Retry</button>
     </div>
   </div>
-
-  <div class="prefs-card" *ngIf="!loading">
-    <h3>Preferred Language</h3>
-    <p>{{ preferences?.preferredLanguage === 'Bn' ? 'বাংলা' : (preferences?.preferredLanguage === 'En' ? 'English' : 'Not yet set — choose it while authoring a prescription.') }}</p>
-  </div>
-</div>
+</section>

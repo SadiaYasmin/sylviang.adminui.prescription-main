@@ -2,3 +2,9 @@
   display: block;
   height: 100%;
 }
+
+// Pages can use the space left by the sidebar, rather than the viewport width,
+// for responsive layout decisions.
+.app-main-content {
+  container-type: inline-size;
+}

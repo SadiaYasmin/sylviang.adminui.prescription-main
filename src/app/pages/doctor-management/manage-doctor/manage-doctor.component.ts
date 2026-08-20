@@ -3,8 +3,10 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbService } from '@app/@core/services';
 import { AuthService } from '@core/services/auth/auth.service';
-import { DoctorGender, IDoctorSummary } from '@core/interfaces/doctors/doctor.interface';
+import { DoctorGender } from '@core/interfaces/doctors/doctor.interface';
 import { DoctorService } from '@core/services/doctors/doctor.service';
+import { IDepartment } from '@core/interfaces/departments/department.interface';
+import { DepartmentService } from '@core/services/departments/department.service';
 import { ToastService } from '@core/services/misc/toast.service';
 import { ConfirmationService } from 'primeng/api';
 import { GenderOptions } from './manage-doctor.component.constants';
@@ -22,6 +24,7 @@ export class ManageDoctorComponent implements OnInit {
   constructor(
     private fb: FormBuilder,
     private doctorService: DoctorService,
+    private departmentService: DepartmentService,
     private authService: AuthService,
     private route: ActivatedRoute,
     private router: Router,
@@ -43,23 +46,25 @@ export class ManageDoctorComponent implements OnInit {
   // ("leave unchanged") until the admin actually picks a new file.
   currentPhotoUrl: string | null = null;
 
-  createdUsername: string | null = null;
-  createdEmail: string | null = null;
-  createdTemporaryPassword: string | null = null;
-  showTemporaryPasswordDialog = false;
-  isPasswordReset = false;
-
+  departmentOptions: IDepartment[] = [];
   genderOptions = GenderOptions;
 
   ngOnInit(): void {
     this.initForm();
+
+    this.departmentService.getAll().subscribe({
+      next: (response) => {
+        if (response && !response.hasError && response.content) {
+          this.departmentOptions = response.content.filter((d) => d.isActive);
+        }
+      },
+    });
 
     this.route.paramMap.subscribe((params) => {
       const idParam = params.get('id');
       if (idParam) {
         this.doctorId = +idParam;
         this.isEditMode = true;
-        this.doctorForm.get('username')?.disable();
 
         this.doctorService.getDoctorById(this.doctorId).subscribe({
           next: (response) => {
@@ -92,9 +97,8 @@ export class ManageDoctorComponent implements OnInit {
 
   private initForm(): void {
     this.doctorForm = this.fb.group({
-      username: [null, [Validators.required, Validators.maxLength(100)]],
       fullName: [null, [Validators.required, Validators.maxLength(200)]],
-      email: [null, [Validators.email]],
+      email: [null, [Validators.required, Validators.email]],
       phone: [null, [Validators.required, Validators.pattern(BD_PHONE_REGEX)]],
       department: [null],
       specialization: [null],
@@ -191,8 +195,11 @@ export class ManageDoctorComponent implements OnInit {
     const formValue = this.doctorForm.getRawValue();
     this.doctorService
       .addDoctor({
-        username: formValue.username,
-        email: formValue.email || null,
+        // The account's login identifier is just its email — admins no longer pick a
+        // separate username, matching the email-invite creation flow (no password is
+        // ever issued here for the admin to hand over alongside one).
+        username: formValue.email,
+        email: formValue.email,
         fullName: formValue.fullName,
         phone: formValue.phone,
         department: formValue.department,
@@ -207,11 +214,8 @@ export class ManageDoctorComponent implements OnInit {
       .subscribe({
         next: (response) => {
           if (response && !response.hasError && response.content) {
-            this.createdUsername = response.content.username;
-            this.createdEmail = formValue.email || null;
-            this.createdTemporaryPassword = response.content.temporaryPassword;
-            this.isPasswordReset = false;
-            this.showTemporaryPasswordDialog = true;
+            this.toast.success({ detail: `Invite email sent to ${formValue.email}.` });
+            this.router.navigate(['/doctors/doctor-list']);
           } else if (!response?.decentMessage) {
             this.toast.error({ detail: 'Could not create this doctor.' });
           }
@@ -254,26 +258,23 @@ export class ManageDoctorComponent implements OnInit {
       });
   }
 
-  resetPassword(event: Event): void {
+  resendAccountInvite(event: Event): void {
+    const email = this.doctorForm.get('email')?.value;
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: 'Generate a new temporary password for this doctor? Their current password will stop working immediately.',
-      header: 'Reset Password',
+      message: `Re-send the account setup email to ${email}? Any password they already set stops working until they use the new link.`,
+      header: 'Resend Account Setup Email',
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-secondary',
       acceptIcon: 'fa fa-check',
       rejectIcon: 'fa fa-times',
       accept: () => {
-        this.authService.resetPassword(this.userId).subscribe({
+        this.authService.resendAccountInvite(this.userId).subscribe({
           next: (response) => {
-            if (response && !response.hasError && response.content) {
-              this.createdUsername = this.doctorForm.get('username')?.value;
-              this.createdEmail = this.doctorForm.get('email')?.value || null;
-              this.createdTemporaryPassword = response.content.temporaryPassword;
-              this.isPasswordReset = true;
-              this.showTemporaryPasswordDialog = true;
+            if (response && !response.hasError) {
+              this.toast.success({ detail: `Account setup email resent to ${email}.` });
             } else if (!response?.decentMessage) {
-              this.toast.error({ detail: 'Could not reset this password.' });
+              this.toast.error({ detail: 'Could not resend the account setup email.' });
             }
           },
           error: () => {
@@ -282,23 +283,5 @@ export class ManageDoctorComponent implements OnInit {
         });
       },
     });
-  }
-
-  onTemporaryPasswordDialogClose(): void {
-    this.showTemporaryPasswordDialog = false;
-    if (!this.isPasswordReset) {
-      this.router.navigate(['/doctors/doctor-list']);
-    }
-  }
-
-  copyCredentials(): void {
-    if (!this.createdTemporaryPassword) return;
-
-    const lines = [`Username: ${this.createdUsername}`];
-    if (this.createdEmail) lines.push(`Email: ${this.createdEmail}`);
-    lines.push(`Temporary password: ${this.createdTemporaryPassword}`);
-
-    navigator.clipboard?.writeText(lines.join('\n'));
-    this.toast.info({ detail: 'Credentials copied to clipboard.' });
   }
 }

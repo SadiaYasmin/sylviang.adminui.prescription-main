@@ -1,6 +1,7 @@
 <div class="quick-add" *ngIf="presets.length">
-  <button type="button" class="quick-add-toggle" (click)="toggle()">{{ label }} ▾</button>
+  <button type="button" class="quick-add-toggle" [attr.aria-label]="label" (click)="toggle()">Quick Add</button>
   <ul class="quick-add-list" *ngIf="open">
-    <li *ngFor="let p of presets" (mousedown)="choose(p)">{{ p.label }}</li>
+    <li class="quick-add-list-header">Quick Add</li>
+    <li *ngFor="let p of presets" (mousedown)="choose(p)">{{ optionLabel(p) }}</li>
   </ul>
 </div>

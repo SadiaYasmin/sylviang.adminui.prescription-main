@@ -38,11 +38,14 @@ export class ManageStaffComponent implements OnInit {
 
   doctors: IDoctorSummary[] = [];
 
-  createdUsername: string | null = null;
-  createdEmail: string | null = null;
-  createdTemporaryPassword: string | null = null;
-  showTemporaryPasswordDialog = false;
-  isPasswordReset = false;
+  /** Staff has no own Department field — a staff member can support doctors from more
+   * than one department, so it's shown read-only, derived from whichever doctors are
+   * currently checked below (live, before saving — not a round trip to the backend). */
+  get derivedDepartments(): string[] {
+    const assignedIds: number[] = this.staffForm?.get('assignedDoctorIds')?.value || [];
+    const departments = this.doctors.filter((d) => assignedIds.includes(d.doctorId)).map((d) => d.department);
+    return [...new Set(departments.filter((d): d is string => !!d))].sort();
+  }
 
   ngOnInit(): void {
     this.initForm();
@@ -53,7 +56,6 @@ export class ManageStaffComponent implements OnInit {
       if (idParam) {
         this.staffId = +idParam;
         this.isEditMode = true;
-        this.staffForm.get('username')?.disable();
 
         this.staffService.getStaffById(this.staffId).subscribe({
           next: (response) => {
@@ -85,11 +87,9 @@ export class ManageStaffComponent implements OnInit {
 
   private initForm(): void {
     this.staffForm = this.fb.group({
-      username: [null, [Validators.required, Validators.maxLength(100)]],
       fullName: [null, [Validators.required, Validators.maxLength(200)]],
-      email: [null, [Validators.email]],
+      email: [null, [Validators.required, Validators.email]],
       phone: [null, [Validators.required, Validators.pattern(BD_PHONE_REGEX)]],
-      department: [null],
       assignedDoctorIds: [[]],
       isActive: [true],
     });
@@ -115,9 +115,11 @@ export class ManageStaffComponent implements OnInit {
   }
 
   toggleDoctor(doctorId: number, checked: boolean): void {
-    const current: number[] = this.staffForm.get('assignedDoctorIds')?.value || [];
+    const control = this.staffForm.get('assignedDoctorIds');
+    const current: number[] = control?.value || [];
     const next = checked ? [...current, doctorId] : current.filter((id) => id !== doctorId);
-    this.staffForm.patchValue({ assignedDoctorIds: next });
+    control?.patchValue(next);
+    control?.markAsDirty();
   }
 
   isDoctorAssigned(doctorId: number): boolean {
@@ -144,21 +146,20 @@ export class ManageStaffComponent implements OnInit {
     const formValue = this.staffForm.getRawValue();
     this.staffService
       .addStaff({
-        username: formValue.username,
-        email: formValue.email || null,
+        // The account's login identifier is just its email — admins no longer pick a
+        // separate username, matching the email-invite creation flow (no password is
+        // ever issued here for the admin to hand over alongside one).
+        username: formValue.email,
+        email: formValue.email,
         fullName: formValue.fullName,
         phone: formValue.phone,
-        department: formValue.department,
         assignedDoctorIds: formValue.assignedDoctorIds || [],
       })
       .subscribe({
         next: (response) => {
           if (response && !response.hasError && response.content) {
-            this.createdUsername = response.content.username;
-            this.createdEmail = formValue.email || null;
-            this.createdTemporaryPassword = response.content.temporaryPassword;
-            this.isPasswordReset = false;
-            this.showTemporaryPasswordDialog = true;
+            this.toast.success({ detail: `Invite email sent to ${formValue.email}.` });
+            this.router.navigate(['/staff/staff-list']);
           } else if (!response?.decentMessage) {
             this.toast.error({ detail: 'Could not create this staff member.' });
           }
@@ -176,7 +177,6 @@ export class ManageStaffComponent implements OnInit {
         fullName: formValue.fullName,
         email: formValue.email || null,
         phone: formValue.phone,
-        department: formValue.department,
         assignedDoctorIds: formValue.assignedDoctorIds || [],
         isActive: formValue.isActive,
       })
@@ -195,26 +195,23 @@ export class ManageStaffComponent implements OnInit {
       });
   }
 
-  resetPassword(event: Event): void {
+  resendAccountInvite(event: Event): void {
+    const email = this.staffForm.get('email')?.value;
     this.confirmationService.confirm({
       target: event.target as EventTarget,
-      message: 'Generate a new temporary password for this staff member? Their current password will stop working immediately.',
-      header: 'Reset Password',
+      message: `Re-send the account setup email to ${email}? Any password they already set stops working until they use the new link.`,
+      header: 'Resend Account Setup Email',
       acceptButtonStyleClass: 'p-button-danger',
       rejectButtonStyleClass: 'p-button-secondary',
       acceptIcon: 'fa fa-check',
       rejectIcon: 'fa fa-times',
       accept: () => {
-        this.authService.resetPassword(this.userId).subscribe({
+        this.authService.resendAccountInvite(this.userId).subscribe({
           next: (response) => {
-            if (response && !response.hasError && response.content) {
-              this.createdUsername = this.staffForm.get('username')?.value;
-              this.createdEmail = this.staffForm.get('email')?.value || null;
-              this.createdTemporaryPassword = response.content.temporaryPassword;
-              this.isPasswordReset = true;
-              this.showTemporaryPasswordDialog = true;
+            if (response && !response.hasError) {
+              this.toast.success({ detail: `Account setup email resent to ${email}.` });
             } else if (!response?.decentMessage) {
-              this.toast.error({ detail: 'Could not reset this password.' });
+              this.toast.error({ detail: 'Could not resend the account setup email.' });
             }
           },
           error: () => {
@@ -223,23 +220,5 @@ export class ManageStaffComponent implements OnInit {
         });
       },
     });
-  }
-
-  onTemporaryPasswordDialogClose(): void {
-    this.showTemporaryPasswordDialog = false;
-    if (!this.isPasswordReset) {
-      this.router.navigate(['/staff/staff-list']);
-    }
-  }
-
-  copyCredentials(): void {
-    if (!this.createdTemporaryPassword) return;
-
-    const lines = [`Username: ${this.createdUsername}`];
-    if (this.createdEmail) lines.push(`Email: ${this.createdEmail}`);
-    lines.push(`Temporary password: ${this.createdTemporaryPassword}`);
-
-    navigator.clipboard?.writeText(lines.join('\n'));
-    this.toast.info({ detail: 'Credentials copied to clipboard.' });
   }
 }

@@ -1,16 +1,45 @@
+// Flush left, no side margin — matches the reference prototype's QuickAddSelect (spacing
+// comes from the parent row's own `gap`/block flow, not from this component).
 .quick-add {
   position: relative;
   display: inline-block;
-  margin-left: 0.5rem;
 }
 
+// Styled to read as a small muted line rather than a real form control, so it never
+// competes with the clinical content — matches the reference prototype's `.rx-quickadd`.
 .quick-add-toggle {
+  display: inline-block;
   border: none;
-  background: transparent;
-  color: var(--tpl-accent-color, #0f766e);
-  font-size: 0.75em;
+  box-shadow: none;
+  background-color: transparent;
+  background-repeat: no-repeat;
+  background-position: right 2px center;
+  background-size: 10px 10px;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23667085' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+  color: var(--text-color-secondary, #667085);
+  font-size: 12.5px;
+  font-weight: 400;
+  width: 94px;
+  padding: 0 18px 0 2px;
+  margin: 0.35rem 0 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
   cursor: pointer;
-  padding: 0;
+  text-align: left;
+
+  &:hover,
+  &:focus {
+    color: var(--tpl-accent-color, #0f766e);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%230f6e6e' stroke-width='2' stroke-linecap='round' stroke-linejoin='round' d='M4 6l4 4 4-4'/%3E%3C/svg%3E");
+    outline: none;
+  }
+}
+
+@media print {
+  .quick-add {
+    display: none !important;
+  }
 }
 
 .quick-add-list {
@@ -18,7 +47,13 @@
   z-index: 20;
   top: 100%;
   left: 0;
-  min-width: 10rem;
+  // Medicine's option text is a full " · "-joined preset line (identity + dosage +
+  // frequency + duration + instructions) — 10rem forced every one of those onto 3 wrapped
+  // lines. Size to content instead (min/max, not a fixed width), so a short Diagnosis/
+  // Investigation label stays compact while a long Medicine line gets the room it needs.
+  min-width: 14rem;
+  max-width: min(34rem, 90vw);
+  width: max-content;
   background: #fff;
   border: 1px solid #e2e8f0;
   border-radius: 0.375rem;
@@ -28,14 +63,33 @@
   padding: 0.2rem 0;
   max-height: 12rem;
   overflow-y: auto;
+  // Safety net for the rare line that still exceeds max-width — scrolls horizontally
+  // instead of wrapping, since wrapping is what this fix exists to avoid.
+  overflow-x: auto;
 
   li {
     padding: 0.3rem 0.6rem;
     font-size: 0.8em;
     cursor: pointer;
+    white-space: nowrap;
 
     &:hover {
       background: rgba(0, 0, 0, 0.04);
+    }
+  }
+
+  // Static, non-interactive first row — mirrors the reference prototype's native
+  // <select><option value="">Quick Add</option></select> placeholder row (its browser
+  // rendering is a plain grey row at the top of the open list), reproduced here since
+  // this is a custom-styled <ul> menu, not a native select.
+  .quick-add-list-header {
+    cursor: default;
+    font-weight: 600;
+    color: #64748b;
+    background: #f1f5f9;
+
+    &:hover {
+      background: #f1f5f9;
     }
   }
 }

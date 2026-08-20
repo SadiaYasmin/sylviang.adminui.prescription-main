@@ -82,8 +82,17 @@ export class MenuService {
     let best: string | undefined;
     let bestSegmentCount = -1;
     for (const item of items) {
-      if (!item.href || !this.isRouteMatch(item.href, currentRoute)) continue;
-      const segmentCount = item.href.replace(/^\//, '').split('/').length;
+      if (!item.href) continue;
+      // An item may match either at its concrete `href` or at a broader `activeMatch`
+      // prefix (see IMenuItem.activeMatch) — try both, so e.g. /quick-add/follow-up still
+      // lights up the item whose href is /quick-add/medicine.
+      const matchAgainst = this.isRouteMatch(item.href, currentRoute)
+        ? item.href
+        : item.activeMatch && this.isRouteMatch(item.activeMatch, currentRoute)
+          ? item.activeMatch
+          : undefined;
+      if (!matchAgainst) continue;
+      const segmentCount = matchAgainst.replace(/^\//, '').split('/').length;
       if (segmentCount > bestSegmentCount) {
         bestSegmentCount = segmentCount;
         best = item.href;

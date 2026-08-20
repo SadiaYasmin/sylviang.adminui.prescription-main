@@ -103,7 +103,7 @@
 
     <div class="flex justify-end gap-3 mt-6">
       <button type="button" pButton severity="secondary" [routerLink]="['/templates/template-list']">Cancel</button>
-      <button type="submit" pButton [loading]="saving">Save Changes</button>
+      <button type="submit" pButton [loading]="saving" [disabled]="settingsForm.invalid || settingsForm.pristine">Save Changes</button>
     </div>
   </form>
 </section>

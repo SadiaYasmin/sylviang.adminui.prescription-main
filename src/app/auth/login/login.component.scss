@@ -46,6 +46,18 @@
   margin-top: 0.5rem;
 }
 
+.forgot-link {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--primary-600, #0284c7);
+  text-decoration: none;
+  margin-top: -0.5rem;
+
+  &:hover {
+    text-decoration: underline;
+  }
+}
+
 .invalid {
   color: #b91c1c;
   font-size: 0.75rem;

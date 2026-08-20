@@ -1,6 +1,6 @@
 import { ITemplateConfig, TemplateType } from '@core/interfaces/templates/template.interface';
 
-export type PrescriptionStatus = 'Draft' | 'Finalized';
+export type PrescriptionStatus = 'InProgress' | 'Draft' | 'Finalized';
 export type PrescriptionLanguage = 'En' | 'Bn';
 
 export interface IExamination {

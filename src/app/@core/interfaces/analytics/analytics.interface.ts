@@ -91,6 +91,7 @@ export interface IExecutiveSummaryResponse {
   totalPrescriptions: number;
   totalMedicines: number;
   totalDoctors: number;
+  totalStaff: number;
   prescriptionTrend: IMonthOverMonthMetric;
   newPatientTrend: IMonthOverMonthMetric;
   topMedicines: IMedicineCountEntry[];

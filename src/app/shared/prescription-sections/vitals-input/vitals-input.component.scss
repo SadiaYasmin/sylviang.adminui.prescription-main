@@ -6,16 +6,16 @@
 // here too — themed via the `--tpl-*` custom properties set on each template's root,
 // which (unlike class selectors) do inherit across the encapsulation boundary.
 .vitals {
-  display: grid;
-  grid-template-columns: repeat(var(--tpl-vitals-columns, 2), 1fr);
-  gap: 5px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
   margin-top: 4px;
 }
 
 .vital {
   display: flex;
   align-items: baseline;
-  gap: 6px;
+  gap: 8px;
   font-size: 0.85em;
 }
 
@@ -23,6 +23,7 @@
   color: var(--tpl-vitals-label-color, #475569);
   font-weight: 600;
   white-space: nowrap;
+  min-width: 6.5em;
 }
 
 .vital-line {
@@ -32,18 +33,53 @@
 }
 
 .vital-input {
+  flex: 1;
   border: none;
   border-bottom: 1px dashed var(--tpl-vitals-line-color, #cbd5e1);
   background: transparent;
   font: inherit;
-  width: 100%;
+  text-align: right;
   outline: none;
 
   &:focus {
     border-bottom-color: var(--tpl-accent-color, #0f766e);
   }
+
+  // BMI's disabled input — same border/alignment/sizing as every editable sibling, just
+  // a slightly muted color so it still reads as "not for you to type in" at a glance.
+  &:disabled {
+    color: var(--tpl-vitals-label-color, #64748b);
+    cursor: default;
+  }
 }
 
 .vital-value {
-  font-weight: 500;
+  flex: 1;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+// Small square icon button, left-aligned under the vitals list — matches the
+// reference prototype's `.icon-btn.icon-btn-plain.icon-btn-sm` (28px, transparent
+// until hover), not a full-width centered bar.
+.vitals-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  margin-top: 4px;
+  padding: 0;
+  border: 1.5px solid transparent;
+  border-radius: 0.45rem;
+  background: transparent;
+  color: var(--tpl-vitals-label-color, #64748b);
+  cursor: pointer;
+  font-size: 0.75rem;
+
+  &:hover {
+    background: rgba(0, 0, 0, 0.04);
+    color: var(--tpl-accent-color, #0f766e);
+  }
 }

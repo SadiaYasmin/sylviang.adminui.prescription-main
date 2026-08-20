@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
-import { IMedicineCatalogEntry, IMedicineSummary } from '@core/interfaces/medicines/medicine.interface';
+import { UI_CONFIG } from '@app/@core/constants';
+import { IMedicineCatalogEntry } from '@core/interfaces/medicines/medicine.interface';
 import { AuthService } from '@core/services/auth/auth.service';
 import { MedicineService } from '@core/services/medicines/medicine.service';
 import { ToastService } from '@core/services/misc/toast.service';
@@ -7,11 +8,9 @@ import { ConfirmationService } from 'primeng/api';
 import { MedicineListColumns } from './medicine-list.component.constants';
 
 /**
- * US-036/037/038/039/040. Staff gets the plain catalog (via `search()`, no analytics
- * column/sort at all — the backend never sends `totalPrescribed` to them, this component
- * just also never renders a column for a field that isn't in `medicines` for that role).
- * Admin/Doctor get the catalog view (`getCatalog()`, includes Total Prescribed, sorted by
- * it descending already by the backend). Only Admin sees the Add/Edit/Deactivate actions.
+ * US-036/037/038/039/040. Admin, Doctor, and Staff all see the exact same catalog view now —
+ * same rows, same columns (incl. Total Prescribed/DGDA/Status), same `getCatalog()` endpoint,
+ * same pagination. Only write access (Add/Import/Edit/Deactivate) stays Admin-only.
  */
 @Component({
   selector: 'app-medicine-list',
@@ -28,17 +27,21 @@ export class MedicineListComponent implements OnInit {
     private toast: ToastService,
   ) {}
 
-  medicines: (IMedicineSummary | IMedicineCatalogEntry)[] = [];
+  medicines: IMedicineCatalogEntry[] = [];
   loading = false;
+  importing = false;
   searchTerm = '';
   columns = MedicineListColumns;
 
+  // Catalog can run 20k+ rows after a CSV import — server-paginated for every role, same
+  // lazy p-table pattern as doctor-list.
+  UI_CONFIG = UI_CONFIG;
+  rows: number = UI_CONFIG.defaultPageSize;
+  currentPage = 1;
+  totalRecords = 0;
+
   get role(): string | null {
     return this.authService.getRole();
-  }
-
-  get showAnalytics(): boolean {
-    return this.role === 'Admin' || this.role === 'Doctor';
   }
 
   get canManage(): boolean {
@@ -46,13 +49,9 @@ export class MedicineListComponent implements OnInit {
   }
 
   get skeletonItems() {
-    return Array(5)
+    return Array(this.rows)
       .fill({})
       .map((_, index) => ({ id: index }));
-  }
-
-  asCatalogEntry(medicine: IMedicineSummary | IMedicineCatalogEntry): IMedicineCatalogEntry {
-    return medicine as IMedicineCatalogEntry;
   }
 
   ngOnInit(): void {
@@ -60,28 +59,73 @@ export class MedicineListComponent implements OnInit {
   }
 
   applySearch(): void {
+    this.currentPage = 1;
     this.loadMedicines();
   }
 
   resetSearch(): void {
     this.searchTerm = '';
+    this.currentPage = 1;
+    this.loadMedicines();
+  }
+
+  onPageChange(event: { first: number; rows: number }): void {
+    this.currentPage = Math.floor(event.first / event.rows) + 1;
+    this.rows = event.rows;
     this.loadMedicines();
   }
 
   loadMedicines(): void {
     this.loading = true;
-    const request$ = this.showAnalytics ? this.medicineService.getCatalog(this.searchTerm) : this.medicineService.search(this.searchTerm);
 
-    request$.subscribe({
+    this.medicineService.getCatalog(this.searchTerm, this.currentPage, this.rows).subscribe({
       next: (response) => {
-        this.medicines = !response.hasError && response.content ? response.content : [];
+        if (!response.hasError && response.content) {
+          this.medicines = response.content.medicines || [];
+          this.totalRecords = response.content.totalCount || 0;
+        } else {
+          this.medicines = [];
+          this.totalRecords = 0;
+        }
         this.loading = false;
         this.cdr.detectChanges();
       },
       error: () => {
         this.medicines = [];
+        this.totalRecords = 0;
         this.loading = false;
         this.cdr.detectChanges();
+      },
+    });
+  }
+
+  onCsvSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+
+    this.importing = true;
+    this.medicineService.importCsv(file).subscribe({
+      next: (response) => {
+        this.importing = false;
+        if (response && !response.hasError && response.content) {
+          const r = response.content;
+          this.toast.success({
+            summary: 'Import complete',
+            detail: `${r.rowsRead} rows read — ${r.inserted} added, ${r.updated} updated, ${r.skipped} skipped.`,
+          });
+          if (r.errors.length) {
+            this.toast.error({ summary: `${r.errors.length} issue(s)`, detail: r.errors.slice(0, 3).join(' ') });
+          }
+          this.loadMedicines();
+        } else if (!response?.decentMessage) {
+          this.toast.error({ detail: 'Could not import the CSV file.' });
+        }
+      },
+      error: () => {
+        this.importing = false;
+        // ErrorHandlerInterceptor already surfaces the backend's error message as a toast.
       },
     });
   }

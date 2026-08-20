@@ -2,15 +2,22 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApiResponse } from '@core/interfaces/ApiResponse';
 import {
+  IConfirmEmailChangeRequest,
+  IConfirmPasswordChangeRequest,
   ICreateUserAccountRequest,
   ICreateUserAccountResponse,
   ICurrentUser,
+  ICurrentUserDetails,
+  IForgotPasswordRequest,
   ILoginRequest,
   ILoginResponse,
   IRefreshTokenResponse,
-  IResetPasswordResponse,
+  IRequestEmailChangeRequest,
+  IResetPasswordWithOtpRequest,
+  IVerifyForgotPasswordOtpRequest,
+  IVerifyForgotPasswordOtpResponse,
 } from '@core/interfaces/auth/auth.interface';
-import { BASE_URL_Auth } from '@env/environment';
+import { BASE_URL_Auth, BASE_URL_Me } from '@env/environment';
 import { BehaviorSubject, Observable, finalize, shareReplay, tap } from 'rxjs';
 
 const ACCESS_TOKEN_KEY = 'pms_access_token';
@@ -73,8 +80,45 @@ export class AuthService {
     return this.httpClient.post<ApiResponse<ICreateUserAccountResponse>>(`${BASE_URL_Auth}/users`, request);
   }
 
-  resetPassword(userId: number): Observable<ApiResponse<IResetPasswordResponse>> {
-    return this.httpClient.post<ApiResponse<IResetPasswordResponse>>(`${BASE_URL_Auth}/users/${userId}/reset-password`, {});
+  /** Re-sends the "set your password" invite email — no password is ever returned to the client. */
+  resendAccountInvite(userId: number): Observable<ApiResponse<void>> {
+    return this.httpClient.post<ApiResponse<void>>(`${BASE_URL_Auth}/users/${userId}/reset-password`, {});
+  }
+
+  // ===== Forgot password (anonymous, OTP) =====
+
+  forgotPassword(request: IForgotPasswordRequest): Observable<ApiResponse<void>> {
+    return this.httpClient.post<ApiResponse<void>>(`${BASE_URL_Auth}/forgot-password`, request);
+  }
+
+  verifyForgotPasswordOtp(request: IVerifyForgotPasswordOtpRequest): Observable<ApiResponse<IVerifyForgotPasswordOtpResponse>> {
+    return this.httpClient.post<ApiResponse<IVerifyForgotPasswordOtpResponse>>(`${BASE_URL_Auth}/forgot-password/verify`, request);
+  }
+
+  resetPasswordWithOtp(request: IResetPasswordWithOtpRequest): Observable<ApiResponse<void>> {
+    return this.httpClient.post<ApiResponse<void>>(`${BASE_URL_Auth}/forgot-password/reset`, request);
+  }
+
+  // ===== Self-service change email / password =====
+
+  getCurrentUser(): Observable<ApiResponse<ICurrentUserDetails>> {
+    return this.httpClient.get<ApiResponse<ICurrentUserDetails>>(`${BASE_URL_Me}`);
+  }
+
+  requestEmailChange(request: IRequestEmailChangeRequest): Observable<ApiResponse<void>> {
+    return this.httpClient.post<ApiResponse<void>>(`${BASE_URL_Me}/email/request-change`, request);
+  }
+
+  confirmEmailChange(request: IConfirmEmailChangeRequest): Observable<ApiResponse<void>> {
+    return this.httpClient.post<ApiResponse<void>>(`${BASE_URL_Me}/email/confirm-change`, request);
+  }
+
+  requestPasswordChange(): Observable<ApiResponse<void>> {
+    return this.httpClient.post<ApiResponse<void>>(`${BASE_URL_Me}/password/request-change`, {});
+  }
+
+  confirmPasswordChange(request: IConfirmPasswordChangeRequest): Observable<ApiResponse<void>> {
+    return this.httpClient.post<ApiResponse<void>>(`${BASE_URL_Me}/password/confirm-change`, request);
   }
 
   clearSession(): void {

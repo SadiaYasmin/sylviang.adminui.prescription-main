@@ -608,7 +608,7 @@
       <i class="fas fa-arrow-left z-10"></i>
       <span>Back</span>
     </button>
-    <button pButton type="submit">
+    <button pButton type="submit" [disabled]="isEditMode && (shiftForm.invalid || shiftForm.pristine)">
       <i class="fas fa-save"></i>
       <span>Save</span>
     </button>

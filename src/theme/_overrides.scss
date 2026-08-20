@@ -94,6 +94,15 @@
 }
 .p-floatlabel > label {
   @apply text-black/80 dark:text-white/80 !important;
+  // PrimeNG's floated (raised) label only reserves room for a single line — a longer
+  // label (e.g. "Search name, username, department") wraps to 2 lines in a narrow
+  // container and the second line overlaps the input's typed text underneath it.
+  // Force single-line + ellipsis instead of wrapping, at every state (resting
+  // placeholder or floated) so it never collides with input content.
+  white-space: nowrap !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  max-width: calc(100% - 0.5rem);
 }
 
 // --------------------------------------------Input Number Css Override--------------------------------------------
@@ -279,7 +288,12 @@
   // all — content becomes the dialog's visual bottom edge, so it needs the same
   // bottom rounding + breathing room the footer would otherwise provide. Keeps every
   // dialog rounded on all 4 corners with proper spacing, footer or not.
-  .p-dialog-content:last-child {
+  // NOTE: this can't be `.p-dialog-content:last-child` — PrimeNG always appends a
+  // hidden `.p-hidden-accessible` focus-trap div *after* the content (and after the
+  // footer, when there is one), so `.p-dialog-content` is never actually the DOM's
+  // last child and that selector silently never matched. `:has()` checks for a real
+  // `.p-dialog-footer` sibling instead, which isn't fooled by the trailing trap div.
+  .p-dialog-content:not(:has(~ .p-dialog-footer)) {
     @apply rounded-b-xl pb-5 !important;
   }
   .p-dialog-footer {

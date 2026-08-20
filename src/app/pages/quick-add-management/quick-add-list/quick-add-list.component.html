@@ -4,6 +4,7 @@
     <div>
       <h2 class="page-header-title">{{ section.label }}</h2>
       <p class="page-header-subtitle">Manage your saved shortcuts for one-click insert while authoring a prescription.</p>
+      <p class="page-header-count" *ngIf="!loading">{{ presets.length }} {{ section.countNoun }} configured</p>
     </div>
   </div>
 
@@ -14,20 +15,24 @@
     </a>
   </div>
 
-  <div class="flex justify-end mb-3">
+  <div class="flex flex-wrap justify-between items-center gap-3 mb-3">
+    <div class="search-with-icon">
+      <i class="fa fa-search search-icon"></i>
+      <input type="text" pInputText [(ngModel)]="searchTerm" name="quickAddSearch" [placeholder]="'Search ' + section.countNoun + '...'" />
+    </div>
+
     <button pButton [routerLink]="['/quick-add', section.routeSegment, 'manage']">
       <i class="fa fa-plus"></i>
-      <span>Add Preset</span>
+      <span>Add {{ section.singularLabel }} Preset</span>
     </button>
   </div>
 
   <div class="table-container">
     <div class="transition-all duration-500 ease-in-out">
-      <p-table [value]="loading ? skeletonItems : presets" dataKey="quickAddPresetId" [responsiveLayout]="'scroll'">
+      <p-table [value]="loading ? skeletonItems : filteredPresets" dataKey="quickAddPresetId" [responsiveLayout]="'scroll'">
         <ng-template pTemplate="header">
           <tr>
-            <th style="width: 14rem">Label</th>
-            <th>Preview</th>
+            <th>Preset</th>
             <th style="width: 8rem">Actions</th>
           </tr>
         </ng-template>
@@ -36,12 +41,10 @@
           @if (loading) {
             <tr>
               <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
-              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
               <td><p-skeleton width="3rem" height="1rem"></p-skeleton></td>
             </tr>
           } @else {
             <tr>
-              <td>{{ preset.label }}</td>
               <td>{{ previewPayload(preset) }}</td>
               <td>
                 <button [routerLink]="['/quick-add', section.routeSegment, 'manage', preset.quickAddPresetId]" class="text-primary mr-2" title="Edit">
@@ -57,10 +60,10 @@
 
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td [attr.colspan]="3" class="not-found">
+            <td [attr.colspan]="2" class="not-found">
               <div>
                 <i class="fa fa-magnifying-glass-minus"></i>
-                <p>No presets saved yet.</p>
+                <p>{{ searchTerm ? 'No presets match your search.' : 'No presets saved yet.' }}</p>
               </div>
             </td>
           </tr>

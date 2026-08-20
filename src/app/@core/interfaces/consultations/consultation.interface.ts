@@ -49,6 +49,9 @@ export interface IQueueItem {
   patientName: string;
   doctorId: number;
   doctorName: string;
+  // True once the linked prescription has ever been explicitly "Save as Draft"-ed —
+  // independent of status, which flips back to InConsultation on reopen.
+  hasSavedDraft: boolean;
 }
 
 export interface IAssignedDoctorSummary {

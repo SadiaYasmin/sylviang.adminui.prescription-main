@@ -59,7 +59,7 @@
 
     <div class="flex justify-end gap-3 mt-6">
       <button type="button" pButton severity="secondary" [routerLink]="['/patients/patient-list']">Cancel</button>
-      <button type="submit" pButton>{{ isEditMode ? 'Save Changes' : 'Register Patient' }}</button>
+      <button type="submit" pButton [disabled]="isEditMode && (patientForm.invalid || patientForm.pristine)">{{ isEditMode ? 'Save Changes' : 'Register Patient' }}</button>
     </div>
   </form>
 </section>

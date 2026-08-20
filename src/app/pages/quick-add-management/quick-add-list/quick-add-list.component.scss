@@ -17,8 +17,11 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(16, 185, 129, 0.12);
-  color: #0f766e;
+  // Real PrimeNG Aura design tokens (same convention as authoring.component.scss) instead
+  // of a hardcoded emerald/teal mix — keeps this in sync with the app's actual theme color
+  // (the "Add Preset" button, sidebar active state), not a manually-guessed shade.
+  background: var(--p-primary-50, rgba(16, 185, 129, 0.12));
+  color: var(--p-primary-color, #0f766e);
   font-size: 1.1rem;
 }
 
@@ -32,6 +35,13 @@
   margin: 0.15rem 0 0;
   color: var(--text-color-secondary, #6b7280);
   font-size: 0.9rem;
+}
+
+.page-header-count {
+  margin: 0.35rem 0 0;
+  color: var(--p-primary-color, #0f766e);
+  font-size: 0.8rem;
+  font-weight: 600;
 }
 
 .section-tabs {
@@ -51,11 +61,44 @@
     font-size: 0.85rem;
     text-decoration: none;
     cursor: pointer;
+    transition: background-color 0.12s ease, border-color 0.12s ease, color 0.12s ease;
 
-    &.active {
-      background: #0f766e;
-      border-color: #0f766e;
-      color: #fff;
+    &:hover:not(.active) {
+      border-color: var(--p-primary-200, #99d5cd);
+      color: var(--p-primary-color, #0f766e);
+      background: var(--p-primary-50, rgba(16, 185, 129, 0.08));
     }
+
+    // Real PrimeNG Aura design tokens instead of a hardcoded hex, so the active pill always
+    // matches the app's actual accent color (same one the "Add Preset" button and sidebar use).
+    &.active {
+      background: var(--p-primary-color, #0f766e);
+      border-color: var(--p-primary-color, #0f766e);
+      color: var(--p-primary-contrast-color, #fff);
+    }
+  }
+}
+
+// Search bar: wider than the old floatlabel default, with a leading icon and room to sit
+// neatly alongside the category-specific Add button on the same row.
+.search-with-icon {
+  position: relative;
+  flex: 1 1 320px;
+  max-width: 420px;
+  min-width: 220px;
+
+  .search-icon {
+    position: absolute;
+    top: 50%;
+    left: 0.85rem;
+    transform: translateY(-50%);
+    color: var(--text-color-secondary, #94a3b8);
+    font-size: 0.85rem;
+    pointer-events: none;
+  }
+
+  input {
+    width: 100%;
+    padding-left: 2.4rem;
   }
 }

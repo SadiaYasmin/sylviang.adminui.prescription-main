@@ -7,7 +7,7 @@
 
     <div>
       <label class="block text-xs font-medium mb-1">Doctor</label>
-      <p-select [options]="doctors" [(ngModel)]="selectedDoctorId" optionLabel="fullName" optionValue="doctorId" styleClass="w-full" placeholder="Select a doctor"></p-select>
+      <p-select [options]="doctors" [(ngModel)]="selectedDoctorId" optionLabel="fullName" optionValue="doctorId" styleClass="w-full" placeholder="Select a doctor" appendTo="body"></p-select>
     </div>
 
     <p class="text-sm text-color-secondary">This consultation will be created for today.</p>

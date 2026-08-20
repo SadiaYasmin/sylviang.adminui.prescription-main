@@ -28,6 +28,18 @@ export class PrescriptionService {
     return this.httpClient.put<ApiResponse<IPrescriptionDocument>>(`${this.API_URL}/${id}`, request);
   }
 
+  /**
+   * Background auto-save for data protection while authoring. Persists the current content
+   * but leaves the prescription InProgress (never promotes it to Draft), so it stays out of
+   * the Draft Prescriptions list until the doctor leaves or explicitly saves it.
+   */
+  autoSave(id: number, request: ISaveDraftPrescriptionRequest) {
+    return this.httpClient.patch<ApiResponse<{ prescriptionId: number; status: string; autoSavedAt: string }>>(
+      `${this.API_URL}/${id}/autosave`,
+      request,
+    );
+  }
+
   finalize(id: number, request: ISaveDraftPrescriptionRequest) {
     return this.httpClient.post<ApiResponse<IPrescriptionDocument>>(`${this.API_URL}/${id}/finalize`, request);
   }

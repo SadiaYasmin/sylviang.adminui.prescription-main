@@ -16,5 +16,8 @@ export const roleGuard: CanActivateFn = (route) => {
     return true;
   }
 
-  return router.parseUrl('/dashboard');
+  // Admin has no Dashboard (Analytics & Reports covers the same ground, without the
+  // duplication) — bouncing a denied Admin to '/dashboard' would just hit this same guard
+  // again there. Everyone else still lands on Dashboard.
+  return router.parseUrl(role === 'Admin' ? '/analytics' : '/dashboard');
 };

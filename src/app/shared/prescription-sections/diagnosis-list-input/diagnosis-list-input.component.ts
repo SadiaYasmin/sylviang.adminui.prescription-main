@@ -16,27 +16,33 @@ export class DiagnosisListInputComponent {
   @Input() items: IDiagnosisItem[] = [];
   @Input() editable = false;
   @Input() emptyReadonlyText = 'No diagnosis recorded.';
+  // Diagnosis text is always plain English (ICD-10-style entries, not free-form
+  // clinical phrasing) — never gets Avro phonetic Bangla input, regardless of the
+  // document's selected language. `language` is still accepted since callers pass
+  // it uniformly across all section inputs, but it's intentionally unused here.
+  @Input() language: 'en' | 'bn' = 'en';
   @Output() itemsChange = new EventEmitter<IDiagnosisItem[]>();
 
-  draft = '';
-  private draftInitialized = false;
+  private draft = '';
+  private focused = false;
 
-  /** US-070: opt-in per field — off by default so doctors can type plain English notes. */
-  banglaMode = false;
-
-  private ensureDraft(): void {
-    if (!this.draftInitialized) {
-      this.draft = this.toText(this.items);
-      this.draftInitialized = true;
-    }
+  get rows(): number {
+    return Math.max(2, this.items.length + 1);
   }
 
   get textValue(): string {
-    this.ensureDraft();
+    if (!this.focused) {
+      this.draft = this.toText(this.items);
+    }
     return this.draft;
   }
 
+  onFocus(): void {
+    this.focused = true;
+  }
+
   onBlur(value: string): void {
+    this.focused = false;
     this.draft = value;
     const lines = value
       .split('\n')

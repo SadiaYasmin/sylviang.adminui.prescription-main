@@ -151,12 +151,22 @@ describe('DashboardComponent', () => {
     expect(doctorPreferencesServiceSpy.get).not.toHaveBeenCalled();
   });
 
-  it('should filter dashboard cards by role', () => {
-    configure('Admin');
+  it('should show the signature-upload nudge for a Doctor with no signature on file', () => {
+    configure('Doctor');
+    doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: 1, signatureUrl: null, preferredLanguage: null } } as any));
+
     fixture.detectChanges();
 
-    expect(component.cards.length).toBeGreaterThan(0);
-    expect(component.cards.every((c) => !c.roles || c.roles.includes('Admin'))).toBeTrue();
+    expect(component.needsSignatureUpload).toBeTrue();
+  });
+
+  it('should not show the signature-upload nudge for a Doctor who already uploaded one', () => {
+    configure('Doctor');
+    doctorPreferencesServiceSpy.get.and.returnValue(of({ hasError: false, decentMessage: 'ok', content: { preferredTemplateId: 1, signatureUrl: '/sig.png', preferredLanguage: null } } as any));
+
+    fixture.detectChanges();
+
+    expect(component.needsSignatureUpload).toBeFalse();
   });
 
   it('should load own scoped stats for Doctor role without disturbing the queue', () => {

@@ -1,7 +1,15 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApiResponse } from '@core/interfaces/ApiResponse';
-import { ICreateMedicineRequest, IMedicineCatalogEntry, IMedicineSummary, IUpdateMedicineRequest } from '@core/interfaces/medicines/medicine.interface';
+import {
+  ICreateMedicineRequest,
+  IMedicineCatalogEntry,
+  IMedicineCatalogListResponse,
+  IMedicineImportResult,
+  IMedicineSearchListResponse,
+  IMedicineSummary,
+  IUpdateMedicineRequest,
+} from '@core/interfaces/medicines/medicine.interface';
 import { BASE_URL_Medicines } from '@env/environment';
 
 @Injectable({
@@ -12,18 +20,20 @@ export class MedicineService {
 
   API_URL = BASE_URL_Medicines;
 
-  /** Cheap, role-agnostic — used by prescription authoring's medicine autocomplete (hot path). */
-  search(term: string) {
-    const params: Record<string, string> = {};
+  /** Cheap, role-agnostic — used by prescription authoring's medicine autocomplete (hot path)
+   * and Staff's plain catalog browse. Real pagination + total count, same underlying catalog
+   * Admin/Doctor's `getCatalog()` reads from — every role can reach every medicine. */
+  search(term: string, page: number = 1, pageSize: number = 10) {
+    const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
     if (term?.trim()) params['search'] = term.trim();
-    return this.httpClient.get<ApiResponse<IMedicineSummary[]>>(`${this.API_URL}`, { params });
+    return this.httpClient.get<ApiResponse<IMedicineSearchListResponse>>(`${this.API_URL}`, { params });
   }
 
-  /** Admin/Doctor only — the Medicine Catalog management screen, includes Total Prescribed. */
-  getCatalog(term?: string) {
-    const params: Record<string, string> = {};
+  /** Admin/Doctor only — the Medicine Catalog management screen, includes Total Prescribed. Server-paginated (catalogs can run 20k+ rows after a CSV import). */
+  getCatalog(term: string | undefined, page: number, pageSize: number) {
+    const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
     if (term?.trim()) params['search'] = term.trim();
-    return this.httpClient.get<ApiResponse<IMedicineCatalogEntry[]>>(`${this.API_URL}/catalog`, { params });
+    return this.httpClient.get<ApiResponse<IMedicineCatalogListResponse>>(`${this.API_URL}/catalog`, { params });
   }
 
   getById(medicineId: number) {
@@ -40,5 +50,12 @@ export class MedicineService {
 
   deactivate(medicineId: number) {
     return this.httpClient.post<ApiResponse<null>>(`${this.API_URL}/${medicineId}/deactivate`, {});
+  }
+
+  /** Admin-only idempotent CSV upsert (medicine-feature-brief.md §5). */
+  importCsv(file: File) {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.httpClient.post<ApiResponse<IMedicineImportResult>>(`${this.API_URL}/import`, formData);
   }
 }

@@ -1,12 +1,59 @@
-<div class="vitals">
-  <div class="vital" *ngFor="let f of fields">
-    <span class="vital-label">{{ f.label }}</span>
-    <ng-container *ngIf="editable; else readonlyVital">
-      <input type="text" class="vital-input" [value]="value[f.key] || ''" (blur)="update(f.key, $any($event.target).value)" />
+<ng-container *ngIf="editable; else readonlyVitals">
+  <div class="vitals">
+    <ng-container *ngFor="let f of primaryFields; trackBy: trackByKey">
+      <div class="vital">
+        <span class="vital-label">{{ f.label }}:</span>
+        <input type="text" class="vital-input" [value]="displayValue(f.key)" [placeholder]="placeholderFor(f.key)" (input)="onInput(f.key, $event)" />
+      </div>
+
+      <!-- Read-only, auto-calculated from Weight/Height — placed right after Height so it
+           reads as "one more row" of the same primary group, not a separate section. A real
+           disabled <input> (not a span) so its underline/alignment/sizing stays pixel-identical
+           to its live sibling fields, while genuinely blocking manual edits. -->
+      <div class="vital vital-bmi" *ngIf="f.key === 'height'">
+        <span class="vital-label">{{ bmiLabel }}:</span>
+        <input type="text" class="vital-input" [value]="bmiDisplay" disabled aria-readonly="true" />
+      </div>
     </ng-container>
-    <ng-template #readonlyVital>
-      <span class="vital-line" *ngIf="!value[f.key]"></span>
-      <span class="vital-value" *ngIf="value[f.key]">{{ value[f.key] }}</span>
-    </ng-template>
+
+    <!-- Secondary fields sit in the same list, directly under the primary ones, so the
+         toggle below stays beneath every O/E field (not wedged between the two groups). -->
+    <ng-container *ngIf="expanded">
+      <div class="vital" *ngFor="let f of secondaryFields; trackBy: trackByKey">
+        <span class="vital-label">{{ f.label }}:</span>
+        <input type="text" class="vital-input" [value]="displayValue(f.key)" [placeholder]="placeholderFor(f.key)" (input)="onInput(f.key, $event)" />
+      </div>
+    </ng-container>
   </div>
-</div>
+
+  <button type="button" class="vitals-toggle" (click)="toggleExpanded()" [attr.aria-expanded]="expanded" [attr.aria-label]="expanded ? 'Show fewer vitals' : 'Show more vitals'">
+    <i class="fa-solid" [ngClass]="expanded ? 'fa-chevron-up' : 'fa-chevron-down'"></i>
+  </button>
+</ng-container>
+
+<!-- Read-only/finalized/PDF/print view: no interactivity possible on a printed page, so the
+     expand/collapse toggle is meaningless here — every field that has a value shows, in its
+     normal position, and every field without one is skipped outright (no empty dotted line,
+     no reserved row height). If nothing at all was recorded, the whole box (border, title,
+     everything) renders as nothing — the caller checks `hasAnyVitalData` to decide whether to
+     show the O/E section wrapper at all. -->
+<ng-template #readonlyVitals>
+  <div class="vitals" *ngIf="hasAnyVitalData">
+    <ng-container *ngFor="let f of primaryFields; trackBy: trackByKey">
+      <div class="vital" *ngIf="value[f.key]">
+        <span class="vital-label">{{ f.label }}:</span>
+        <span class="vital-value">{{ readonlyDisplayValue(f.key) }}</span>
+      </div>
+      <div class="vital vital-bmi" *ngIf="f.key === 'height' && bmiDisplay">
+        <span class="vital-label">{{ bmiLabel }}:</span>
+        <span class="vital-value">{{ bmiDisplay }}</span>
+      </div>
+    </ng-container>
+    <ng-container *ngFor="let f of secondaryFields; trackBy: trackByKey">
+      <div class="vital" *ngIf="value[f.key]">
+        <span class="vital-label">{{ f.label }}:</span>
+        <span class="vital-value">{{ readonlyDisplayValue(f.key) }}</span>
+      </div>
+    </ng-container>
+  </div>
+</ng-template>

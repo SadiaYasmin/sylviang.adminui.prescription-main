@@ -1,137 +1,167 @@
 <div class="corporate-tpl" [ngStyle]="rootStyle" *ngIf="config">
-  <!-- Full-width hospital branding banner -->
+  <!-- Full-width hospital branding hero: logo + name centered -->
   <header class="corporate-banner" [ngStyle]="bannerStyle">
     <img *ngIf="config.visibility.logo && hospitalSettings?.logoUrl" [src]="hospitalSettings?.logoUrl | assetUrl" [ngStyle]="logoStyle" class="hospital-logo" alt="Hospital logo" />
-    <div class="banner-text">
-      <div class="hospital-name">{{ hospitalSettings?.name || '[Hospital Name]' }}</div>
-      <div class="hospital-slogan" *ngIf="config.visibility.slogan && slogan">{{ slogan }}</div>
-      <div class="hospital-contact">
-        {{ hospitalSettings?.address || '[Hospital Address]' }} &middot; {{ label('callPrefix', 'Call') }}: {{ hospitalSettings?.phone || '[Phone]' }}
-      </div>
+    <div class="hospital-name">{{ hospitalSettings?.name || '[Hospital Name]' }}</div>
+    <div class="hospital-slogan" *ngIf="config.visibility.slogan && slogan">{{ slogan }}</div>
+    <div class="hospital-contact">
+      {{ hospitalSettings?.address || '[Hospital Address]' }} &middot; {{ label('callPrefix', 'Call') }}: {{ hospitalSettings?.phone || '[Phone]' }}
     </div>
   </header>
 
+  <!-- Doctor line, plain, below the hero -->
+  <div class="doctor-bar">
+    <div class="doctor-name">{{ document ? document.doctor.fullName : '[Doctor Name]' }}</div>
+    <div class="doctor-qualification">{{ document ? (document.doctor.qualification || '') : '[Qualification]' }}</div>
+    <div class="doctor-reg">{{ label('bmdcRegNo', 'BM&DC Reg. No') }}: {{ document ? (document.doctor.licenseNumber || '—') : '[XXXXX]' }}</div>
+  </div>
+
   <div class="corporate-body">
-    <!-- Doctor line -->
-    <div class="doctor-bar">
-      <div class="doctor-info">
-        <span class="doctor-name">{{ document ? document.doctor.fullName : '[Doctor Name]' }}</span>
-        <span class="doctor-qualification">{{ document ? (document.doctor.qualification || '') : '[Qualification]' }}</span>
-      </div>
-      <div class="doctor-reg">{{ label('bmdcRegNo', 'BM&DC Reg. No') }}: {{ document ? (document.doctor.licenseNumber || '—') : '[XXXXX]' }}</div>
+    <div class="rx-card">
+      <app-patient-info-block
+        [name]="patientInfo ? patientInfo.name : '[Patient Name]'"
+        [age]="patientInfo ? patientInfo.age : '[Age]'"
+        [sex]="patientInfo ? patientInfo.sex : '[Sex]'"
+        [phone]="patientInfo ? patientInfo.phone : '[Phone]'"
+        [bloodGroup]="patientInfo ? patientInfo.bloodGroup : '[Blood Group]'"
+        [allergies]="patientInfo ? patientInfo.allergies : '[Allergies]'"
+        [date]="patientInfo ? patientInfo.date : '[Date]'"
+        [rxNo]="patientInfo ? patientInfo.rxNo : '[Rx No]'"
+        [labels]="labels"
+      ></app-patient-info-block>
     </div>
 
-    <app-patient-info-block
-      class="patient-block"
-      [name]="patientInfo ? patientInfo.name : '[Patient Name]'"
-      [age]="patientInfo ? patientInfo.age : '[Age]'"
-      [sex]="patientInfo ? patientInfo.sex : '[Sex]'"
-      [phone]="patientInfo ? patientInfo.phone : '[Phone]'"
-      [bloodGroup]="patientInfo ? patientInfo.bloodGroup : '[Blood Group]'"
-      [allergies]="patientInfo ? patientInfo.allergies : '[Allergies]'"
-      [date]="patientInfo ? patientInfo.date : '[Date]'"
-      [rxNo]="patientInfo ? patientInfo.rxNo : '[Rx No]'"
-      [labels]="config.labels"
-    ></app-patient-info-block>
-
-    <div class="corporate-columns">
-      <div class="col col-left">
-        <section class="card">
-          <h4>{{ label('chiefComplaint', 'C/C') }}</h4>
-          <ng-container *ngIf="document; else ccPlaceholder">
-            <app-chip-list-input [items]="content.chiefComplaints" [editable]="editable" placeholder="Add complaint..." (itemsChange)="patchContent({ chiefComplaints: $event })"></app-chip-list-input>
-          </ng-container>
-          <ng-template #ccPlaceholder><p class="placeholder-text">{{ label('chiefComplaintPlaceholder', 'Fever for 3 days') }}</p></ng-template>
-        </section>
-        <section class="card">
-          <h4>{{ label('history', 'H/O') }}</h4>
-          <ng-container *ngIf="document; else hoPlaceholder">
-            <app-chip-list-input [items]="content.history" [editable]="editable" placeholder="Add history..." (itemsChange)="patchContent({ history: $event })"></app-chip-list-input>
-          </ng-container>
-          <ng-template #hoPlaceholder><p class="placeholder-text">[History]</p></ng-template>
-        </section>
-        <section class="card">
-          <h4>{{ label('examination', 'O/E') }}</h4>
-          <ng-container *ngIf="document; else oePlaceholder">
-            <app-vitals-input [value]="content.examination" [editable]="editable" [vitalLabels]="examinationLabels" (valueChange)="patchContent({ examination: $event })"></app-vitals-input>
-          </ng-container>
-          <ng-template #oePlaceholder>
-            <div class="vitals">
-              <div class="vital" *ngFor="let v of vitals">
-                <span class="vital-label">{{ v }}</span>
-                <span class="vital-line"></span>
-              </div>
-            </div>
-          </ng-template>
-        </section>
-        <section class="card">
-          <h4>{{ label('investigation', 'Inv') }}</h4>
-          <ng-container *ngIf="document; else invPlaceholder">
-            <app-chip-list-input [items]="content.investigations" [editable]="editable" placeholder="Add investigation..." (itemsChange)="patchContent({ investigations: $event })"></app-chip-list-input>
-          </ng-container>
-          <ng-template #invPlaceholder><p class="placeholder-text">[Investigation]</p></ng-template>
-        </section>
-      </div>
-
-      <div class="col col-right">
-        <section class="card">
-          <h4>{{ label('diagnosis', 'Dx') }}</h4>
-          <ng-container *ngIf="document; else dxPlaceholder">
-            <app-diagnosis-list-input [items]="content.diagnoses" [editable]="editable" (itemsChange)="patchContent({ diagnoses: $event })"></app-diagnosis-list-input>
-          </ng-container>
-          <ng-template #dxPlaceholder><p class="placeholder-text">[Diagnosis]</p></ng-template>
-        </section>
-        <section class="card rx-card" [ngClass]="'table-' + config.style.tableStyle">
-          <div class="rx-heading">{{ label('prescriptionHeading', 'Rx') }}</div>
-          <ng-container *ngIf="document; else rxPlaceholder">
-            <app-medicine-list-input
-              [items]="content.medicines"
-              [editable]="editable"
-              [emptyReadonlyText]="label('medEmptyReadonly', 'No medicines prescribed.')"
-              (itemsChange)="patchContent({ medicines: $event })"
-            ></app-medicine-list-input>
-          </ng-container>
-          <ng-template #rxPlaceholder><p class="rx-empty">{{ label('medEmptyReadonly', 'No medicines prescribed.') }}</p></ng-template>
-        </section>
-        <section class="card">
-          <h4>{{ label('advice', 'Advice') }}</h4>
-          <ng-container *ngIf="document; else advicePlaceholder">
-            <app-chip-list-input [items]="content.advice" [editable]="editable" placeholder="Add advice..." (itemsChange)="patchContent({ advice: $event })"></app-chip-list-input>
-          </ng-container>
-          <ng-template #advicePlaceholder><p class="placeholder-text">{{ label('advicePlaceholder', 'Write advice here...') }}</p></ng-template>
-        </section>
-        <section class="card">
-          <h4>{{ label('followUp', 'Follow-Up') }}</h4>
-          <ng-container *ngIf="document; else followUpPlaceholder">
-            <ng-container *ngIf="editable; else followUpReadonly">
-              <div class="follow-up-row">
-                <input
-                  type="text"
-                  class="follow-up-input"
-                  [value]="content.followUp || ''"
-                  [appBanglaPhoneticInput]="followUpBanglaMode"
-                  (blur)="patchContent({ followUp: $any($event.target).value })"
-                />
-                <button
-                  type="button"
-                  class="bangla-toggle"
-                  [class.active]="followUpBanglaMode"
-                  (click)="followUpBanglaMode = !followUpBanglaMode"
-                  [attr.aria-pressed]="followUpBanglaMode"
-                  title="Toggle Bangla phonetic typing"
-                >
-                  বাং
-                </button>
-              </div>
-            </ng-container>
-            <ng-template #followUpReadonly><p class="placeholder-text">{{ content.followUp || 'Not specified.' }}</p></ng-template>
-          </ng-container>
-          <ng-template #followUpPlaceholder><p class="placeholder-text">{{ label('followUpPlaceholder', 'e.g. Review after 7 days') }}</p></ng-template>
-        </section>
-      </div>
+    <div class="rx-card" *ngIf="editable || hasChiefComplaints">
+      <div class="section-label">{{ label('chiefComplaint', 'C/C') }}</div>
+      <ng-container *ngIf="document; else ccPlaceholder">
+        <app-chip-list-input
+          [items]="content.chiefComplaints"
+          [editable]="editable"
+          [language]="language"
+          [avroEnabled]="true"
+          [placeholder]="label('chiefComplaintPlaceholder', 'Fever x 3 days')"
+          emptyReadonlyText="None recorded."
+          (itemsChange)="patchContent({ chiefComplaints: $event })"
+        ></app-chip-list-input>
+      </ng-container>
+      <ng-template #ccPlaceholder><p class="placeholder-text">{{ label('chiefComplaintPlaceholder', 'Fever for 3 days') }}</p></ng-template>
     </div>
 
-    <div class="signoff">
+    <div class="rx-card" *ngIf="editable || hasHistory">
+      <div class="section-label">{{ label('history', 'H/O') }}</div>
+      <ng-container *ngIf="document; else hoPlaceholder">
+        <app-chip-list-input
+          [items]="content.history"
+          [editable]="editable"
+          [language]="language"
+          [placeholder]="label('historyPlaceholder', 'DM x 5 years')"
+          emptyReadonlyText="None recorded."
+          (itemsChange)="patchContent({ history: $event })"
+        ></app-chip-list-input>
+      </ng-container>
+      <ng-template #hoPlaceholder><p class="placeholder-text">[History]</p></ng-template>
+    </div>
+
+    <div class="rx-card" *ngIf="editable || hasExamination">
+      <div class="section-label">{{ label('examination', 'O/E') }}</div>
+      <ng-container *ngIf="document; else oePlaceholder">
+        <app-vitals-input [value]="content.examination" [editable]="editable" [language]="language" [vitalLabels]="examinationLabels" [bmiLabel]="label('vitalBMI', 'BMI')" (valueChange)="patchContent({ examination: $event })"></app-vitals-input>
+      </ng-container>
+      <ng-template #oePlaceholder>
+        <div class="vitals">
+          <div class="vital" *ngFor="let v of vitals">
+            <span class="vital-label">{{ v }}:</span>
+            <span class="vital-line"></span>
+          </div>
+        </div>
+      </ng-template>
+    </div>
+
+    <div class="dx-row" *ngIf="editable || hasDiagnoses">
+      <span class="dx-label">{{ label('diagnosis', 'Dx') }}:</span>
+      <ng-container *ngIf="document; else dxPlaceholder">
+        <app-diagnosis-list-input [items]="content.diagnoses" [editable]="editable" [language]="language" (itemsChange)="patchContent({ diagnoses: $event })"></app-diagnosis-list-input>
+        <app-quick-add-select *ngIf="editable" sectionType="Diagnosis" label="Quick Add Diagnosis" [language]="language" (insert)="addDiagnosisPreset($event)"></app-quick-add-select>
+      </ng-container>
+      <ng-template #dxPlaceholder><span class="placeholder-text">[Diagnosis]</span></ng-template>
+    </div>
+
+    <div class="rx-card" *ngIf="editable || hasInvestigations">
+      <div class="section-label">{{ label('investigation', 'Inv') }}</div>
+      <ng-container *ngIf="document; else invPlaceholder">
+        <app-chip-list-input
+          [items]="content.investigations"
+          [editable]="editable"
+          [language]="language"
+          [placeholder]="label('investigationPlaceholder', 'CBC')"
+          emptyReadonlyText="None recorded."
+          (itemsChange)="patchContent({ investigations: $event })"
+        ></app-chip-list-input>
+        <app-quick-add-select *ngIf="editable" sectionType="Investigation" label="Quick Add Investigation" [language]="language" (insert)="addInvestigationPreset($event)"></app-quick-add-select>
+      </ng-container>
+      <ng-template #invPlaceholder><p class="placeholder-text">[Investigation]</p></ng-template>
+    </div>
+
+    <div class="rx-card rx-medicine-card" [ngClass]="'table-' + config.style.tableStyle">
+      <div class="rx-heading">{{ label('prescriptionHeading', 'Rx') }}</div>
+      <ng-container *ngIf="document; else rxPlaceholder">
+        <app-medicine-list-input
+          [items]="content.medicines"
+          [editable]="editable"
+          [language]="language"
+          [emptyReadonlyText]="label('medEmptyReadonly', 'No medicines prescribed.')"
+              [emptyEditableText]="label('medEmptyEditable', 'No medicines added yet.')"
+              [medicinePlaceholder]="label('medSearchPlaceholder', 'Medicine name')"
+              [strengthPlaceholder]="label('medStrengthPlaceholder', 'Strength')"
+              [dosageLabel]="label('medDosage', 'Dosage')"
+              [frequencyLabel]="label('medFrequency', 'Frequency')"
+              [durationLabel]="label('medDuration', 'Duration')"
+              [instructionsLabel]="label('medInstructions', 'Instructions')"
+          (itemsChange)="patchContent({ medicines: $event })"
+        ></app-medicine-list-input>
+        <app-quick-add-select *ngIf="editable" sectionType="Medicine" label="Quick Add Medicine" [language]="language" (insert)="addMedicinePreset($event)"></app-quick-add-select>
+      </ng-container>
+      <ng-template #rxPlaceholder><p class="rx-empty">{{ label('medEmptyReadonly', 'No medicines prescribed.') }}</p></ng-template>
+    </div>
+
+    <div class="rx-card" *ngIf="editable || hasAdvice">
+      <div class="section-label">{{ label('advice', 'Advice') }}</div>
+      <ng-container *ngIf="document; else advicePlaceholder">
+        <app-chip-list-input
+          [items]="content.advice"
+          [editable]="editable"
+          [language]="language"
+          [avroEnabled]="true"
+          [placeholder]="label('advicePlaceholder', 'Write advice here...')"
+          emptyReadonlyText="None recorded."
+          (itemsChange)="patchContent({ advice: $event })"
+        ></app-chip-list-input>
+        <app-quick-add-select *ngIf="editable" sectionType="Advice" label="Quick Add Advice" [language]="language" (insert)="addAdvicePreset($event)"></app-quick-add-select>
+      </ng-container>
+      <ng-template #advicePlaceholder><p class="placeholder-text">{{ label('advicePlaceholder', 'Write advice here...') }}</p></ng-template>
+    </div>
+
+    <div class="rx-card" *ngIf="editable || hasFollowUp">
+      <div class="section-label">{{ label('followUp', 'Follow-Up') }}</div>
+      <ng-container *ngIf="document; else followUpPlaceholder">
+        <ng-container *ngIf="editable; else followUpReadonly">
+          <div class="follow-up-row">
+            <input
+              type="text"
+              class="follow-up-input"
+              [value]="content.followUp || ''"
+              [appBanglaPhoneticInput]="language === 'bn'"
+              (blur)="patchContent({ followUp: $any($event.target).value })"
+            />
+            <app-quick-add-select sectionType="FollowUp" label="Quick Add Follow-Up" [language]="language" (insert)="addFollowUpPreset($event)"></app-quick-add-select>
+          </div>
+        </ng-container>
+        <ng-template #followUpReadonly><p class="placeholder-text">{{ content.followUp || label('followUpEmpty', 'Not specified.') }}</p></ng-template>
+      </ng-container>
+      <ng-template #followUpPlaceholder><p class="placeholder-text">{{ label('followUpPlaceholder', 'e.g. Review after 7 days') }}</p></ng-template>
+    </div>
+
+    <div class="rx-card signoff">
       <div class="qr-box">
         <app-prescription-qr [qrValue]="verifyUrl"></app-prescription-qr>
         <div class="qr-caption">{{ qrMessage }}</div>
