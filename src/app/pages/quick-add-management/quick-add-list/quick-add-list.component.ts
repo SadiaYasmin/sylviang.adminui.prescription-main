@@ -26,6 +26,15 @@ export class QuickAddListComponent implements OnInit {
   sections = QUICK_ADD_SECTION_OPTIONS;
   presets: IQuickAddPreset[] = [];
   loading = false;
+  searchTerm = '';
+
+  /** Instant client-side filter — these lists are small and already fully loaded, so a
+   *  server round trip per keystroke isn't warranted (unlike the paginated Medicine Catalog). */
+  get filteredPresets(): IQuickAddPreset[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    if (!term) return this.presets;
+    return this.presets.filter((p) => this.previewPayload(p).toLowerCase().includes(term));
+  }
 
   get skeletonItems() {
     return Array(3)
@@ -36,6 +45,7 @@ export class QuickAddListComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.section = findQuickAddSectionByRoute(params.get('section')!);
+      this.searchTerm = '';
       this.loadPresets();
     });
   }
@@ -61,13 +71,14 @@ export class QuickAddListComponent implements OnInit {
       const payload = JSON.parse(preset.payloadJson);
       switch (this.section.payloadShape) {
         case 'medicine':
-          return [payload.medicine, payload.strength, payload.dosage, payload.frequency, payload.duration].filter(Boolean).join(' · ');
+          return [payload.medicine, payload.strength, payload.dosage, payload.frequency, payload.duration, payload.instructions].filter(Boolean).join(' · ');
         case 'diagnosis':
           return payload.icd10 ? `${payload.text} (${payload.icd10})` : payload.text;
         case 'bilingual':
-          return `${payload.en} / ${payload.bn}`;
+          return payload.bn ? `${payload.en} / ${payload.bn}` : payload.en;
+        case 'text':
         default:
-          return String(payload);
+          return payload.text;
       }
     } catch {
       return preset.payloadJson;

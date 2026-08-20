@@ -32,14 +32,29 @@
       </div>
 
       <div>
+        <label class="block text-xs font-medium mb-1">Route</label>
+        <input type="text" pInputText class="w-full" formControlName="route" placeholder="e.g. Oral" />
+      </div>
+
+      <div>
         <label class="block text-xs font-medium mb-1">Category</label>
         <input type="text" pInputText class="w-full" formControlName="category" placeholder="e.g. Analgesic" />
+      </div>
+
+      <div>
+        <label class="block text-xs font-medium mb-1">Unit Price (BDT)</label>
+        <input type="number" pInputText class="w-full" formControlName="unitPrice" step="0.01" min="0" />
+      </div>
+
+      <div class="flex items-center gap-2">
+        <p-checkbox formControlName="dgdaRegistered" [binary]="true" inputId="dgdaRegistered"></p-checkbox>
+        <label for="dgdaRegistered" class="text-xs font-medium">DGDA Registered</label>
       </div>
     </div>
 
     <div class="flex justify-end gap-3 mt-6">
       <button type="button" pButton severity="secondary" (click)="goBack()">Cancel</button>
-      <button type="submit" pButton [loading]="saving">{{ isEditMode ? 'Save Changes' : 'Create Medicine' }}</button>
+      <button type="submit" pButton [loading]="saving" [disabled]="isEditMode && (medicineForm.invalid || medicineForm.pristine)">{{ isEditMode ? 'Save Changes' : 'Create Medicine' }}</button>
     </div>
   </form>
 </section>

@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
 import { QuickAddService } from '@core/services/quick-add/quick-add.service';
-import { IQuickAddPreset, QuickAddSectionType } from '@core/interfaces/quick-add/quick-add.interface';
+import { IQuickAddPreset, QuickAddSectionType, resolveQuickAddOptionLabel } from '@core/interfaces/quick-add/quick-add.interface';
 
 /**
  * "Quick Add [X]" one-click insert dropdown (US-025, Epic G stub) — insert-only, no
@@ -16,6 +16,8 @@ import { IQuickAddPreset, QuickAddSectionType } from '@core/interfaces/quick-add
 export class QuickAddSelectComponent implements OnChanges {
   @Input() sectionType!: QuickAddSectionType;
   @Input() label = 'Quick Add';
+  /** Only affects Advice/FollowUp option text (bilingual presets) — see resolveQuickAddOptionLabel. */
+  @Input() language: 'en' | 'bn' = 'en';
   @Output() insert = new EventEmitter<unknown>();
 
   presets: IQuickAddPreset[] = [];
@@ -31,6 +33,10 @@ export class QuickAddSelectComponent implements OnChanges {
 
   toggle(): void {
     this.open = !this.open;
+  }
+
+  optionLabel(preset: IQuickAddPreset): string {
+    return resolveQuickAddOptionLabel(preset, this.language);
   }
 
   choose(preset: IQuickAddPreset): void {

@@ -30,9 +30,9 @@
   <div *ngIf="isEditMode">
     <div *ngIf="loading" class="text-muted-color">Loading template...</div>
 
-    <div *ngIf="!loading && configForm" class="grid grid-cols-1 xl:grid-cols-2 gap-4">
+    <div *ngIf="!loading && configForm" class="template-editor-layout grid grid-cols-1 gap-4">
       <!-- Editor column -->
-      <form [formGroup]="configForm" (ngSubmit)="save()" novalidate class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <form [formGroup]="configForm" (ngSubmit)="save()" novalidate class="min-w-0 rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
         <div class="flex items-center justify-between mb-4">
           <div>
             <label class="block text-xs font-medium mb-1">Template Name</label>
@@ -40,7 +40,7 @@
           </div>
         </div>
 
-        <p-tabs [value]="activeTab" (valueChange)="activeTab = $event">
+        <p-tabs class="template-tabs" [value]="activeTab" (valueChange)="activeTab = $event">
           <p-tablist>
             <p-tab *ngFor="let tab of tabs" [value]="tab.value">{{ tab.label }}</p-tab>
           </p-tablist>
@@ -250,12 +250,12 @@
 
         <div class="flex justify-end gap-3 mt-6">
           <button type="button" pButton severity="secondary" (click)="goBack()">Cancel</button>
-          <button type="submit" pButton [loading]="saving">Save Changes</button>
+          <button type="submit" pButton [loading]="saving" [disabled]="configForm.invalid || configForm.pristine">Save Changes</button>
         </div>
       </form>
 
       <!-- Live preview column -->
-      <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="min-w-0 rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
         <h4 class="text-sm font-semibold mb-3">Live Preview</h4>
         <div class="overflow-auto">
           <app-template-preview *ngIf="previewConfig" [config]="previewConfig" [type]="template!.type" [hospitalSettings]="hospitalSettings" [language]="currentLangCode"></app-template-preview>

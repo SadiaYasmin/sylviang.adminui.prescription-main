@@ -9,8 +9,9 @@
 .pib-row {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-start;
-  gap: 0.5rem 1.25rem;
+  align-items: baseline;
+  column-gap: 1.25rem;
+  row-gap: 0.5rem;
   width: 100%;
 }
 
@@ -19,10 +20,6 @@
   gap: 0.35rem;
   align-items: baseline;
   min-width: 0;
-  // Long values wrap onto extra lines instead of being clipped/truncated (US-052).
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
 }
 
 .pib-label {
@@ -36,51 +33,87 @@
 }
 
 .pib-value {
-  white-space: normal;
-  overflow-wrap: break-word;
-  word-break: break-word;
   min-width: 0;
   flex: 1 1 auto;
   color: #475569;
-  padding-bottom: 2px;
+  // Was 2px — too thin for descenders ("y" in "25y", "p" in "Aspirin"/patient names) to
+  // clear the underline at normal font sizes, so they visually crossed the dotted line.
+  // A relative unit (not a fixed px) so the gap scales with whichever font-size each
+  // template applies via --tpl-font-size, rather than needing a per-template fix.
+  padding-bottom: 0.28em;
   border-bottom: 1px dotted #cbd5e1;
+  // Fixed-width fields (age/sex/phone/blood group/date) never wrap their own
+  // text — a field only ever moves to a new line as a whole unit (see the
+  // non-shrinking flex-basis on each .pib-* field below). Name/Allergies
+  // override this back to normal wrapping since they legitimately hold long
+  // free text.
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-// Row 1: Name grows to absorb extra width, Age/Sex/Phone are fixed-ish so they don't
-// get squeezed by a long name — but all four still wrap rather than clip.
+// Every field below is flex-shrink:0 (never squeezed thinner than its own
+// content needs) via a fixed `flex: 0 0 Npx` — this is what guarantees a
+// field's label and value always stay side by side. When a row doesn't have
+// room for everything, flex-wrap can then only push the LAST field in that
+// row down to a new line as a whole, intact unit — never break a field open
+// mid-content the way a shrinkable basis does.
+//
+// Row 1: Name grows to absorb extra width (flex:1, never shrinks below
+// 140px); Age/Sex/Phone are fixed.
 .pib-name {
-  flex: 1 1 auto;
-  min-width: 8rem;
+  flex: 1 0 140px;
+}
+
+.pib-name .pib-value {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-overflow: clip;
 }
 
 .pib-age {
-  flex: 0 1 112px;
+  flex: 0 0 112px;
 }
 
 .pib-sex {
-  flex: 0 1 94px;
+  flex: 0 0 94px;
 }
 
 .pib-phone {
-  flex: 0 1 150px;
+  flex: 0 0 150px;
 }
 
-// Row 2: Allergies is the long field here, so it grows; Blood Group/Date are fixed-ish.
+// Row 2: Allergies is the long field here, so it grows; Blood Group/Date are fixed.
 .pib-blood-group {
-  flex: 0 1 140px;
+  flex: 0 0 130px;
 }
 
 .pib-allergies {
-  flex: 1 1 auto;
-  min-width: 8rem;
+  flex: 1 0 140px;
+}
+
+.pib-allergies .pib-value {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-overflow: clip;
 }
 
 .pib-date {
-  flex: 0 1 160px;
+  flex: 0 0 155px;
 }
 
-// Row 3: Rx No gets its own full-width line.
+// Row 3: Rx No is always its own full-width line — a 100%-basis item in a
+// flex-wrap row can never share a line with anything before it.
 .pib-rxno-fullwidth {
-  flex: 1 1 100%;
+  flex: 0 0 100%;
   width: 100%;
+}
+
+.pib-rxno-fullwidth .pib-value {
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  text-overflow: clip;
 }

@@ -2,20 +2,20 @@
   position: relative;
   font-family: var(--tpl-font-family, 'Baloo 2', sans-serif);
   font-size: var(--tpl-font-size, 14px);
-  color: #0f172a;
+  color: #1a2434;
   background: #fff;
   display: flex;
   flex-direction: column;
   min-height: 100%;
 }
 
-/* ===== Header ===== */
+/* ===== Header: plain paper masthead, doctor left / hospital right, no color band ===== */
 .classic-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  gap: 16px;
-  padding: 22px 32px 14px;
+  gap: 20px;
+  padding: 20px 32px 12px;
   box-sizing: border-box;
 }
 
@@ -24,47 +24,40 @@
 }
 
 .doctor-name {
-  font-size: 1.45em;
   font-weight: 800;
+  font-size: 1.25em;
   letter-spacing: -0.01em;
+  color: #1a2434;
 }
 
-.doctor-qualification {
-  font-size: 0.82em;
-  font-weight: 600;
-  color: var(--tpl-accent-color, #0f766e);
-  margin-top: 2px;
-}
-
-.doctor-reg {
-  font-size: 0.8em;
-  color: #64748b;
+.doctor-meta {
+  color: #667085;
+  font-size: 0.78em;
+  line-height: 1.45;
   margin-top: 2px;
 }
 
 .hospital-info {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
   text-align: right;
 }
 
-.hospital-logo {
-  object-fit: contain;
-  border-radius: 6px;
-}
-
 .hospital-name {
-  font-size: 1.2em;
   font-weight: 800;
-  color: var(--tpl-rx-color, #b42318);
+  font-size: 1.05em;
+  letter-spacing: -0.01em;
+  color: var(--tpl-accent-color, #0f766e);
 }
 
-.hospital-address,
-.hospital-contact {
-  font-size: 0.8em;
-  color: #64748b;
+.hospital-meta {
+  color: #667085;
+  font-size: 0.78em;
+  line-height: 1.45;
   margin-top: 2px;
+}
+
+.classic-divider {
+  border-top: 1px dashed #cfd6dc;
+  margin: 0 28px;
 }
 
 /* ===== Body ===== */
@@ -72,48 +65,58 @@
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 18px 32px 0;
+  padding: 14px 32px 0;
   gap: var(--tpl-section-spacing, 16px);
 }
 
-.patient-block {
-  display: block;
-  border: 1px solid var(--tpl-accent-line, #99f6e4);
-  background: var(--tpl-accent-soft, #f0fdfa);
-  border-radius: var(--tpl-border-radius, 8px);
-  padding: 12px 16px;
+.patient-bar {
+  background: #f4f6f8;
+  border: 1px solid #eaedf1;
+  border-radius: 5px;
+  padding: 10px 16px;
 }
 
-/* ===== Two clinical columns ===== */
+.patient-bar ::ng-deep .pib-label {
+  color: #344054;
+}
+
+.patient-bar ::ng-deep .pib-value {
+  color: #1a2434;
+}
+
+/* ===== Two clinical columns, narrower left / wider right, vertical rule ===== */
 .classic-columns {
-  display: flex;
-  gap: 28px;
-  align-items: flex-start;
+  display: grid;
+  grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.65fr);
+  gap: 0;
 }
 
 .col {
-  flex: 1;
   min-width: 0;
   display: flex;
   flex-direction: column;
   gap: var(--tpl-section-spacing, 16px);
 }
 
-.col-right {
-  border-left: 1px solid #e5e7eb;
-  padding-left: 28px;
+.col-left {
+  padding-right: 0.9rem;
 }
 
-.section h4 {
-  margin: 0 0 5px;
-  font-size: 0.86em;
-  font-weight: 800;
-  color: var(--tpl-accent-color, #0f766e);
-  text-transform: uppercase;
-  letter-spacing: 0.03em;
-  border-bottom: 1px solid var(--tpl-accent-line, #99f6e4);
-  padding-bottom: 3px;
+.col-right {
+  padding-left: 1.1rem;
+  border-left: 1px solid #eaedf1;
+}
+
+.section-label {
   display: inline-block;
+  color: #1e3a5f;
+  font-weight: 800;
+  font-size: 0.84em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-thickness: 1px;
+  margin-bottom: 0.28rem;
+  letter-spacing: 0;
 }
 
 .placeholder-text {
@@ -124,46 +127,80 @@
 }
 
 .fill-line {
-  border-bottom: 1px dotted #d1d5db;
+  border-bottom: 1px dashed #98a2b3;
   height: 1.4em;
 }
 
-/* O/E vitals */
+/* O/E vitals placeholder (single column, dotted leader — real data uses app-vitals-input) */
 .vitals {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 5px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.26rem;
   margin-top: 4px;
 }
 
 .vital {
   display: flex;
   align-items: baseline;
-  gap: 6px;
-  font-size: 0.85em;
+  gap: 0.35rem;
+  font-size: 0.9em;
+  color: #475467;
 }
 
 .vital-label {
-  color: #475569;
+  color: #344054;
   font-weight: 600;
   white-space: nowrap;
+  min-width: 5.75rem;
 }
 
 .vital-line {
   flex: 1;
-  border-bottom: 1px dotted #d1d5db;
-  height: 1em;
+  border-bottom: 1px dotted #cfd6dc;
+  transform: translateY(-4px);
+  margin: 0 0.35rem;
+}
+
+/* Dx — inline "Dx: - item  - item" row framed by dashed rules */
+.dx-row {
+  border-top: 1px dashed #cfd6dc;
+  border-bottom: 1px dashed #cfd6dc;
+  padding: 0.45rem 0;
+  display: flex;
+  align-items: baseline;
+  gap: 0.55rem;
+  flex-wrap: wrap;
+  min-width: 0;
+
+  // Quick Add on its own full-width row under the diagnosis list, flush-left — mirrors the
+  // prototype's `<div style="flex-basis:100%">` wrapper around QuickAddSelect.
+  app-quick-add-select {
+    flex-basis: 100%;
+  }
+}
+
+.dx-label {
+  display: inline-block;
+  color: #1e3a5f;
+  font-weight: 800;
+  font-size: 0.84em;
+  flex: none;
 }
 
 /* Rx */
+.rx-block {
+  margin: 0;
+}
+
 .rx-heading {
-  font-family: Georgia, 'Times New Roman', serif;
+  font-family: 'Merriweather', Georgia, 'Times New Roman', serif;
   font-style: italic;
   font-weight: 700;
-  font-size: 2em;
+  font-size: 1.6em;
   line-height: 1;
-  margin: 0 0 8px;
-  color: var(--tpl-rx-color, #b42318);
+  color: var(--tpl-accent-color, #0f766e);
+  margin: 0.1rem 0 0.5rem;
+  letter-spacing: -0.01em;
 }
 
 .rx-empty {
@@ -173,24 +210,19 @@
   margin: 6px 0 0;
 }
 
-.rx-section.table-striped .rx-empty {
-  background: #f9fafb;
-  padding: 6px 8px;
-  border-radius: 4px;
+.advice-block {
+  border-top: 1px dashed #cfd6dc;
+  padding-top: 0.75rem;
 }
 
-.rx-section.table-bordered {
-  border: 1px solid #e5e7eb;
-  border-radius: var(--tpl-border-radius, 8px);
-  padding: 8px 10px;
-}
-
-/* ===== Sign-off: QR + signature ===== */
+/* ===== Sign-off: QR + signature under a dashed rule ===== */
 .signoff {
+  border-top: 1px dashed #cfd6dc;
   display: flex;
   justify-content: space-between;
   align-items: flex-end;
-  padding: 20px 0 12px;
+  gap: 1.5rem;
+  padding: 14px 0 12px;
   margin-top: auto;
 }
 
@@ -231,12 +263,13 @@
   display: flex;
   align-items: center;
   gap: 0.35rem;
+  flex-wrap: wrap;
 }
 
 .follow-up-input {
   width: 100%;
   border: none;
-  border-bottom: 1px dashed #cbd5e1;
+  border-bottom: 1px dashed #98a2b3;
   background: transparent;
   font: inherit;
   padding: 0.15rem 0.25rem;
@@ -267,7 +300,7 @@
 
 .signature-line {
   width: 100%;
-  border-top: 1.5px solid #0f172a;
+  border-top: 1.5px solid #1a2434;
   padding-top: 4px;
   margin-top: 2px;
 }
@@ -282,7 +315,7 @@
   color: #64748b;
 }
 
-/* ===== Footer bar ===== */
+/* ===== Footer: thin top rule only, no color band ===== */
 .classic-footer {
   display: flex;
   justify-content: space-between;
@@ -290,8 +323,7 @@
   gap: 16px;
   padding: 10px 32px;
   box-sizing: border-box;
-  background: var(--tpl-accent-soft, #f0fdfa);
-  border-top: 1px solid var(--tpl-accent-line, #99f6e4);
+  border-top: 1px solid #1a2434;
   font-size: 0.72em;
   color: #64748b;
 }
@@ -300,8 +332,6 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  font-weight: 600;
-  color: var(--tpl-accent-color, #0f766e);
 }
 
 .footer-mark {
@@ -314,7 +344,7 @@
 
 .footer-right .gen {
   display: block;
-  color: #94a3b8;
+  color: #98a2b3;
   font-size: 0.92em;
 }
 
@@ -330,12 +360,24 @@
   white-space: nowrap;
 }
 
+@media (max-width: 768px) {
+  .classic-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .col-right {
+    border-left: none;
+    padding-left: 0;
+  }
+}
+
 /* ===== Print pagination (US-034) ===== */
 @media print {
   header,
   footer,
-  .patient-block,
-  .section,
+  .patient-bar,
+  .field-section,
+  .dx-row,
   .signoff {
     break-inside: avoid;
   }

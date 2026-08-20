@@ -65,6 +65,9 @@ export interface IDoctorPatientQueueItem extends IPatientSummary {
   todayConsultationStatus?: ConsultationStatus | null;
   // Only ever set when todayConsultationStatus is 'Completed'.
   todayPrescriptionId?: number | null;
+  // True once today's linked prescription has ever been explicitly "Save as Draft"-ed —
+  // independent of todayConsultationStatus, which flips back to InConsultation on reopen.
+  todayHasSavedDraft?: boolean;
 }
 
 export interface IDoctorPatientQueueResponse {

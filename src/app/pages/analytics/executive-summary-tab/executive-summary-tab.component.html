@@ -1,11 +1,11 @@
-<div *ngIf="loading" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-  <p-skeleton height="6rem" *ngFor="let i of [1, 2, 3, 4]"></p-skeleton>
+<div *ngIf="loading" class="grid grid-cols-2 lg:grid-cols-5 gap-3">
+  <p-skeleton height="6rem" *ngFor="let i of [1, 2, 3, 4, 5]"></p-skeleton>
 </div>
 
 <div *ngIf="!loading && !summary" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
 
 <ng-container *ngIf="!loading && summary as s">
-  <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
+  <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
     <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Patients</div>
       <div class="text-2xl font-semibold">{{ s.totalPatients }}</div>
@@ -21,6 +21,10 @@
     <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Doctors</div>
       <div class="text-2xl font-semibold">{{ s.totalDoctors }}</div>
+    </div>
+    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="text-xs uppercase tracking-wide text-muted-color">Total Staff</div>
+      <div class="text-2xl font-semibold">{{ s.totalStaff }}</div>
     </div>
   </div>
 

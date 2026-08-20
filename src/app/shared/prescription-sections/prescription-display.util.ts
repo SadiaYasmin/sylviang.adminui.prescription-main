@@ -1,22 +1,25 @@
 import { IPrescriptionDocument } from '@core/interfaces/prescriptions/prescription.interface';
+import { AllergyPresetId } from '@core/interfaces/patients/patient.interface';
 import { toBanglaDigits } from '@app/shared/utils/bangla-digits.util';
 import { GENDER_LABELS_BN } from '@app/shared/utils/gender-labels.util';
 
-const ALLERGY_LABELS: Record<number, string> = {
-  1: 'None',
-  2: 'Penicillin',
-  3: 'Dust',
-  4: 'Seafood',
-  5: 'Latex',
+// Backend serializes AllergyPresetEnum as its string name (global JSON string-enum
+// converter), so these must be keyed by AllergyPresetId, not the enum's numeric value.
+const ALLERGY_LABELS: Record<AllergyPresetId, string> = {
+  None: 'None',
+  Penicillin: 'Penicillin',
+  Dust: 'Dust',
+  Seafood: 'Seafood',
+  Latex: 'Latex',
 };
 
 /** US-069: Bangla counterparts, shown only when rendering a Bangla-language prescription. */
-const ALLERGY_LABELS_BN: Record<number, string> = {
-  1: 'নেই',
-  2: 'পেনিসিলিন',
-  3: 'ধুলা',
-  4: 'সামুদ্রিক খাবার',
-  5: 'ল্যাটেক্স',
+const ALLERGY_LABELS_BN: Record<AllergyPresetId, string> = {
+  None: 'নেই',
+  Penicillin: 'পেনিসিলিন',
+  Dust: 'ধুলা',
+  Seafood: 'সামুদ্রিক খাবার',
+  Latex: 'ল্যাটেক্স',
 };
 
 const BLOOD_GROUP_LABELS: Record<string, string> = {
@@ -54,18 +57,22 @@ export function formatPatientInfoBlock(
 } {
   const p = doc.patient;
   const isBn = language === 'bn';
-  let age = '';
+  // English suffix is a terse "y"; Bangla spells out "বছর" (years) with a space, matching
+  // the reference prototype (e.g. "৩৪ বছর", not "৩৪y").
+  let years: number | null = null;
   if (p.dateOfBirth) {
     const dob = new Date(p.dateOfBirth);
     const now = new Date();
-    let years = now.getFullYear() - dob.getFullYear();
+    years = now.getFullYear() - dob.getFullYear();
     const beforeBirthday = now.getMonth() < dob.getMonth() || (now.getMonth() === dob.getMonth() && now.getDate() < dob.getDate());
     if (beforeBirthday) years--;
-    age = `${years}y`;
   } else if (p.age != null) {
-    age = `${p.age}y`;
+    years = p.age;
   }
-  if (isBn && age) age = `${toBanglaDigits(age.slice(0, -1))}y`;
+  let age = '';
+  if (years != null) {
+    age = isBn ? `${toBanglaDigits(years)} বছর` : `${years}y`;
+  }
 
   const allergyLabels = isBn ? ALLERGY_LABELS_BN : ALLERGY_LABELS;
   const allergies = p.allergyPresetId != null ? allergyLabels[p.allergyPresetId] || '—' : p.allergyOtherText || (isBn ? 'নেই' : 'None');

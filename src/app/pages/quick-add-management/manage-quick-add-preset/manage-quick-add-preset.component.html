@@ -2,41 +2,72 @@
   <div *ngIf="loading" class="text-muted-color">Loading preset...</div>
 
   <form *ngIf="!loading && form" [formGroup]="form" (ngSubmit)="onSubmit()" novalidate class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm max-w-xl">
-    <h3 class="text-lg font-semibold mb-4">{{ isEditMode ? 'Edit' : 'Add' }} {{ section.label.replace('Quick Add ', '') }} Preset</h3>
+    <h3 class="text-lg font-semibold mb-4">{{ isEditMode ? 'Edit' : 'Add' }} {{ section.singularLabel }} Preset</h3>
 
     <div class="flex flex-col gap-4">
-      <div>
-        <label class="block text-xs font-medium mb-1">Label (shown in the Quick Add picker)</label>
-        <input type="text" pInputText class="w-full" formControlName="label" />
-        <small class="text-danger" *ngIf="hasError('label')">Label is required.</small>
-      </div>
-
       <!-- Medicine shape -->
       <ng-container *ngIf="section.payloadShape === 'medicine'">
-        <div>
+        <div class="medicine-name-field">
           <label class="block text-xs font-medium mb-1">Medicine</label>
-          <input type="text" pInputText class="w-full" formControlName="medicine" />
+          <input
+            type="text"
+            pInputText
+            class="w-full"
+            [value]="f['medicine'].value"
+            (input)="onMedicineInput($any($event.target).value)"
+            (focus)="showMedicineSuggestions = true"
+            (blur)="hideMedicineSuggestions()"
+            placeholder="Search medicine"
+            autocomplete="off"
+          />
           <small class="text-danger" *ngIf="hasError('medicine')">Medicine is required.</small>
+          <ul class="medicine-suggestions" *ngIf="showMedicineSuggestions && medicineSuggestions.length">
+            <li *ngFor="let s of medicineSuggestions" (mousedown)="selectMedicineSuggestion(s)">
+              {{ s.brandName }}<ng-container *ngIf="s.strength"> {{ s.strength }}</ng-container>
+              <span class="medicine-suggestion-generic" *ngIf="s.genericName">({{ s.genericName }})</span>
+            </li>
+          </ul>
         </div>
         <div>
           <label class="block text-xs font-medium mb-1">Strength</label>
-          <input type="text" pInputText class="w-full" formControlName="strength" />
+          <input type="text" pInputText class="w-full" formControlName="strength" placeholder="e.g. 500mg" />
         </div>
         <div>
           <label class="block text-xs font-medium mb-1">Dosage</label>
-          <input type="text" pInputText class="w-full" formControlName="dosage" />
+          <select class="p-inputtext w-full preset-select" formControlName="dosage">
+            <option [ngValue]="null">Select dosage</option>
+            <option *ngFor="let opt of dosageOptions" [value]="opt">{{ opt }}</option>
+          </select>
         </div>
         <div>
           <label class="block text-xs font-medium mb-1">Frequency</label>
-          <input type="text" pInputText class="w-full" formControlName="frequency" />
+          <select class="p-inputtext w-full preset-select" formControlName="frequency">
+            <option [ngValue]="null">Select frequency</option>
+            <option *ngFor="let opt of frequencyOptions" [value]="opt">{{ opt }}</option>
+          </select>
         </div>
         <div>
           <label class="block text-xs font-medium mb-1">Duration</label>
-          <input type="text" pInputText class="w-full" formControlName="duration" />
+          <select class="p-inputtext w-full preset-select" formControlName="duration">
+            <option [ngValue]="null">Select duration</option>
+            <option *ngFor="let opt of durationOptions" [value]="opt">{{ opt }}</option>
+          </select>
         </div>
         <div>
           <label class="block text-xs font-medium mb-1">Instructions</label>
-          <input type="text" pInputText class="w-full" formControlName="instructions" />
+          <ng-container *ngIf="!customInstructions; else customInstructionsField">
+            <select class="p-inputtext w-full preset-select" [value]="f['instructions'].value || ''" (change)="onInstructionsPresetChange($any($event.target).value)">
+              <option value="">Select instructions</option>
+              <option *ngFor="let opt of instructionsPresets" [value]="opt">{{ opt }}</option>
+              <option [value]="customInstructionsValue">Custom…</option>
+            </select>
+          </ng-container>
+          <ng-template #customInstructionsField>
+            <div class="flex gap-2">
+              <input type="text" pInputText class="w-full" formControlName="instructions" placeholder="Custom instructions" />
+              <button type="button" pButton severity="secondary" class="use-preset-btn" (click)="useInstructionsPreset()">Use preset</button>
+            </div>
+          </ng-template>
         </div>
       </ng-container>
 
@@ -44,7 +75,10 @@
       <ng-container *ngIf="section.payloadShape === 'diagnosis'">
         <div>
           <label class="block text-xs font-medium mb-1">Diagnosis</label>
-          <input type="text" pInputText class="w-full" formControlName="text" />
+          <input type="text" pInputText class="w-full" formControlName="text" list="quickadd-text-suggestions" autocomplete="off" />
+          <datalist id="quickadd-text-suggestions">
+            <option *ngFor="let s of textSuggestions" [value]="s"></option>
+          </datalist>
           <small class="text-danger" *ngIf="hasError('text')">Diagnosis text is required.</small>
         </div>
         <div>
@@ -57,7 +91,10 @@
       <ng-container *ngIf="section.payloadShape === 'text'">
         <div>
           <label class="block text-xs font-medium mb-1">Text</label>
-          <input type="text" pInputText class="w-full" formControlName="text" />
+          <input type="text" pInputText class="w-full" formControlName="text" list="quickadd-text-suggestions" autocomplete="off" />
+          <datalist id="quickadd-text-suggestions">
+            <option *ngFor="let s of textSuggestions" [value]="s"></option>
+          </datalist>
           <small class="text-danger" *ngIf="hasError('text')">Text is required.</small>
         </div>
       </ng-container>
@@ -66,20 +103,26 @@
       <ng-container *ngIf="section.payloadShape === 'bilingual'">
         <div>
           <label class="block text-xs font-medium mb-1">English</label>
-          <input type="text" pInputText class="w-full" formControlName="en" (input)="onEnglishInput()" />
+          <input type="text" pInputText class="w-full" formControlName="en" list="quickadd-en-suggestions" autocomplete="off" (input)="onEnglishInput()" />
+          <datalist id="quickadd-en-suggestions">
+            <option *ngFor="let s of englishSuggestions" [value]="s"></option>
+          </datalist>
           <small class="text-danger" *ngIf="hasError('en')">English text is required.</small>
         </div>
         <div>
           <label class="block text-xs font-medium mb-1">বাংলা</label>
-          <input type="text" pInputText class="w-full" formControlName="bn" (input)="onBanglaInput()" />
-          <small class="hint-text">Auto-filled from a known-phrase dictionary when recognized — you can still edit it.</small>
+          <input type="text" pInputText class="w-full" formControlName="bn" list="quickadd-bn-suggestions" autocomplete="off" [appBanglaPhoneticInput]="true" (input)="onBanglaInput()" />
+          <datalist id="quickadd-bn-suggestions">
+            <option *ngFor="let s of banglaSuggestions" [value]="s"></option>
+          </datalist>
+          <small class="hint-text">Auto-filled from a known-phrase dictionary when recognized — you can still edit it. Type phonetically (e.g. "ami") for Avro-style Bangla input.</small>
         </div>
       </ng-container>
     </div>
 
     <div class="flex justify-end gap-3 mt-6">
       <button type="button" pButton severity="secondary" (click)="goBack()">Cancel</button>
-      <button type="submit" pButton [loading]="saving">{{ isEditMode ? 'Save Changes' : 'Create Preset' }}</button>
+      <button type="submit" pButton [loading]="saving" [disabled]="isEditMode && (form.invalid || form.pristine)">{{ isEditMode ? 'Save Changes' : 'Create Preset' }}</button>
     </div>
   </form>
 </section>

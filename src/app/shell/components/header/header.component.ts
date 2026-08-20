@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnInit, Output } from '@angular/core';
+import { Component, EventEmitter, Input, OnInit, Output } from '@angular/core';
 import { Router } from '@angular/router';
 import { BreadcrumbItem, BreadcrumbService } from '@core/services/breadcrumb.service';
 import { AuthService } from '@core/services/auth/auth.service';
@@ -12,7 +12,6 @@ import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
   standalone: false,
 })
 export class HeaderComponent implements OnInit {
-  menuHidden = true;
   breadcrumbs: BreadcrumbItem[] = [];
   username = '';
   role = '';
@@ -21,7 +20,6 @@ export class HeaderComponent implements OnInit {
   @Output() sidebarToggle = new EventEmitter<void>();
 
   constructor(
-    private readonly _eRef: ElementRef,
     private breadcrumbService: BreadcrumbService,
     private authService: AuthService,
     private router: Router,
@@ -47,20 +45,5 @@ export class HeaderComponent implements OnInit {
 
   toggleSidebar(): void {
     this.sidebarToggle.emit();
-  }
-
-  toggleMenu(): void {
-    this.menuHidden = !this.menuHidden;
-  }
-
-  hideMenu(): void {
-    this.menuHidden = true;
-  }
-
-  @HostListener('document:click', ['$event'])
-  onClickOutside(event: Event) {
-    if (!this._eRef.nativeElement.contains(event.target)) {
-      this.hideMenu();
-    }
   }
 }

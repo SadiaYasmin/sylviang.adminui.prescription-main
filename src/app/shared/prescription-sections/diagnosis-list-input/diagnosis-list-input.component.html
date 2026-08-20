@@ -1,30 +1,20 @@
 <ng-container *ngIf="editable; else readonlyView">
-  <div class="diagnosis-input-row">
-    <textarea
-      class="diagnosis-textarea"
-      rows="3"
-      placeholder="One diagnosis per line, e.g. Acute Pharyngitis (J02.9)"
-      [value]="textValue"
-      [appBanglaPhoneticInput]="banglaMode"
-      (blur)="onBlur($any($event.target).value)"
-    ></textarea>
-    <button
-      type="button"
-      class="bangla-toggle"
-      [class.active]="banglaMode"
-      (click)="banglaMode = !banglaMode"
-      [attr.aria-pressed]="banglaMode"
-      title="Toggle Bangla phonetic typing"
-    >
-      বাং
-    </button>
-  </div>
+  <textarea
+    class="rx-freetext dx-textarea"
+    [rows]="rows"
+    [value]="textValue"
+    placeholder="- Viral Fever (Suspected)&#10;- Flu (J11)"
+    (focus)="onFocus()"
+    (blur)="onBlur($any($event.target).value)"
+  ></textarea>
 </ng-container>
 <ng-template #readonlyView>
   <ng-container *ngIf="items.length; else emptyReadonly">
-    <p class="placeholder-text" *ngFor="let d of items">{{ d.text }}<span *ngIf="d.icd10"> ({{ d.icd10 }})</span></p>
+    <span class="dx-items">
+      <span class="dx-item" *ngFor="let d of items">- {{ d.text }}<ng-container *ngIf="d.icd10"> ({{ d.icd10 }})</ng-container></span>
+    </span>
   </ng-container>
   <ng-template #emptyReadonly>
-    <p class="placeholder-text placeholder-empty">{{ emptyReadonlyText }}</p>
+    <span class="placeholder-text placeholder-empty">{{ emptyReadonlyText }}</span>
   </ng-template>
 </ng-template>

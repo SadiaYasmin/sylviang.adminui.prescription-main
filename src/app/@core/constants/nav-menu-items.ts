@@ -6,6 +6,7 @@ export const webSidebarMenuItems: IMenuItem[] = [
     title: 'Dashboard',
     active: false,
     icon: 'fa-solid fa-chart-line',
+    roles: ['Doctor', 'Staff'],
   },
   {
     href: '/analytics',
@@ -13,6 +14,14 @@ export const webSidebarMenuItems: IMenuItem[] = [
     active: false,
     icon: 'fa-solid fa-chart-pie',
     roles: ['Admin'],
+  },
+  {
+    href: '/my-profile',
+    title: 'My Profile',
+    active: false,
+    icon: 'fa-solid fa-user',
+    // No `roles` — visible to every logged-in role (Admin/Doctor/Staff all get change
+    // email/password here; Doctor additionally gets full profile fields + photo).
   },
   {
     href: '/patients/patient-list',
@@ -40,6 +49,13 @@ export const webSidebarMenuItems: IMenuItem[] = [
     title: 'Staff Management',
     active: false,
     icon: 'fa-solid fa-users',
+    roles: ['Admin'],
+  },
+  {
+    href: '/departments',
+    title: 'Departments',
+    active: false,
+    icon: 'fa-solid fa-building',
     roles: ['Admin'],
   },
   {
@@ -81,6 +97,7 @@ export const webSidebarMenuItems: IMenuItem[] = [
       },
       {
         href: '/quick-add/medicine',
+        activeMatch: '/quick-add',
         title: 'Quick Add Presets',
         active: false,
         icon: 'fa-solid fa-bolt',

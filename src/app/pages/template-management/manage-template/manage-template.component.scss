@@ -1,3 +1,33 @@
 :host {
   display: block;
+  min-width: 0;
+}
+
+.template-editor-layout {
+  grid-template-columns: minmax(0, 1fr);
+}
+
+// Use the actual content area as the breakpoint. When the sidebar is expanded,
+// the editor stays full-width until there is enough room for both cards.
+@container (min-width: 1280px) {
+  .template-editor-layout {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.template-tabs {
+  display: block;
+  min-width: 0;
+  max-width: 100%;
+}
+
+// Always scrollable rather than gated behind a narrow-only breakpoint — the
+// 7 tab labels can outgrow the card at plenty of in-between widths too (not
+// just very narrow ones), and without a scroll affordance here the row just
+// spills past the card with no way to reach it.
+:host ::ng-deep .template-tabs .p-tablist {
+  max-width: 100%;
+  min-width: 0;
+  overflow-x: auto;
+  scrollbar-width: thin;
 }

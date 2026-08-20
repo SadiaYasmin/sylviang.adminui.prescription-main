@@ -15,7 +15,10 @@ export interface IMedicineCatalogEntry {
   strength: string | null;
   manufacturer: string | null;
   dosageForm: string | null;
+  route: string | null;
   category: string | null;
+  unitPrice: number | null;
+  dgdaRegistered: boolean;
   active: boolean;
   totalPrescribed: number;
 }
@@ -26,7 +29,35 @@ export interface ICreateMedicineRequest {
   strength: string | null;
   manufacturer: string | null;
   dosageForm: string | null;
+  route: string | null;
   category: string | null;
+  unitPrice: number | null;
+  dgdaRegistered: boolean;
 }
 
 export type IUpdateMedicineRequest = ICreateMedicineRequest;
+
+/** Paged wrapper for the plain search/browse (Admin, Doctor, and Staff all get the same rows/count — no analytics fields). */
+export interface IMedicineSearchListResponse {
+  medicines: IMedicineSummary[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
+/** Paged wrapper for the Medicine Catalog admin/doctor screen (large catalogs need server-side paging). */
+export interface IMedicineCatalogListResponse {
+  medicines: IMedicineCatalogEntry[];
+  totalCount: number;
+  pageNumber: number;
+  pageSize: number;
+}
+
+/** Result summary of an admin CSV catalog import (medicine-feature-brief.md §5). */
+export interface IMedicineImportResult {
+  rowsRead: number;
+  inserted: number;
+  updated: number;
+  skipped: number;
+  errors: string[];
+}

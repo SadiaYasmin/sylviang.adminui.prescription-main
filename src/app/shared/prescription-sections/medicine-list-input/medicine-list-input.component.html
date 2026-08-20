@@ -1,67 +1,96 @@
 <ng-container *ngIf="editable; else readonlyView">
   <div class="medicine-editable">
-    <button
-      type="button"
-      class="bangla-toggle"
-      [class.active]="banglaMode"
-      (click)="banglaMode = !banglaMode"
-      [attr.aria-pressed]="banglaMode"
-      title="Toggle Bangla phonetic typing for dosage/frequency/duration/instructions"
-    >
-      বাং Dosage/Frequency/Duration/Instructions
-    </button>
-    <div class="medicine-card" *ngFor="let m of items; let i = index" [class.duplicate]="duplicateRowIndex === i">
-      <div class="med-row">
-        <div class="med-field med-name">
+    <div class="medicine-empty-state" *ngIf="!items.length">
+      {{ emptyEditableText }}
+      <div class="medicine-empty-hint">Click <kbd>+</kbd> below to prescribe.</div>
+    </div>
+    <div class="medicine-card" *ngFor="let m of items; let i = index; trackBy: trackByIndex" [class.duplicate]="duplicateRowIndex === i">
+      <div class="med-head">
+        <span class="med-index">{{ i + 1 }}.</span>
+        <div class="med-name">
           <input
             type="text"
-            placeholder="Medicine name"
+            [placeholder]="medicinePlaceholder"
             [value]="m.medicine"
             (input)="onFieldChange(i, 'medicine', $any($event.target).value)"
-            (focus)="activeSuggestionRow = i"
+            (focus)="onMedicineFocus(i, m.medicine)"
+            (blur)="onMedicineBlur()"
           />
           <ul class="suggestions" *ngIf="activeSuggestionRow === i && suggestions.length">
             <li *ngFor="let s of suggestions" (mousedown)="selectSuggestion(i, s)">
-              {{ s.brandName }} <span class="suggestion-generic" *ngIf="s.genericName">({{ s.genericName }})</span>
+              {{ s.brandName }}<ng-container *ngIf="s.strength"> {{ s.strength }}</ng-container>
+              <span class="suggestion-generic" *ngIf="s.genericName">({{ s.genericName }})</span>
             </li>
           </ul>
         </div>
-        <input type="text" class="med-field" placeholder="Strength" [value]="m.strength" (blur)="onFieldChange(i, 'strength', $any($event.target).value)" />
-        <button type="button" class="med-remove" (click)="remove(i)" aria-label="Remove">&times;</button>
+        <input type="text" class="med-strength" [placeholder]="strengthPlaceholder" [value]="m.strength" (blur)="onFieldChange(i, 'strength', $any($event.target).value)" />
+        <button type="button" class="med-remove" (click)="remove(i)" aria-label="Remove medicine">&times;</button>
       </div>
-      <div class="med-row">
-        <input type="text" class="med-field" placeholder="Dosage" [value]="m.dosage" [appBanglaPhoneticInput]="banglaMode" (blur)="onFieldChange(i, 'dosage', $any($event.target).value)" />
-        <input type="text" class="med-field" placeholder="Frequency" [value]="m.frequency" [appBanglaPhoneticInput]="banglaMode" (blur)="onFieldChange(i, 'frequency', $any($event.target).value)" />
-        <input type="text" class="med-field" placeholder="Duration" [value]="m.duration" [appBanglaPhoneticInput]="banglaMode" (blur)="onFieldChange(i, 'duration', $any($event.target).value)" />
+
+      <div class="med-grid">
+        <label class="med-field">
+          <span>{{ dosageLabel }}</span>
+          <input type="text" [value]="m.dosage" [appBanglaPhoneticInput]="banglaMode" [attr.list]="'dosage-presets-' + i" (blur)="onFieldChange(i, 'dosage', $any($event.target).value)" />
+          <datalist [id]="'dosage-presets-' + i">
+            <option *ngFor="let opt of dosageOptions" [value]="opt"></option>
+          </datalist>
+        </label>
+        <label class="med-field">
+          <span>{{ frequencyLabel }}</span>
+          <input
+            type="text"
+            [value]="m.frequency"
+            [appBanglaPhoneticInput]="banglaMode"
+            [attr.list]="'frequency-presets-' + i"
+            (blur)="onFieldChange(i, 'frequency', $any($event.target).value)"
+          />
+          <datalist [id]="'frequency-presets-' + i">
+            <option *ngFor="let opt of frequencyOptions" [value]="opt"></option>
+          </datalist>
+        </label>
+        <label class="med-field">
+          <span>{{ durationLabel }}</span>
+          <input type="text" [value]="m.duration" [appBanglaPhoneticInput]="banglaMode" [attr.list]="'duration-presets-' + i" (blur)="onFieldChange(i, 'duration', $any($event.target).value)" />
+          <datalist [id]="'duration-presets-' + i">
+            <option *ngFor="let opt of durationOptions" [value]="opt"></option>
+          </datalist>
+        </label>
       </div>
-      <input
-        type="text"
-        class="med-field med-instructions"
-        placeholder="Instructions"
-        [value]="m.instructions"
-        [appBanglaPhoneticInput]="banglaMode"
-        (blur)="onFieldChange(i, 'instructions', $any($event.target).value)"
-      />
+      <label class="med-field med-instructions">
+        <span>{{ instructionsLabel }}</span>
+        <input
+          type="text"
+          [value]="m.instructions"
+          [appBanglaPhoneticInput]="banglaMode"
+          [attr.list]="'instructions-presets-' + i"
+          (blur)="onFieldChange(i, 'instructions', $any($event.target).value)"
+        />
+        <datalist [id]="'instructions-presets-' + i">
+          <option *ngFor="let opt of instructionsOptions" [value]="opt"></option>
+        </datalist>
+      </label>
+
       <p class="duplicate-warning" *ngIf="duplicateRowIndex === i">
         This medicine + strength is already on the prescription — edit the existing line instead.
       </p>
+      <p class="same-name-warning" *ngIf="duplicateRowIndex !== i && sameNameDifferentStrengthRowIndex === i">
+        This medicine is already on the prescription at a different strength — please confirm this is intentional.
+      </p>
     </div>
-    <button type="button" class="med-add" (click)="addBlank()">+ Add medicine</button>
+    <button type="button" class="med-add" (click)="addBlank()" title="Add medicine" aria-label="Add medicine">
+      <i class="fa-solid fa-plus"></i>
+    </button>
   </div>
 </ng-container>
 <ng-template #readonlyView>
   <ng-container *ngIf="items.length; else emptyReadonly">
-    <table class="rx-table">
-      <tbody>
-        <tr *ngFor="let m of items">
-          <td class="rx-med-name">{{ m.medicine }} <span *ngIf="m.strength">({{ m.strength }})</span></td>
-          <td>{{ m.dosage }}</td>
-          <td>{{ m.frequency }}</td>
-          <td>{{ m.duration }}</td>
-          <td>{{ m.instructions }}</td>
-        </tr>
-      </tbody>
-    </table>
+    <ol class="rx-med-list">
+      <li *ngFor="let m of items">
+        <div class="rx-med-name">{{ m.medicine }}<ng-container *ngIf="m.strength"> {{ m.strength }}</ng-container></div>
+        <div class="rx-med-details" *ngIf="medDetails(m)">{{ medDetails(m) }}</div>
+        <div class="rx-med-instructions" *ngIf="m.instructions">{{ m.instructions }}</div>
+      </li>
+    </ol>
   </ng-container>
   <ng-template #emptyReadonly>
     <p class="rx-empty">{{ emptyReadonlyText }}</p>

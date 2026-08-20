@@ -8,87 +8,6 @@ import { ConsultationService } from '@core/services/consultations/consultation.s
 import { DoctorPreferencesService } from '@core/services/doctor-preferences/doctor-preferences.service';
 import { ToastService } from '@core/services/misc/toast.service';
 
-interface IDashboardCard {
-  href: string;
-  title: string;
-  description: string;
-  icon: string;
-  roles?: string[];
-}
-
-const DASHBOARD_CARDS: IDashboardCard[] = [
-  {
-    href: '/doctors/doctor-list',
-    title: 'Doctor Management',
-    description: 'Manage doctor profiles & roster',
-    icon: 'fa-solid fa-user-doctor',
-    roles: ['Admin'],
-  },
-  {
-    href: '/staff/staff-list',
-    title: 'Staff Management',
-    description: 'Manage staff & doctor assignments',
-    icon: 'fa-solid fa-users',
-    roles: ['Admin'],
-  },
-  {
-    href: '/staff/staff-list',
-    title: 'Your Assigned Staff',
-    description: 'View staff assigned to you',
-    icon: 'fa-solid fa-users',
-    roles: ['Doctor'],
-  },
-  {
-    href: '/templates/template-list',
-    title: 'Prescription Templates',
-    description: 'Manage template layouts & branding',
-    icon: 'fa-solid fa-file-medical',
-    roles: ['Admin'],
-  },
-  {
-    href: '/templates/hospital-settings',
-    title: 'Hospital Settings',
-    description: 'Manage hospital identity & branding',
-    icon: 'fa-solid fa-hospital',
-    roles: ['Admin'],
-  },
-  {
-    href: '/consultations/consultation-list',
-    title: 'Consultations Monitor',
-    description: 'Review today\'s and past consultations',
-    icon: 'fa-solid fa-notes-medical',
-    roles: ['Admin'],
-  },
-  {
-    href: '/prescriptions',
-    title: 'Start a Prescription',
-    description: 'Quick-create for a walk-in patient',
-    icon: 'fa-solid fa-file-pen',
-    roles: ['Doctor'],
-  },
-  {
-    href: '/prescriptions/drafts',
-    title: 'Draft Prescriptions',
-    description: 'Resume your in-progress prescriptions',
-    icon: 'fa-solid fa-file-circle-question',
-    roles: ['Doctor'],
-  },
-  {
-    href: '/prescriptions/finalized',
-    title: 'Finalized Prescriptions',
-    description: 'Review your completed prescriptions',
-    icon: 'fa-solid fa-file-circle-check',
-    roles: ['Doctor'],
-  },
-  {
-    href: '/prescriptions/preferences',
-    title: 'Prescription Preferences',
-    description: 'Set your preferred template & signature',
-    icon: 'fa-solid fa-gear',
-    roles: ['Doctor'],
-  },
-];
-
 @Component({
   selector: 'app-dashboard',
   standalone: false,
@@ -102,6 +21,10 @@ export class DashboardComponent implements OnInit {
   queue: IQueueItem[] = [];
   queueLoading = false;
   needsTemplateChoice = false;
+  needsSignatureUpload = false;
+
+  queueDoctorTabs: { doctorId: number; doctorName: string; items: IQueueItem[] }[] = [];
+  activeDoctorTabIndex = 0;
 
   myDoctorStats: IMyDoctorAnalyticsResponse | null = null;
   myStaffStats: IMyStaffAnalyticsResponse | null = null;
@@ -117,16 +40,16 @@ export class DashboardComponent implements OnInit {
     this.role = this.authService.getRole();
   }
 
-  get cards(): IDashboardCard[] {
-    return DASHBOARD_CARDS.filter((card) => !card.roles || card.roles.length === 0 || (this.role != null && card.roles.includes(this.role)));
-  }
-
   get isDoctor(): boolean {
     return this.role === 'Doctor';
   }
 
   get isStaff(): boolean {
     return this.role === 'Staff';
+  }
+
+  get activeDoctorTabItems(): IQueueItem[] {
+    return this.queueDoctorTabs[this.activeDoctorTabIndex]?.items ?? [];
   }
 
   ngOnInit(): void {
@@ -147,9 +70,10 @@ export class DashboardComponent implements OnInit {
     this.doctorPreferencesService.get().subscribe({
       next: (response) => {
         this.needsTemplateChoice = !response.hasError && !response.content?.preferredTemplateId;
+        this.needsSignatureUpload = !response.hasError && !response.content?.signatureUrl;
       },
       error: () => {
-        // Non-critical — leave the nudge hidden if this call fails.
+        // Non-critical — leave the nudges hidden if this call fails.
       },
     });
   }
@@ -173,13 +97,31 @@ export class DashboardComponent implements OnInit {
     this.consultationService.getMyQueue().subscribe({
       next: (response) => {
         this.queue = !response.hasError && response.content ? response.content : [];
+        this.buildQueueDoctorTabs();
         this.queueLoading = false;
       },
       error: () => {
         this.queue = [];
+        this.queueDoctorTabs = [];
         this.queueLoading = false;
       },
     });
+  }
+
+  // US-079: staff's "My Queue" split into one tab per assigned doctor so staff can see each
+  // doctor's consultation queue separately instead of one mixed table.
+  buildQueueDoctorTabs(): void {
+    const byDoctor = new Map<number, { doctorId: number; doctorName: string; items: IQueueItem[] }>();
+    for (const item of this.queue) {
+      const existing = byDoctor.get(item.doctorId);
+      if (existing) {
+        existing.items.push(item);
+      } else {
+        byDoctor.set(item.doctorId, { doctorId: item.doctorId, doctorName: item.doctorName, items: [item] });
+      }
+    }
+    this.queueDoctorTabs = Array.from(byDoctor.values()).sort((a, b) => a.doctorName.localeCompare(b.doctorName));
+    this.activeDoctorTabIndex = 0;
   }
 
   // US-077: a doctor's own scoped stats card, alongside Today's Queue. Fetch failures are
@@ -208,7 +150,9 @@ export class DashboardComponent implements OnInit {
   }
 
   displayStatus(status: string): string {
-    return status === 'InConsultation' ? 'In Progress' : status;
+    if (status === 'InConsultation') return 'In Progress';
+    if (status === 'Draft') return 'Draft';
+    return status;
   }
 
   // Opening a consultation now lands directly in prescription authoring (Epic D) — the

@@ -13,10 +13,21 @@ const CONTENT_HEIGHT_PX = PAGE_HEIGHT_PX - PAGE_MARGIN_PX * 2;
 // is ever cut mid-element). Browser-native printing (the Print button) additionally gets
 // `break-inside: avoid` on these same classes via each template's own print CSS, so the
 // two pagination paths (native print vs. this programmatic PDF) stay visually consistent.
+//
+// Must cover every template's actual body block classes, not just header/footer/signoff —
+// `.patient-block`/`.section`/`.card` never matched anything real (Classic uses
+// `.patient-bar`/`.field-section`/`.rx-block`, Corporate uses `.rx-card`, the shared
+// patient-info component is `.patient-info-block`). A stale/incomplete list here doesn't
+// lose content anymore (see the pageStart fix below), but it does mean an unmatched block
+// can get split awkwardly across a page boundary instead of staying whole.
 const PAGE_UNIT_SELECTOR = [
   'header',
   'footer',
-  '.patient-block',
+  '.patient-info-block',
+  '.patient-bar',
+  '.field-section',
+  '.rx-block',
+  '.rx-card',
   '.section',
   '.card',
   '.compact-grid',
@@ -59,7 +70,13 @@ function computePageRanges(root: HTMLElement): PageRange[] {
 
     if (unitBottom - pageStart > CONTENT_HEIGHT_PX && cursor > pageStart) {
       ranges.push({ top: pageStart, height: cursor - pageStart });
-      pageStart = unitTop;
+      // Real bug (US-034 fallout): this used to jump straight to `unitTop`, silently
+      // dropping everything between the previous unit's bottom (`cursor`) and this unit's
+      // top from every page range — any content that fell in that gap (e.g. an unmatched
+      // block between two matched units) was rasterized on no page at all. Starting the
+      // next page at `cursor` instead makes the ranges tile the document with zero gaps,
+      // regardless of which elements the selector above happens to match.
+      pageStart = cursor;
     }
     cursor = Math.max(cursor, unitBottom);
   }

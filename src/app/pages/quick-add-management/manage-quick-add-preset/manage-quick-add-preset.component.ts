@@ -1,12 +1,18 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbService } from '@app/@core/services';
 import { findQuickAddSectionByRoute, IQuickAddSectionOption } from '@core/constants/quick-add-section-options';
-import { IAdvicePhraseDictionary } from '@core/interfaces/quick-add/quick-add.interface';
+import { CUSTOM_INSTRUCTIONS_VALUE, DOSAGE_PRESETS, DURATION_PRESETS, FREQUENCY_PRESETS, INSTRUCTIONS_PRESETS } from '@core/constants/quick-add-medicine-presets';
+import { ADVICE_SUGGESTIONS, DIAGNOSIS_SUGGESTIONS, FOLLOW_UP_SUGGESTIONS, INVESTIGATION_SUGGESTIONS } from '@core/constants/quick-add-suggestions';
+import { derivePresetLabel, IAdvicePhraseDictionary, resolveKnownPhraseTranslation } from '@core/interfaces/quick-add/quick-add.interface';
+import { IMedicineSummary } from '@core/interfaces/medicines/medicine.interface';
 import { ToastService } from '@core/services/misc/toast.service';
 import { QuickAddService } from '@core/services/quick-add/quick-add.service';
+import { MedicineService } from '@core/services/medicines/medicine.service';
 import { ConfirmationService } from 'primeng/api';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 
 /**
  * US-041-043: one generic create/edit form shared by all 5 Quick Add section types, with
@@ -21,16 +27,21 @@ import { ConfirmationService } from 'primeng/api';
   templateUrl: './manage-quick-add-preset.component.html',
   styleUrl: './manage-quick-add-preset.component.scss',
 })
-export class ManageQuickAddPresetComponent implements OnInit {
+export class ManageQuickAddPresetComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private quickAddService: QuickAddService,
+    private medicineService: MedicineService,
     private route: ActivatedRoute,
     private router: Router,
     private breadcrumbService: BreadcrumbService,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
-  ) {}
+  ) {
+    this.searchTerms
+      .pipe(debounceTime(250), distinctUntilChanged(), switchMap((term) => this.medicineService.search(term)))
+      .subscribe((res) => (this.medicineSuggestions = res.content?.medicines ?? []));
+  }
 
   section!: IQuickAddSectionOption;
   form!: FormGroup;
@@ -43,6 +54,21 @@ export class ManageQuickAddPresetComponent implements OnInit {
   phraseDictionary: IAdvicePhraseDictionary = {};
   banglaManuallyEdited = false;
 
+  // ===== Medicine name autocomplete (mirrors medicine-list-input.component.ts) =====
+  medicineSuggestions: IMedicineSummary[] = [];
+  showMedicineSuggestions = false;
+  private readonly searchTerms = new Subject<string>();
+
+  // ===== Predefined dropdowns for Dosage/Frequency/Duration/Instructions =====
+  readonly dosagePresets = DOSAGE_PRESETS;
+  readonly frequencyPresets = FREQUENCY_PRESETS;
+  readonly durationPresets = DURATION_PRESETS;
+  readonly instructionsPresets = INSTRUCTIONS_PRESETS;
+  readonly customInstructionsValue = CUSTOM_INSTRUCTIONS_VALUE;
+  /** Instructions starts as a preset dropdown; switches to free text via "Custom…" or when
+   *  loading an existing preset whose stored instructions text isn't one of the presets. */
+  customInstructions = false;
+
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.section = findQuickAddSectionByRoute(params.get('section')!);
@@ -51,6 +77,10 @@ export class ManageQuickAddPresetComponent implements OnInit {
       if (this.section.payloadShape === 'bilingual') {
         this.quickAddService.getAdvicePhraseDictionary().subscribe((res) => {
           if (!res.hasError && res.content) this.phraseDictionary = res.content;
+          // Covers the race where this dictionary finishes loading AFTER loadPreset() has
+          // already patched the form — its own post-load check (below) only catches a
+          // known phrase if the dictionary was already here by then.
+          if (this.isEditMode) this.applyKnownTranslation();
         });
       }
 
@@ -68,11 +98,102 @@ export class ManageQuickAddPresetComponent implements OnInit {
     });
   }
 
+  ngOnDestroy(): void {
+    this.searchTerms.complete();
+  }
+
+  // ===== Medicine name autocomplete =====
+  // These bypass `formControlName`'s own DOM value accessor (need the raw keystroke for the
+  // debounced search, and a direct patch on suggestion select), so `setValue`/`patchValue`
+  // here never trigger Angular's normal dirty-tracking pipeline — mark dirty explicitly, or
+  // the edit-mode "Save disabled until something changes" button never enables.
+  onMedicineInput(value: string): void {
+    const control = this.form.get('medicine');
+    control?.setValue(value);
+    control?.markAsDirty();
+    this.showMedicineSuggestions = true;
+    this.searchTerms.next(value);
+  }
+
+  selectMedicineSuggestion(suggestion: IMedicineSummary): void {
+    this.form.patchValue({
+      medicine: suggestion.brandName,
+      strength: suggestion.strength || this.form.get('strength')?.value,
+    });
+    this.form.markAsDirty();
+    this.showMedicineSuggestions = false;
+    this.medicineSuggestions = [];
+  }
+
+  hideMedicineSuggestions(): void {
+    // Deferred so a suggestion's (mousedown) still fires before the input's blur hides the list.
+    setTimeout(() => (this.showMedicineSuggestions = false), 150);
+  }
+
+  // ===== Instructions preset/custom toggle =====
+  // Same reasoning as the medicine handlers above: this select isn't `formControlName`-bound
+  // (it shows a different value than the control in "custom" mode), so mark dirty by hand.
+  onInstructionsPresetChange(value: string): void {
+    const control = this.form.get('instructions');
+    if (value === CUSTOM_INSTRUCTIONS_VALUE) {
+      this.customInstructions = true;
+      control?.setValue('');
+    } else {
+      control?.setValue(value);
+    }
+    control?.markAsDirty();
+  }
+
+  useInstructionsPreset(): void {
+    this.customInstructions = false;
+    const control = this.form.get('instructions');
+    control?.setValue('');
+    control?.markAsDirty();
+  }
+
+  // ===== Dosage/Frequency/Duration option lists, with a legacy stored value (typed
+  // before these were dropdowns, or not matching any preset) prepended so it stays
+  // visible/selected instead of silently dropping off the list. =====
+  private withLegacyValue(presets: string[], value: string | null | undefined): string[] {
+    return value && !presets.includes(value) ? [value, ...presets] : presets;
+  }
+
+  // ===== Autocomplete suggestion lists (native <datalist>) for the non-medicine sections.
+  // Suggestions only — the doctor can always type a custom value; nothing is forced. Advice/
+  // Follow-Up expose per-language lists so each bilingual field suggests in its own language.
+  get textSuggestions(): string[] {
+    if (this.section.payloadShape === 'diagnosis') return DIAGNOSIS_SUGGESTIONS;
+    if (this.section.sectionType === 'Investigation') return INVESTIGATION_SUGGESTIONS;
+    return [];
+  }
+
+  get englishSuggestions(): string[] {
+    return this.section.sectionType === 'FollowUp' ? FOLLOW_UP_SUGGESTIONS.en : ADVICE_SUGGESTIONS.en;
+  }
+
+  get banglaSuggestions(): string[] {
+    return this.section.sectionType === 'FollowUp' ? FOLLOW_UP_SUGGESTIONS.bn : ADVICE_SUGGESTIONS.bn;
+  }
+
+  get dosageOptions(): string[] {
+    return this.withLegacyValue(this.dosagePresets, this.form?.get('dosage')?.value);
+  }
+
+  get frequencyOptions(): string[] {
+    return this.withLegacyValue(this.frequencyPresets, this.form?.get('frequency')?.value);
+  }
+
+  get durationOptions(): string[] {
+    return this.withLegacyValue(this.durationPresets, this.form?.get('duration')?.value);
+  }
+
   private initForm(): void {
+    // No separate "Label" control — the content fields below are the preset's identity,
+    // matching the reference prototype (no label field there at all). `buildPayload`
+    // derives a label from these same fields right before submit.
     switch (this.section.payloadShape) {
       case 'medicine':
         this.form = this.fb.group({
-          label: [null, [Validators.required, Validators.maxLength(300)]],
           medicine: [null, Validators.required],
           strength: [null],
           dosage: [null],
@@ -83,14 +204,12 @@ export class ManageQuickAddPresetComponent implements OnInit {
         break;
       case 'diagnosis':
         this.form = this.fb.group({
-          label: [null, [Validators.required, Validators.maxLength(300)]],
           text: [null, Validators.required],
           icd10: [null],
         });
         break;
       case 'bilingual':
         this.form = this.fb.group({
-          label: [null, [Validators.required, Validators.maxLength(300)]],
           en: [null, Validators.required],
           bn: [null],
         });
@@ -98,7 +217,6 @@ export class ManageQuickAddPresetComponent implements OnInit {
       case 'text':
       default:
         this.form = this.fb.group({
-          label: [null, [Validators.required, Validators.maxLength(300)]],
           text: [null, Validators.required],
         });
         break;
@@ -113,9 +231,20 @@ export class ManageQuickAddPresetComponent implements OnInit {
         if (preset) {
           try {
             const payload = JSON.parse(preset.payloadJson);
-            this.form.patchValue({ label: preset.label, ...payload });
+            this.form.patchValue(payload);
+            // A pre-existing preset's instructions text might not be one of the predefined
+            // options (typed before this dropdown existed, or picked "Custom" originally) —
+            // show it in the free-text field rather than silently blanking the selection.
+            if (this.section.payloadShape === 'medicine' && payload.instructions && !INSTRUCTIONS_PRESETS.includes(payload.instructions)) {
+              this.customInstructions = true;
+            }
+            // patchValue() never fires the native input event onEnglishInput() listens for,
+            // so an existing Advice/FollowUp preset saved with বাংলা left blank (or saved
+            // before a phrase became recognized) would otherwise sit empty forever, even
+            // when the English text is one the dictionary/pattern can translate right now.
+            if (this.section.payloadShape === 'bilingual') this.applyKnownTranslation();
           } catch {
-            this.form.patchValue({ label: preset.label });
+            // Malformed stored payload — leave the form at its blank defaults rather than crash.
           }
         } else {
           this.toast.error({ detail: 'Could not load this preset.' });
@@ -145,15 +274,33 @@ export class ManageQuickAddPresetComponent implements OnInit {
   }
 
   onEnglishInput(): void {
-    const en = (this.form.get('en')?.value || '').trim().toLowerCase();
-    const translation = this.phraseDictionary[en];
+    this.applyKnownTranslation();
+  }
+
+  /**
+   * Looks up (exact dictionary match, then the day-count pattern) and applies a Bangla
+   * translation for whatever's currently in the English field. Called both on every
+   * keystroke (`onEnglishInput`) and once right after an existing preset loads
+   * (`loadPreset`) — patching the form programmatically on load never fires the input
+   * event `onEnglishInput` listens for, so without this second call an existing preset
+   * that was saved before this dictionary/pattern existed (or before Bangla was filled
+   * in) would sit there showing an empty বাংলা field forever, even on a phrase the
+   * dictionary now recognizes.
+   */
+  private applyKnownTranslation(): void {
+    const translation = resolveKnownPhraseTranslation(this.form.get('en')?.value, this.phraseDictionary);
     if (!translation) return;
 
     const bnControl = this.form.get('bn');
     const currentBn = (bnControl?.value || '').trim();
 
     if (!currentBn || !this.banglaManuallyEdited) {
+      if (bnControl?.value === translation) return; // already applied — avoid a no-op dirty flag
       bnControl?.setValue(translation);
+      // Needed for the load-triggered call: setValue() alone doesn't mark the control
+      // dirty, and an auto-filled বাংলা the doctor never typed is still a real change
+      // worth letting them save (edit-mode Save stays disabled otherwise).
+      bnControl?.markAsDirty();
       this.banglaManuallyEdited = false;
       return;
     }
@@ -173,10 +320,8 @@ export class ManageQuickAddPresetComponent implements OnInit {
     });
   }
 
-  private buildPayload(): unknown {
-    const value = this.form.getRawValue();
-    const { label, ...payload } = value;
-    return payload;
+  private buildPayload(): Record<string, unknown> {
+    return this.form.getRawValue();
   }
 
   onSubmit(): void {
@@ -188,8 +333,9 @@ export class ManageQuickAddPresetComponent implements OnInit {
     }
 
     this.saving = true;
-    const label = this.form.get('label')!.value;
-    const payloadJson = JSON.stringify(this.buildPayload());
+    const payload = this.buildPayload();
+    const label = derivePresetLabel(this.section.payloadShape, payload);
+    const payloadJson = JSON.stringify(payload);
 
     const action$ = this.isEditMode
       ? this.quickAddService.update(this.presetId, { label, payloadJson })

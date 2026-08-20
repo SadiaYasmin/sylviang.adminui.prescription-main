@@ -62,6 +62,17 @@ import { RouteReusableStrategy } from './@core/helpers/route-reusable-strategy';
     providePrimeNG({
       theme: {
         preset: Aura,
+        options: {
+          // Without this, PrimeNG's Aura preset switches every PrimeNG
+          // component to its dark palette based on the OS/browser
+          // `prefers-color-scheme` media query, independent of this app's
+          // own light/dark toggle (ThemeService, which only flips `.dark`
+          // on <html> for its own CSS variables). That mismatch is why
+          // PrimeNG controls (tabs, selects, inputs) could render dark while
+          // the rest of a "light" page stayed light. Scoping PrimeNG's dark
+          // mode to the same `.dark` class keeps both in sync.
+          darkModeSelector: '.dark',
+        },
       },
     }),
   ],

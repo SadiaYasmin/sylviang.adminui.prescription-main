@@ -37,6 +37,10 @@ export class AuthoringComponent implements OnInit, OnDestroy {
   unfinishedDrafts: IPrescriptionListItem[] | null = null;
   finalizeMissing: string[] = [];
 
+  /** True once an explicit Save-as-Draft or Finalize has handled the lifecycle, so the
+   *  ngOnDestroy leave-park doesn't double-write / re-park an already-parked prescription. */
+  private leaveHandled = false;
+
   needsPatientPick = false;
   patientSearchTerm = '';
   queueFilter: PatientQueueFilter = DefaultPatientQueueFilter;
@@ -51,6 +55,11 @@ export class AuthoringComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly searchTermChanges$ = new Subject<string>();
 
+  /** Debounced auto-save trigger — every content/language edit pokes this. */
+  private readonly autoSave$ = new Subject<void>();
+  /** How long after the last keystroke an auto-save fires (data protection, not persistence-on-every-key). */
+  private static readonly AUTO_SAVE_DEBOUNCE_MS = 1500;
+
   constructor(
     private route: ActivatedRoute,
     private router: Router,
@@ -61,6 +70,11 @@ export class AuthoringComponent implements OnInit, OnDestroy {
   ) {}
 
   ngOnInit(): void {
+    // Auto-save (US: data protection): persists the working copy while the prescription stays
+    // InProgress — deliberately does NOT promote it to Draft (that only happens on leave or an
+    // explicit Save as Draft), so it never leaks into the Draft Prescriptions list mid-edit.
+    this.autoSave$.pipe(debounceTime(AuthoringComponent.AUTO_SAVE_DEBOUNCE_MS), takeUntil(this.destroy$)).subscribe(() => this.runAutoSave());
+
     const params = this.route.snapshot.queryParamMap;
     this.consultationId = params.get('consultationId') ? Number(params.get('consultationId')) : null;
     this.patientId = params.get('patientId') ? Number(params.get('patientId')) : null;
@@ -79,6 +93,15 @@ export class AuthoringComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    // Leaving an unfinished prescription parks it as a Draft (US requirement). Only for an
+    // InProgress doc that wasn't already saved/finalized — a reopened Draft is already a Draft,
+    // and finalize/explicit-save have their own status flips. Fire-and-forget on a fresh
+    // subscription (NOT via destroy$/takeUntil, which would cancel the in-flight request as the
+    // component tears down).
+    if (this.document && this.document.status === 'InProgress' && !this.leaveHandled) {
+      this.prescriptionService.saveDraft(this.document.prescriptionId, { language: this.document.language, content: this.document.content }).subscribe();
+    }
+
     this.destroy$.next();
     this.destroy$.complete();
   }
@@ -124,7 +147,10 @@ export class AuthoringComponent implements OnInit, OnDestroy {
       case 'Waiting':
         return { label: 'Waiting', modifierClass: 'status-badge--waiting' };
       case 'InConsultation':
-        return { label: 'In Progress', modifierClass: 'status-badge--waiting' };
+      case 'Draft':
+        return patient.todayHasSavedDraft
+          ? { label: 'Draft', modifierClass: 'status-badge--waiting' }
+          : { label: 'In Progress', modifierClass: 'status-badge--waiting' };
       case 'Completed':
         return { label: 'Completed', modifierClass: 'status-badge--completed' };
       default:
@@ -133,13 +159,20 @@ export class AuthoringComponent implements OnInit, OnDestroy {
   }
 
   rowActionLabel(patient: IDoctorPatientQueueItem): string {
-    if (patient.todayConsultationStatus === 'Waiting' || patient.todayConsultationStatus === 'InConsultation') return 'Continue';
-    if (patient.todayConsultationStatus === 'Completed') return 'View Prescription';
+    if (patient.todayConsultationStatus === 'Waiting') return 'Continue';
+    if (patient.todayConsultationStatus === 'InConsultation' || patient.todayConsultationStatus === 'Draft') {
+      return patient.todayHasSavedDraft ? 'Continue Draft' : 'Continue';
+    }
+    if (patient.todayConsultationStatus === 'Completed') return 'Completed';
     return 'Start Consultation';
   }
 
   selectPatientRow(patient: IDoctorPatientQueueItem): void {
-    if (patient.todayConsultationStatus === 'Waiting' || patient.todayConsultationStatus === 'InConsultation') {
+    if (
+      patient.todayConsultationStatus === 'Waiting' ||
+      patient.todayConsultationStatus === 'InConsultation' ||
+      patient.todayConsultationStatus === 'Draft'
+    ) {
       this.needsPatientPick = false;
       this.router.navigate(['/prescriptions'], { queryParams: { consultationId: patient.todayConsultationId } });
       this.consultationId = patient.todayConsultationId ?? null;
@@ -181,6 +214,9 @@ export class AuthoringComponent implements OnInit, OnDestroy {
             return;
           }
           this.document = body.document;
+          // Fresh authoring session — a prior park/finalize flag must not suppress this doc's
+          // own leave-park.
+          this.leaveHandled = false;
         },
         error: () => {
           this.loading = false;
@@ -217,6 +253,7 @@ export class AuthoringComponent implements OnInit, OnDestroy {
   onContentChange(content: IPrescriptionContent): void {
     if (!this.document) return;
     this.document = { ...this.document, content };
+    this.autoSave$.next();
   }
 
   setLanguage(language: PrescriptionLanguage): void {
@@ -226,11 +263,24 @@ export class AuthoringComponent implements OnInit, OnDestroy {
     this.doctorPreferencesService
       .update({ preferredTemplateId: this.document.doctor.preferredTemplateId, preferredLanguage: language })
       .subscribe();
+    this.autoSave$.next();
+  }
+
+  /**
+   * Persists the working copy in the background without changing lifecycle state (stays
+   * InProgress). Skipped while an explicit save/finalize is mid-flight, once a finalized
+   * doc is read-only, or after the leave-park already ran.
+   */
+  private runAutoSave(): void {
+    if (!this.document || this.saving || this.leaveHandled) return;
+    if (this.document.status === 'Finalized') return;
+    this.prescriptionService.autoSave(this.document.prescriptionId, { language: this.document.language, content: this.document.content }).subscribe();
   }
 
   saveDraft(): void {
     if (!this.document) return;
     this.saving = true;
+    this.leaveHandled = true;
     this.prescriptionService.saveDraft(this.document.prescriptionId, { language: this.document.language, content: this.document.content }).subscribe({
       next: (res) => {
         this.saving = false;
@@ -240,6 +290,8 @@ export class AuthoringComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.saving = false;
+        // Save failed — let ngOnDestroy's leave-park try again rather than lose the work.
+        this.leaveHandled = false;
       },
     });
   }
@@ -259,6 +311,7 @@ export class AuthoringComponent implements OnInit, OnDestroy {
     this.finalizeMissing = [];
 
     this.saving = true;
+    this.leaveHandled = true;
     this.prescriptionService.finalize(this.document.prescriptionId, { language: this.document.language, content: this.document.content }).subscribe({
       next: () => {
         this.saving = false;
@@ -267,6 +320,8 @@ export class AuthoringComponent implements OnInit, OnDestroy {
       },
       error: () => {
         this.saving = false;
+        // Finalize failed — allow the leave-park fallback so the work still isn't lost.
+        this.leaveHandled = false;
       },
     });
   }

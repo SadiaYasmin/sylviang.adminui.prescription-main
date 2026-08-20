@@ -85,6 +85,23 @@
   grid-column: 1 / -1;
 }
 
+// Diagnosis textarea is `flex:1` in its own component CSS (diagnosis-list-input) but that
+// only takes effect inside a flex parent — without this, quick-add-select had nothing to
+// wrap against and sat inline to the right of the (unstretched) textarea instead of on its
+// own row below, unlike the reference prototype's `.rx-classic-dx`.
+.dx-cell {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+
+  // Force Quick Add onto its own full-width row under the diagnosis textarea, flush-left
+  // with the section — mirrors the prototype's `<div style="flex-basis:100%">` wrapper.
+  app-quick-add-select {
+    flex-basis: 100%;
+  }
+}
+
 .placeholder-text {
   color: #444;
   font-style: italic;
@@ -182,6 +199,7 @@
   align-items: center;
   gap: 0.35rem;
   width: 100%;
+  flex-wrap: wrap;
 }
 
 .follow-up-input {

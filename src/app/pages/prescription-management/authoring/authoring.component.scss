@@ -230,14 +230,15 @@
   button {
     padding: 0.3rem 0.9rem;
     border-radius: 999px;
-    border: 1px solid #cbd5e1;
-    background: #fff;
+    border: 1px solid var(--border-primary, #cbd5e1);
+    background: var(--white, #fff);
+    color: var(--text-color-dark, #333843);
     cursor: pointer;
 
     &.active {
-      background: #0f766e;
-      color: #fff;
-      border-color: #0f766e;
+      background: var(--p-primary-color, #0f766e);
+      color: var(--p-primary-contrast-color, #fff);
+      border-color: var(--p-primary-color, #0f766e);
     }
   }
 }
@@ -269,8 +270,16 @@
 
 .btn-primary {
   border: none;
-  background: #0f766e;
-  color: #fff;
+  background: var(--p-primary-color, #0f766e);
+  color: var(--p-primary-contrast-color, #fff);
+
+  &:hover:not(:disabled) {
+    background: var(--p-primary-hover-color, #0f766e);
+  }
+
+  &:active:not(:disabled) {
+    background: var(--p-primary-active-color, #0f766e);
+  }
 }
 
 .finalize-checklist {

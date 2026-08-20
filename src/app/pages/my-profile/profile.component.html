@@ -1,0 +1,174 @@
+<section class="page-container">
+  <p class="text-sm text-muted-color mb-4">Manage your account — profile details, email, and password.</p>
+
+  <div *ngIf="loading" class="text-muted-color">Loading...</div>
+
+  <ng-container *ngIf="!loading">
+    <div class="flex flex-col gap-4 max-w-2xl">
+      <!-- Identity -->
+      <div class="prefs-card">
+        <h3>Account</h3>
+        <div class="profile-grid">
+          <div>
+            <label class="block text-xs font-medium mb-1">Username</label>
+            <input type="text" pInputText class="w-full" [value]="currentUser?.username" disabled />
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1">Role</label>
+            <input type="text" pInputText class="w-full" [value]="currentUser?.role" disabled />
+          </div>
+        </div>
+      </div>
+
+      <!-- Signature (US-063) -->
+      <div class="prefs-card" *ngIf="isDoctor">
+        <h3>Signature</h3>
+        <p class="hint">Upload a photo of your signature — its background is removed automatically.</p>
+
+        <div class="signature-row">
+          <img *ngIf="signaturePreview && signatureState !== 'processing'" [src]="signaturePreview" class="signature-preview" alt="Current signature" />
+          <span *ngIf="!signaturePreview && signatureState === 'idle'" class="empty">No signature uploaded yet.</span>
+
+          <span *ngIf="signatureState === 'processing'" class="signature-status">
+            <i class="fa fa-spinner fa-spin"></i> Removing background...
+          </span>
+
+          <label class="upload-btn" *ngIf="signatureState !== 'processing'">
+            Upload Signature
+            <input type="file" accept="image/*" (change)="onSignatureSelected($event)" [disabled]="signatureBusy" hidden />
+          </label>
+        </div>
+
+        <div class="signature-error" *ngIf="signatureState === 'error'">
+          <p class="error-text">{{ signatureError }}</p>
+          <button type="button" class="retry-btn" (click)="retrySignature()"><i class="fa fa-rotate-right"></i> Retry</button>
+        </div>
+      </div>
+
+      <!-- Doctor-only profile fields -->
+      <form *ngIf="isDoctor" [formGroup]="profileForm" (ngSubmit)="saveProfile()" novalidate class="prefs-card">
+      <h3>Profile</h3>
+
+      <div class="photo-row">
+        <img *ngIf="doctorProfile?.photoUrl" [src]="resolveAssetUrl(doctorProfile?.photoUrl)" class="photo-preview" alt="Profile photo" />
+        <div *ngIf="!doctorProfile?.photoUrl" class="photo-preview photo-placeholder"><i class="fa fa-user"></i></div>
+        <div class="photo-actions">
+          <label class="upload-btn">
+            {{ doctorProfile?.photoUrl ? 'Change Photo' : 'Upload Photo' }}
+            <input type="file" accept="image/*" (change)="onPhotoSelected($event)" [disabled]="photoBusy" hidden />
+          </label>
+          <button type="button" class="remove-btn" *ngIf="doctorProfile?.photoUrl" [disabled]="photoBusy" (click)="removePhoto()">Remove</button>
+        </div>
+      </div>
+      <p class="error-text" *ngIf="photoError">{{ photoError }}</p>
+
+      <div class="profile-grid">
+        <div>
+          <label class="block text-xs font-medium mb-1">Full Name</label>
+          <input type="text" pInputText class="w-full" formControlName="fullName" />
+          <small class="error-text" *ngIf="hasProfileError('fullName')">Full name is required.</small>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1">Phone</label>
+          <input type="text" pInputText class="w-full" formControlName="phone" />
+          <small class="error-text" *ngIf="hasProfileError('phone')">Enter a valid Bangladesh mobile number.</small>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1">Qualification</label>
+          <input type="text" pInputText class="w-full" formControlName="qualification" />
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1">Department</label>
+          <p-select [options]="departmentOptions" formControlName="department" optionLabel="name" optionValue="name" styleClass="w-full" placeholder="Select department" [showClear]="true"></p-select>
+        </div>
+        <div>
+          <label class="block text-xs font-medium mb-1">License Number</label>
+          <input type="text" pInputText class="w-full" formControlName="licenseNumber" />
+          <small class="hint">Only an Admin can change this.</small>
+        </div>
+      </div>
+
+      <div class="flex justify-end mt-3">
+        <button type="submit" pButton [loading]="savingProfile">Save Profile</button>
+      </div>
+    </form>
+
+    <!-- Change email -->
+    <div class="prefs-card">
+      <h3>Email Address</h3>
+      <p class="hint">Changing your email requires confirming a code sent to the new address before it takes effect.</p>
+
+      <form *ngIf="emailStep === 'idle'" [formGroup]="emailForm" (ngSubmit)="requestEmailChange()" novalidate>
+        <div class="profile-grid">
+          <div>
+            <label class="block text-xs font-medium mb-1">Email</label>
+            <input type="email" pInputText class="w-full" formControlName="newEmail" />
+            <small class="error-text" *ngIf="hasCodeError(emailForm, 'newEmail')">Enter a valid email address.</small>
+          </div>
+        </div>
+        <div class="flex justify-end mt-3">
+          <button type="submit" pButton [loading]="emailBusy" [disabled]="emailForm.get('newEmail')?.value === currentUser?.email">Send Code</button>
+        </div>
+      </form>
+
+      <form *ngIf="emailStep === 'codeSent'" [formGroup]="emailCodeForm" (ngSubmit)="confirmEmailChange()" novalidate>
+        <div class="profile-grid">
+          <div>
+            <label class="block text-xs font-medium mb-1">Confirmation Code</label>
+            <input type="text" pInputText class="w-full" formControlName="code" maxlength="6" placeholder="6-digit code" />
+            <small class="error-text" *ngIf="hasCodeError(emailCodeForm, 'code')">Enter the 6-digit code.</small>
+          </div>
+        </div>
+        <div class="flex justify-between items-center mt-3">
+          <button type="button" class="retry-btn" [disabled]="emailResendCountdown > 0 || emailBusy" (click)="requestEmailChange()">
+            {{ emailResendCountdown > 0 ? 'Resend code in ' + emailResendCountdown + 's' : 'Resend code' }}
+          </button>
+          <div class="flex gap-2">
+            <button type="button" pButton severity="secondary" (click)="cancelEmailChange()">Cancel</button>
+            <button type="submit" pButton [loading]="emailBusy">Confirm</button>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <!-- Change password -->
+    <div class="prefs-card">
+      <h3>Password</h3>
+      <p class="hint">We'll email a confirmation code to your current address before your password actually changes.</p>
+
+      <div *ngIf="passwordStep === 'idle'" class="flex justify-end">
+        <button type="button" pButton [loading]="passwordBusy" (click)="requestPasswordChange()">Change Password</button>
+      </div>
+
+      <form *ngIf="passwordStep === 'codeSent'" [formGroup]="passwordCodeForm" (ngSubmit)="confirmPasswordChange()" novalidate>
+        <div class="profile-grid">
+          <div>
+            <label class="block text-xs font-medium mb-1">Confirmation Code</label>
+            <input type="text" pInputText class="w-full" formControlName="code" maxlength="6" placeholder="6-digit code" />
+            <small class="error-text" *ngIf="hasCodeError(passwordCodeForm, 'code')">Enter the 6-digit code.</small>
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1">New Password</label>
+            <input type="password" pInputText class="w-full" formControlName="newPassword" />
+            <small class="error-text" *ngIf="hasCodeError(passwordCodeForm, 'newPassword')">At least 8 characters.</small>
+          </div>
+          <div>
+            <label class="block text-xs font-medium mb-1">Confirm New Password</label>
+            <input type="password" pInputText class="w-full" formControlName="confirmPassword" />
+            <small class="error-text" *ngIf="passwordsMismatch()">Passwords do not match.</small>
+          </div>
+        </div>
+        <div class="flex justify-between items-center mt-3">
+          <button type="button" class="retry-btn" [disabled]="passwordResendCountdown > 0 || passwordBusy" (click)="requestPasswordChange()">
+            {{ passwordResendCountdown > 0 ? 'Resend code in ' + passwordResendCountdown + 's' : 'Resend code' }}
+          </button>
+          <div class="flex gap-2">
+            <button type="button" pButton severity="secondary" (click)="cancelPasswordChange()">Cancel</button>
+            <button type="submit" pButton [loading]="passwordBusy">Confirm</button>
+          </div>
+        </div>
+      </form>
+    </div>
+    </div>
+  </ng-container>
+</section>

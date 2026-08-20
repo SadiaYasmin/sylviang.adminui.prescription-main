@@ -4,6 +4,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { RouterModule } from '@angular/router';
 import { SharedModule } from '@app/shared/shared.module';
 import { ButtonModule } from 'primeng/button';
+import { CheckboxModule } from 'primeng/checkbox';
 import { ConfirmDialogModule } from 'primeng/confirmdialog';
 import { FloatLabelModule } from 'primeng/floatlabel';
 import { InputTextModule } from 'primeng/inputtext';
@@ -27,6 +28,7 @@ import { MedicineManagementRoutingModule } from './medicine-management-routing.m
     ConfirmDialogModule,
     TableModule,
     ButtonModule,
+    CheckboxModule,
     InputTextModule,
     FloatLabelModule,
     SelectModule,

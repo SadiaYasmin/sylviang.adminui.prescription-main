@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, NgZone } from '@angular/core';
 import { removeBackground } from '@imgly/background-removal';
 
 /**
@@ -12,11 +12,21 @@ import { removeBackground } from '@imgly/background-removal';
   providedIn: 'root',
 })
 export class SignatureProcessingService {
+  constructor(private ngZone: NgZone) {}
+
   async removeBackground(file: File): Promise<Blob> {
     try {
-      return await removeBackground(file);
-    } catch {
-      throw new Error('Could not process that signature image. Please try a clearer photo.');
+      // Runs outside Angular's zone: zone.js monkey-patches fetch/Promise/WebAssembly,
+      // which fights this library's own WASM-streaming model download + inference (its
+      // internal progress callbacks would also otherwise trigger a change-detection run
+      // on every downloaded chunk). Matches the reference prototype's plain (unpatched)
+      // browser behavior, where this same call works.
+      return await this.ngZone.runOutsideAngular(() => removeBackground(file));
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Signature background removal failed:', err);
+      const reason = err instanceof Error ? err.message : String(err);
+      throw new Error(`Could not process that signature image (${reason}). Please try a clearer photo.`);
     }
   }
 

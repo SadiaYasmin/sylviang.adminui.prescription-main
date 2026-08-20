@@ -45,8 +45,8 @@ export class LoginComponent {
   getErrorMessage(fieldName: string): string {
     const field = this.loginForm.get(fieldName);
     if (field?.errors) {
-      if (field.errors['required']) return `${fieldName === 'username' ? 'Username' : 'Password'} is required`;
-      if (field.errors['whitespaceOnly']) return 'Username cannot be whitespace only';
+      if (field.errors['required']) return `${fieldName === 'username' ? 'Email' : 'Password'} is required`;
+      if (field.errors['whitespaceOnly']) return 'Email cannot be whitespace only';
     }
     return '';
   }
@@ -65,14 +65,16 @@ export class LoginComponent {
       next: (response) => {
         this.isSubmitting = false;
         if (!response.hasError) {
-          this.router.navigate(['/dashboard']);
+          // Admin has no Dashboard — lands on Analytics & Reports instead (see role.guard.ts).
+          const role = this.authService.getRole();
+          this.router.navigate([role === 'Admin' ? '/analytics' : '/dashboard']);
         } else {
-          this.loginError = response.decentMessage || 'Invalid username or password.';
+          this.loginError = response.decentMessage || 'Invalid email or password.';
         }
       },
       error: (error) => {
         this.isSubmitting = false;
-        this.loginError = error?.error?.decentMessage || 'Invalid username or password.';
+        this.loginError = error?.error?.decentMessage || 'Invalid email or password.';
       },
     });
   }
