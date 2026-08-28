@@ -1,38 +1,108 @@
-<div *ngIf="loading" class="grid grid-cols-1 lg:grid-cols-2 gap-3">
-  <p-skeleton height="16rem" *ngFor="let i of [1, 2, 3, 4]"></p-skeleton>
+<div *ngIf="loading" class="space-y-4">
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+    <p-skeleton height="6rem" *ngFor="let i of [1, 2, 3, 4]"></p-skeleton>
+  </div>
+  <div class="grid grid-cols-1 lg:grid-cols-2 gap-3">
+    <p-skeleton height="16rem" *ngFor="let i of [1, 2, 3, 4]"></p-skeleton>
+  </div>
 </div>
 
 <div *ngIf="!loading && !analytics" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
 
 <ng-container *ngIf="!loading && analytics as a">
+  <!-- Prescription Overview -->
+  <div class="mb-4">
+    <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Prescription Overview</div>
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+      <div
+        class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+        [routerLink]="['/consultations/consultation-list']"
+        [queryParams]="{ dateMode: 'All', status: 'Completed' }"
+      >
+        <div class="text-xs uppercase tracking-wide text-muted-color">COMPLETED PRESCRIPTIONS</div>
+        <div class="text-2xl font-semibold">{{ a.totalPrescriptions }}</div>
+      </div>
+      <div
+        class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+        [routerLink]="['/medicines/medicine-list']"
+      >
+        <div class="text-xs uppercase tracking-wide text-muted-color">TOTAL MEDICINES PRESCRIBED</div>
+        <div class="text-2xl font-semibold">{{ a.totalMedicinesPrescribed }}</div>
+      </div>
+      <div
+        class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+        [routerLink]="['/medicines/medicine-list']"
+      >
+        <div class="text-xs uppercase tracking-wide text-muted-color">UNIQUE MEDICINES PRESCRIBED</div>
+        <div class="text-2xl font-semibold">{{ a.uniqueMedicinesPrescribed }}</div>
+      </div>
+      <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
+        <div class="text-xs uppercase tracking-wide text-muted-color">AVG. MEDICINES / PRESCRIPTION</div>
+        <div class="text-2xl font-semibold">{{ formatAvg(a.avgMedicinesPerPrescription) }}</div>
+      </div>
+    </div>
+  </div>
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Top Prescribed Medicines</div>
-      <div style="height: 16rem" *ngIf="topMedicinesChartData">
-        <p-chart type="bar" [data]="topMedicinesChartData" [options]="chartOptions"></p-chart>
+      <div class="overflow-hidden" style="height: 16rem" *ngIf="topMedicinesChartData">
+        <p-chart type="bar" [data]="topMedicinesChartData" [options]="topMedicinesChartOptions"></p-chart>
       </div>
       <div *ngIf="a.topPrescribedMedicines.length === 0" class="text-sm text-muted-color py-8 text-center">No finalized prescriptions yet.</div>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Category Breakdown</div>
-      <div style="height: 16rem" *ngIf="categoryChartData">
-        <p-chart type="bar" [data]="categoryChartData" [options]="chartOptions"></p-chart>
+      <div class="overflow-hidden" style="height: 16rem" *ngIf="categoryChartData">
+        <p-chart type="bar" [data]="categoryChartData" [options]="categoryChartOptions"></p-chart>
       </div>
       <div *ngIf="a.categoryBreakdown.length === 0" class="text-sm text-muted-color py-8 text-center">No finalized prescriptions yet.</div>
     </div>
   </div>
 
-  <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm mb-4" *ngIf="trendChartData">
-    <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Prescriptions — Last 30 Days</div>
-    <div style="height: 12rem"><p-chart type="line" [data]="trendChartData" [options]="chartOptions"></p-chart></div>
+  <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm mb-4">
+    <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+      <div class="text-xs font-semibold uppercase tracking-wide text-muted-color">Prescriptions — {{ trendRangeLabel }}</div>
+      <div class="flex flex-wrap items-center gap-2">
+        <div class="inline-flex rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden text-xs">
+          <button
+            type="button"
+            *ngFor="let opt of trendGranularityOptions"
+            (click)="selectTrendGranularity(opt.value)"
+            class="px-3 py-1.5 font-medium"
+            [class]="opt.value === trendGranularity ? 'bg-primary text-primary-contrast' : 'bg-surface-0 dark:bg-surface-900 text-muted-color hover:bg-surface-50 dark:hover:bg-surface-800'"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+        <p-select
+          [options]="trendRangePresetOptions"
+          [ngModel]="trendRangePreset"
+          optionLabel="label"
+          optionValue="value"
+          (ngModelChange)="selectTrendRangePreset($event)"
+          styleClass="text-xs"
+        ></p-select>
+        <ng-container *ngIf="isCustomTrendRange">
+          <p-datepicker [(ngModel)]="customFrom" dateFormat="yy-mm-dd" placeholder="From" (onSelect)="onCustomRangeSelected()"></p-datepicker>
+          <p-datepicker [(ngModel)]="customTo" dateFormat="yy-mm-dd" placeholder="To" (onSelect)="onCustomRangeSelected()"></p-datepicker>
+        </ng-container>
+      </div>
+    </div>
+    <div class="overflow-hidden" style="height: 12rem">
+      <p-skeleton *ngIf="trendLoading" height="100%"></p-skeleton>
+      <p-chart *ngIf="!trendLoading && trendChartData" type="line" [data]="trendChartData" [options]="trendChartOptions"></p-chart>
+      <div *ngIf="!trendLoading && !trendChartData" class="flex h-full items-center justify-center text-sm text-muted-color">
+        No finalized prescriptions in this range.
+      </div>
+    </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
-    <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-hidden">
-      <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50">Rarely Used Medicines</div>
+    <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 overflow-hidden">
+      <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50 dark:bg-surface-800">Rarely Used Medicines</div>
       <table class="w-full text-sm">
-        <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+        <thead class="bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-muted-color">
           <tr>
             <th class="px-4 py-2 text-left font-medium">Medicine</th>
             <th class="px-4 py-2 text-right font-medium">Times Prescribed</th>
@@ -50,10 +120,10 @@
       </table>
     </div>
 
-    <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-hidden">
-      <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50">Co-Prescribed Medicine Pairs</div>
+    <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 overflow-hidden">
+      <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50 dark:bg-surface-800">Co-Prescribed Medicine Pairs</div>
       <table class="w-full text-sm">
-        <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+        <thead class="bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-muted-color">
           <tr>
             <th class="px-4 py-2 text-left font-medium">Pair</th>
             <th class="px-4 py-2 text-right font-medium">Prescriptions</th>

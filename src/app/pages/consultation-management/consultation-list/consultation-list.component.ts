@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { UI_CONFIG } from '@app/@core/constants';
 import { DateTimeUtility } from '@app/@core/utils/date-time.utility';
 import {
@@ -14,6 +15,19 @@ import { DoctorService } from '@core/services/doctors/doctor.service';
 import { ToastService } from '@core/services/misc/toast.service';
 import { ConsultationListColumns } from './consultation-list.component.constants';
 
+/** Parses a "yyyy-MM-dd" query param into a local Date — a plain `new Date(str)` parses as UTC midnight, which can land on the wrong calendar day once displayed in a datepicker. */
+function parseDateParam(value: string | null): Date | null {
+  if (!value) {
+    return null;
+  }
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) {
+    return null;
+  }
+  const [, year, month, day] = match;
+  return new Date(Number(year), Number(month) - 1, Number(day));
+}
+
 @Component({
   selector: 'app-consultation-list',
   standalone: false,
@@ -26,6 +40,7 @@ export class ConsultationListComponent implements OnInit {
     private doctorService: DoctorService,
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
+    private route: ActivatedRoute,
   ) {}
 
   consultations: IConsultationListItem[] = [];
@@ -53,12 +68,14 @@ export class ConsultationListComponent implements OnInit {
     { label: 'Yesterday', value: 'Yesterday' },
     { label: 'Custom Date', value: 'Custom' },
     { label: 'Date Range', value: 'Range' },
+    { label: 'All Time', value: 'All' },
   ];
 
   statusOptions = [
     { label: 'All Statuses', value: null },
     { label: 'Waiting', value: 'Waiting' },
     { label: 'In Progress', value: 'InConsultation' },
+    { label: 'Draft', value: 'Draft' },
     { label: 'Completed', value: 'Completed' },
   ];
 
@@ -81,6 +98,27 @@ export class ConsultationListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const params = this.route.snapshot.queryParamMap;
+
+    const requestedDateMode = params.get('dateMode');
+    if (requestedDateMode === 'Today' || requestedDateMode === 'All' || requestedDateMode === 'Range') {
+      this.dateMode = requestedDateMode;
+    }
+    if (this.dateMode === 'Range') {
+      this.fromDate = parseDateParam(params.get('fromDate'));
+      this.toDate = parseDateParam(params.get('toDate'));
+    }
+
+    const requestedStatus = params.get('status');
+    if (requestedStatus === 'Waiting' || requestedStatus === 'InConsultation' || requestedStatus === 'Completed') {
+      this.status = requestedStatus;
+    }
+
+    const requestedDoctorId = Number(params.get('doctorId'));
+    if (requestedDoctorId > 0) {
+      this.doctorId = requestedDoctorId;
+    }
+
     this.loadDoctors();
     this.loadConsultations();
   }
@@ -96,6 +134,19 @@ export class ConsultationListComponent implements OnInit {
   }
 
   applySearch(): void {
+    this.currentPage = 1;
+    this.loadConsultations();
+  }
+
+  /**
+   * The Total/Waiting/In Progress/Draft/Completed stat tiles are shortcuts onto the same
+   * status filter as the dropdown, always widened to All Time first — a Draft or Waiting
+   * record from last week must never be hidden just because "Today" was still selected.
+   * Search term and doctor filter are left as-is, matching every other filter interaction.
+   */
+  filterByStatusCard(status: ConsultationStatus | null): void {
+    this.dateMode = 'All';
+    this.status = status;
     this.currentPage = 1;
     this.loadConsultations();
   }

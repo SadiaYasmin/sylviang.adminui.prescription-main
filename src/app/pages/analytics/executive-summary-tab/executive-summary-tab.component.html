@@ -6,30 +6,46 @@
 
 <ng-container *ngIf="!loading && summary as s">
   <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div
+      class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+      [routerLink]="['/patients/patient-list']"
+    >
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Patients</div>
       <div class="text-2xl font-semibold">{{ s.totalPatients }}</div>
     </div>
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
-      <div class="text-xs uppercase tracking-wide text-muted-color">Total Prescriptions</div>
+    <div
+      class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+      [routerLink]="['/consultations/consultation-list']"
+      [queryParams]="{ dateMode: 'All', status: 'Completed' }"
+    >
+      <div class="text-xs uppercase tracking-wide text-muted-color">Completed Prescriptions</div>
       <div class="text-2xl font-semibold">{{ s.totalPrescriptions }}</div>
     </div>
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div
+      class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+      [routerLink]="['/medicines/medicine-list']"
+    >
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Medicines</div>
       <div class="text-2xl font-semibold">{{ s.totalMedicines }}</div>
     </div>
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div
+      class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+      [routerLink]="['/doctors/doctor-list']"
+    >
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Doctors</div>
       <div class="text-2xl font-semibold">{{ s.totalDoctors }}</div>
     </div>
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div
+      class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+      [routerLink]="['/staff/staff-list']"
+    >
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Staff</div>
       <div class="text-2xl font-semibold">{{ s.totalStaff }}</div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs uppercase tracking-wide text-muted-color mb-1">Prescriptions — Month over Month</div>
       <div class="flex items-baseline gap-2">
         <span class="text-2xl font-semibold">{{ s.prescriptionTrend.current }}</span>
@@ -44,7 +60,7 @@
       <div class="text-xs text-muted-color">vs. {{ s.prescriptionTrend.previous }} last month</div>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs uppercase tracking-wide text-muted-color mb-1">New Patients — Month over Month</div>
       <div class="flex items-baseline gap-2">
         <span class="text-2xl font-semibold">{{ s.newPatientTrend.current }}</span>
@@ -61,17 +77,22 @@
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-3 gap-3">
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Top 5 Medicines</div>
       <ol class="text-sm space-y-1.5">
         <li *ngFor="let m of s.topMedicines; let i = index" class="flex justify-between">
-          <span>{{ i + 1 }}. {{ m.name }}</span><span class="font-medium">{{ m.count }}</span>
+          <span
+            class="cursor-pointer hover:text-primary hover:underline"
+            [routerLink]="['/medicines/medicine-list']"
+            [queryParams]="{ search: m.name }"
+            >{{ i + 1 }}. {{ m.name }}</span
+          ><span class="font-medium">{{ m.count }}</span>
         </li>
         <li *ngIf="s.topMedicines.length === 0" class="text-muted-color">No data yet.</li>
       </ol>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Top 5 Diagnoses</div>
       <ol class="text-sm space-y-1.5">
         <li *ngFor="let d of s.topDiagnoses; let i = index" class="flex justify-between">
@@ -81,11 +102,15 @@
       </ol>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Top 5 Active Doctors</div>
       <ol class="text-sm space-y-1.5">
         <li *ngFor="let d of s.topActiveDoctors; let i = index" class="flex justify-between">
-          <span>{{ i + 1 }}. {{ d.fullName }}</span><span class="font-medium">{{ d.count }}</span>
+          <span
+            class="cursor-pointer hover:text-primary hover:underline"
+            [routerLink]="['/doctors/doctor-details', d.doctorId]"
+            >{{ i + 1 }}. {{ d.fullName }}</span
+          ><span class="font-medium">{{ d.count }}</span>
         </li>
         <li *ngIf="s.topActiveDoctors.length === 0" class="text-muted-color">No data yet.</li>
       </ol>

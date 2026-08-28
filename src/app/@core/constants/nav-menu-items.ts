@@ -31,6 +31,13 @@ export const webSidebarMenuItems: IMenuItem[] = [
     roles: ['Admin', 'Doctor', 'Staff'],
   },
   {
+    href: '/assigned-doctors',
+    title: 'Assigned Doctors',
+    active: false,
+    icon: 'fa-solid fa-user-doctor',
+    roles: ['Staff'],
+  },
+  {
     href: '/medicines/medicine-list',
     title: 'Medicines',
     active: false,

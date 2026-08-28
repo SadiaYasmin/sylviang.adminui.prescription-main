@@ -2,19 +2,19 @@
   <form [formGroup]="staffForm" (ngSubmit)="onSubmit()" novalidate>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="sm:col-span-2">
-        <label class="block text-xs font-medium mb-1">Full Name</label>
+        <label class="block text-xs font-medium mb-1">Full Name <span class="text-red-600">*</span></label>
         <input type="text" pInputText class="w-full" formControlName="fullName" placeholder="Jane Roy" />
         <div *ngIf="hasError('fullName')" class="text-xs text-red-600 mt-1">Full name is required.</div>
       </div>
 
       <div>
-        <label class="block text-xs font-medium mb-1">Email</label>
+        <label class="block text-xs font-medium mb-1">Email <span class="text-red-600">*</span></label>
         <input type="email" pInputText class="w-full" formControlName="email" placeholder="staff@example.com" />
         <div *ngIf="hasError('email')" class="text-xs text-red-600 mt-1">A valid email is required — the account setup invite is sent there.</div>
       </div>
 
       <div>
-        <label class="block text-xs font-medium mb-1">Phone</label>
+        <label class="block text-xs font-medium mb-1">Phone <span class="text-red-600">*</span></label>
         <input type="text" pInputText class="w-full" formControlName="phone" maxlength="11" placeholder="e.g. 01712345678" />
         <div *ngIf="hasError('phone')" class="text-xs text-red-600 mt-1">Enter a valid Bangladesh mobile number (11 digits, starting with 013-019).</div>
       </div>
@@ -34,7 +34,7 @@
       </div>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm mt-4">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm mt-4">
       <label class="block text-xs font-medium mb-1">Assigned Doctors</label>
       <p class="text-xs text-muted-color mb-2">A staff member can support more than one doctor's chamber.</p>
       <p class="text-xs mb-2">

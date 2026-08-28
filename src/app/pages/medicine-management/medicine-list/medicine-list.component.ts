@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
 import { UI_CONFIG } from '@app/@core/constants';
 import { IMedicineCatalogEntry } from '@core/interfaces/medicines/medicine.interface';
 import { AuthService } from '@core/services/auth/auth.service';
@@ -8,9 +9,10 @@ import { ConfirmationService } from 'primeng/api';
 import { MedicineListColumns } from './medicine-list.component.constants';
 
 /**
- * US-036/037/038/039/040. Admin, Doctor, and Staff all see the exact same catalog view now —
- * same rows, same columns (incl. Total Prescribed/DGDA/Status), same `getCatalog()` endpoint,
- * same pagination. Only write access (Add/Import/Edit/Deactivate) stays Admin-only.
+ * US-036/037/038/039/040. Admin, Doctor, and Staff all see the same catalog view — same rows,
+ * same `getCatalog()` endpoint, same pagination — except Staff doesn't see the Total Prescribed
+ * column (prescribing volume isn't relevant to a Staff user's job). Only write access
+ * (Add/Import/Edit/Deactivate) stays Admin-only.
  */
 @Component({
   selector: 'app-medicine-list',
@@ -25,6 +27,7 @@ export class MedicineListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
+    private route: ActivatedRoute,
   ) {}
 
   medicines: IMedicineCatalogEntry[] = [];
@@ -48,6 +51,10 @@ export class MedicineListComponent implements OnInit {
     return this.role === 'Admin';
   }
 
+  get isStaffView(): boolean {
+    return this.role === 'Staff';
+  }
+
   get skeletonItems() {
     return Array(this.rows)
       .fill({})
@@ -55,6 +62,10 @@ export class MedicineListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    const requestedSearch = this.route.snapshot.queryParamMap.get('search');
+    if (requestedSearch) {
+      this.searchTerm = requestedSearch;
+    }
     this.loadMedicines();
   }
 

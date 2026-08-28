@@ -24,34 +24,34 @@
   <!-- US-077: doctor's own scoped stats -->
   <div *ngIf="isDoctor && myDoctorStats as s" class="mb-4">
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
-      <a [routerLink]="['/patients/patient-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <a [routerLink]="['/patients/patient-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">My Patients</div>
         <div class="text-2xl font-semibold">{{ s.ownPatientCount }}</div>
       </a>
       <!-- No dedicated "consulted patients" page — stays a plain, non-clickable card. -->
-      <div class="stat-card rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <div class="stat-card rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Patients Consulted</div>
         <div class="text-2xl font-semibold">{{ s.patientsConsulted }}</div>
       </div>
-      <a [routerLink]="['/prescriptions/drafts']" class="stat-card stat-card-link rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <a [routerLink]="['/prescriptions/drafts']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Draft Prescriptions</div>
         <div class="text-2xl font-semibold">{{ s.draftPrescriptionCount }}</div>
       </a>
-      <a [routerLink]="['/prescriptions/finalized']" class="stat-card stat-card-link rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <a [routerLink]="['/prescriptions/finalized']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Finalized Prescriptions</div>
         <div class="text-2xl font-semibold">{{ s.finalizedPrescriptionCount }}</div>
       </a>
-      <a [routerLink]="['/staff/staff-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <a [routerLink]="['/staff/staff-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Assigned Staff</div>
         <div class="text-2xl font-semibold">{{ s.assignedStaffCount }}</div>
       </a>
     </div>
 
-    <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-hidden" *ngIf="s.topMedicines.length > 0">
-      <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50">My Top Prescribed Medicines</div>
+    <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 overflow-hidden" *ngIf="s.topMedicines.length > 0">
+      <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50 dark:bg-surface-800">My Top Prescribed Medicines</div>
       <table class="w-full text-sm">
         <tbody>
-          <tr *ngFor="let m of s.topMedicines" class="border-t border-surface-100">
+          <tr *ngFor="let m of s.topMedicines" class="border-t border-surface-100 dark:border-surface-700">
             <td class="px-4 py-2">{{ m.name }}</td>
             <td class="px-4 py-2 text-right font-medium">{{ m.count }}</td>
           </tr>
@@ -63,17 +63,14 @@
   <!-- US-078: staff member's own scoped stats -->
   <div *ngIf="isStaff && myStaffStats as s" class="mb-4">
     <div class="grid grid-cols-2 gap-3 mb-4">
-      <a [routerLink]="['/patients/patient-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+      <a [routerLink]="['/patients/patient-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Patients Registered By Me</div>
         <div class="text-2xl font-semibold">{{ s.patientsRegisteredByMe }}</div>
       </a>
-      <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
-        <div class="text-xs uppercase tracking-wide text-muted-color mb-1">Assigned To</div>
-        <div class="text-sm" *ngIf="s.assignedDoctors.length > 0">
-          <span *ngFor="let d of s.assignedDoctors; let last = last">{{ d.fullName }}{{ last ? '' : ', ' }}</span>
-        </div>
-        <div class="text-sm text-muted-color" *ngIf="s.assignedDoctors.length === 0">No doctor assigned yet.</div>
-      </div>
+      <a [routerLink]="['/assigned-doctors']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
+        <div class="text-xs uppercase tracking-wide text-muted-color">Assigned Doctors</div>
+        <div class="text-2xl font-semibold">{{ s.assignedDoctors.length }}</div>
+      </a>
     </div>
   </div>
 

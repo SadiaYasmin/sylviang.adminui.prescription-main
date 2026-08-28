@@ -61,7 +61,11 @@
   flex-wrap: wrap;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  border-top: 1px solid var(--surface-200, #e5e7eb);
+  border-top: 1px solid var(--p-surface-200, #e5e7eb);
+}
+
+:host-context(.dark) .doctor-queue-tabs {
+  border-top-color: var(--p-surface-700, #3f3f46);
 }
 
 .doctor-queue-tab {
@@ -70,8 +74,8 @@
   gap: 0.4rem;
   padding: 0.4rem 0.9rem;
   border-radius: 999px;
-  border: 1px solid var(--surface-200, #e5e7eb);
-  background: var(--surface-0, #fff);
+  border: 1px solid var(--p-surface-200, #e5e7eb);
+  background: var(--p-surface-0, #fff);
   color: inherit;
   font-size: 0.85rem;
   cursor: pointer;
@@ -85,6 +89,16 @@
     background: var(--primary-color, #10b981);
     border-color: var(--primary-color, #10b981);
     color: #fff;
+  }
+}
+
+:host-context(.dark) .doctor-queue-tab {
+  border-color: var(--p-surface-700, #3f3f46);
+  background: var(--p-surface-900, #18181b);
+
+  &.active {
+    background: var(--primary-color, #10b981);
+    border-color: var(--primary-color, #10b981);
   }
 }
 

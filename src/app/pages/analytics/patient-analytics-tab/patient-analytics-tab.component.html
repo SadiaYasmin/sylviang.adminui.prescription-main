@@ -6,41 +6,58 @@
 
 <ng-container *ngIf="!loading && analytics as a">
   <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 mb-4">
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs uppercase tracking-wide text-muted-color">New Patients</div>
       <div class="text-2xl font-semibold">{{ a.newPatients }}</div>
     </div>
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs uppercase tracking-wide text-muted-color">Returning Patients</div>
       <div class="text-2xl font-semibold">{{ a.returningPatients }}</div>
     </div>
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs uppercase tracking-wide text-muted-color">Avg. Visits / Patient</div>
       <div class="text-2xl font-semibold">{{ a.averageVisitsPerPatient }}</div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 lg:grid-cols-2 gap-4 mb-4">
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
-      <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">New Registrations</div>
-      <div style="height: 14rem" *ngIf="registrationTrendChartData">
-        <p-chart type="line" [data]="registrationTrendChartData" [options]="chartOptions"></p-chart>
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
+      <div class="flex items-center justify-between mb-2">
+        <div class="text-xs font-semibold uppercase tracking-wide text-muted-color">New Registrations</div>
+        <div class="inline-flex rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden text-xs">
+          <button
+            type="button"
+            *ngFor="let opt of trendGranularityOptions"
+            (click)="selectTrendGranularity(opt.value)"
+            class="px-2.5 py-1 font-medium"
+            [class]="opt.value === trendGranularity ? 'bg-primary text-primary-contrast' : 'bg-surface-0 dark:bg-surface-900 text-muted-color hover:bg-surface-50 dark:hover:bg-surface-800'"
+          >
+            {{ opt.label }}
+          </button>
+        </div>
+      </div>
+      <div class="overflow-hidden" style="height: 14rem">
+        <p-skeleton *ngIf="trendLoading" height="100%"></p-skeleton>
+        <p-chart *ngIf="!trendLoading && registrationTrendChartData" type="line" [data]="registrationTrendChartData" [options]="trendChartOptions"></p-chart>
+        <div *ngIf="!trendLoading && !registrationTrendChartData" class="flex h-full items-center justify-center text-sm text-muted-color">
+          No registrations recorded yet.
+        </div>
       </div>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Top Diagnoses</div>
-      <div style="height: 14rem" *ngIf="topDiagnosesChartData">
-        <p-chart type="bar" [data]="topDiagnosesChartData" [options]="chartOptions"></p-chart>
+      <div class="overflow-hidden" style="height: 14rem" *ngIf="topDiagnosesChartData">
+        <p-chart type="bar" [data]="topDiagnosesChartData" [options]="barChartOptions"></p-chart>
       </div>
       <div *ngIf="a.topDiagnoses.length === 0" class="text-sm text-muted-color py-8 text-center">No finalized prescriptions yet.</div>
     </div>
   </div>
 
-  <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-hidden">
-    <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50">Chronic / Repeat Diagnosis Patterns</div>
+  <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 overflow-hidden">
+    <div class="px-4 py-2.5 text-xs font-semibold uppercase tracking-wide text-muted-color bg-surface-50 dark:bg-surface-800">Chronic / Repeat Diagnosis Patterns</div>
     <table class="w-full text-sm">
-      <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+      <thead class="bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-muted-color">
         <tr>
           <th class="px-4 py-2 text-left font-medium">Patient</th>
           <th class="px-4 py-2 text-left font-medium">Diagnosis</th>

@@ -55,8 +55,12 @@ export class MenuService {
   }
 
   updateActiveMenuItem(currentRoute: string): void {
+    // Strip query string/fragment first — a route like /analytics?tab=medicines otherwise
+    // never matches any item's href/activeMatch (isRouteMatch compares the raw path), leaving
+    // every menu item unhighlighted as soon as the route carries a query param.
+    const path = currentRoute.split('?')[0].split('#')[0];
     const menuItems = this.getCurrentMenu();
-    const updatedMenuItems = this.updateMenuItemsActiveState(menuItems, currentRoute);
+    const updatedMenuItems = this.updateMenuItemsActiveState(menuItems, path);
     this.menuSubject.next(updatedMenuItems);
   }
 

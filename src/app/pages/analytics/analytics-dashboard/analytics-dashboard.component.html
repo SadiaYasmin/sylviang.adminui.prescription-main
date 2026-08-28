@@ -18,8 +18,14 @@
       <p-tabpanel value="medicines">
         <app-medicine-prescription-tab
           [analytics]="medicineAnalytics"
-          [trend]="medicineTrend"
           [loading]="medicineLoading"
+          [trend]="medicineTrend"
+          [trendLoading]="medicineTrendLoading"
+          [trendGranularity]="medicineTrendGranularity"
+          [trendRangePreset]="medicineTrendRangePreset"
+          (trendGranularityChange)="onMedicineTrendGranularityChange($event)"
+          (trendRangePresetChange)="onMedicineTrendRangePresetChange($event)"
+          (trendCustomRangeChange)="onMedicineTrendCustomRangeChange($event)"
         ></app-medicine-prescription-tab>
       </p-tabpanel>
 
@@ -31,13 +37,26 @@
         <app-prescription-trends-tab
           [trend]="trend"
           [granularity]="trendGranularity"
+          [rangePreset]="trendRangePreset"
           [loading]="trendLoading"
           (granularityChange)="onTrendGranularityChange($event)"
+          (rangePresetChange)="onTrendRangePresetChange($event)"
+          (customRangeChange)="onTrendCustomRangeChange($event)"
+          [leaderboard]="leaderboard"
+          [leaderboardLoading]="leaderboardLoading"
+          [busiestHours]="busiestHours"
+          [busiestHoursLoading]="busiestHoursLoading"
         ></app-prescription-trends-tab>
       </p-tabpanel>
 
       <p-tabpanel value="patients">
-        <app-patient-analytics-tab [analytics]="patientAnalytics" [loading]="patientLoading"></app-patient-analytics-tab>
+        <app-patient-analytics-tab
+          [analytics]="patientAnalytics"
+          [loading]="patientLoading"
+          [trendLoading]="patientTrendLoading"
+          [trendGranularity]="patientTrendGranularity"
+          (trendGranularityChange)="onPatientTrendGranularityChange($event)"
+        ></app-patient-analytics-tab>
       </p-tabpanel>
     </p-tabpanels>
   </p-tabs>

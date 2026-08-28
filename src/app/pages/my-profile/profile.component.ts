@@ -180,6 +180,7 @@ export class ProfileComponent implements OnInit, OnDestroy {
           this.savingProfile = false;
           if (response && !response.hasError && response.content) {
             this.doctorProfile = response.content;
+            this.profileForm.markAsPristine();
             this.toast.success({ detail: 'Profile updated successfully.' });
           } else if (!response?.decentMessage) {
             this.toast.error({ detail: 'Could not update your profile.' });

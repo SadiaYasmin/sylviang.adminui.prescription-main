@@ -3,13 +3,19 @@
     <div class="flex flex-wrap items-end gap-3">
       <p-floatlabel variant="in">
         <input type="text" pInputText id="searchInput" [(ngModel)]="searchTerm" name="searchInput" (keyup.enter)="applySearch()" />
-        <label for="searchInput">Search name{{ isDoctorView ? '' : ', username, department' }}</label>
+        <label for="searchInput">Search name{{ isDoctorView ? '' : ', username, phone' }}</label>
       </p-floatlabel>
 
-      <p-floatlabel *ngIf="!isDoctorView" variant="in">
-        <input type="text" pInputText id="departmentInput" [(ngModel)]="departmentFilter" name="departmentInput" (keyup.enter)="applySearch()" />
-        <label for="departmentInput">Department</label>
-      </p-floatlabel>
+      <p-select
+        *ngIf="!isDoctorView"
+        [options]="departmentOptions"
+        [(ngModel)]="departmentFilter"
+        optionLabel="label"
+        optionValue="value"
+        placeholder="All Departments"
+        [showClear]="true"
+        (onChange)="applySearch()"
+      ></p-select>
 
       <p-select
         *ngIf="!isDoctorView"

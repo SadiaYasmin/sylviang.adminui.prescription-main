@@ -2,7 +2,7 @@ import { IPrescriptionListItem } from '@core/interfaces/prescriptions/prescripti
 
 export type ConsultationStatus = 'Waiting' | 'InConsultation' | 'Completed' | 'Draft';
 
-export type ConsultationDateMode = 'Today' | 'Yesterday' | 'Custom' | 'Range';
+export type ConsultationDateMode = 'Today' | 'Yesterday' | 'Custom' | 'Range' | 'All';
 
 export interface ICreateConsultationRequest {
   patientId: number;

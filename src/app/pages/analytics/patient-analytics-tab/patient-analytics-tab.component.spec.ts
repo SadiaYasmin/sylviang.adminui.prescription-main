@@ -39,7 +39,7 @@ describe('PatientAnalyticsTabComponent', () => {
 
   it('should render KPI tiles, charts, and the chronic-diagnosis table once data arrives', () => {
     component.loading = false;
-    component.analytics = analytics;
+    fixture.componentRef.setInput('analytics', analytics);
 
     expect(() => fixture.detectChanges()).not.toThrow();
     expect(component.registrationTrendChartData?.labels).toEqual(['2026-01-01']);

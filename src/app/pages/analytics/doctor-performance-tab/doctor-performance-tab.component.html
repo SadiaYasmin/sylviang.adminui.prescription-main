@@ -4,9 +4,9 @@
 
 <div *ngIf="!loading && !leaderboard" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
 
-<div *ngIf="!loading && leaderboard" class="rounded-2xl border border-surface-200 bg-surface-0 overflow-x-auto">
+<div *ngIf="!loading && leaderboard" class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 overflow-x-auto">
   <table class="w-full text-sm">
-    <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+    <thead class="bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-muted-color">
       <tr>
         <th class="px-4 py-2.5 text-left font-medium">Doctor</th>
         <th class="px-4 py-2.5 text-right font-medium">Patients Consulted</th>
@@ -17,7 +17,7 @@
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let d of leaderboard" class="border-t border-surface-100 hover:bg-surface-50">
+      <tr *ngFor="let d of leaderboard" class="border-t border-surface-100 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800">
         <td class="px-4 py-2.5">
           <a [routerLink]="['/doctors/doctor-details', d.doctorId]" class="font-medium text-primary hover:underline">{{ d.fullName }}</a>
         </td>

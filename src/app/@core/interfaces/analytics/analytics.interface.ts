@@ -1,7 +1,12 @@
 // Epic M — Analytics & Reporting Dashboard (US-072–079). Field-for-field mirror of the
 // backend's Application/Features/Analytics/Models/* response DTOs.
 
+import { IHourBucket } from '@core/interfaces/doctors/doctor.interface';
+
 export type AnalyticsGranularity = 'Day' | 'Week' | 'Month';
+
+/** Date-range presets for the "Prescriptions" trend chart on the Medicine & Prescription tab. */
+export type PrescriptionTrendRangePreset = 'Last7Days' | 'Last30Days' | 'Last3Months' | 'Custom';
 
 export interface ITrendPoint {
   bucketKey: string;
@@ -45,6 +50,10 @@ export interface IDoctorCountEntry {
 
 // US-072
 export interface IMedicineAnalyticsResponse {
+  totalPrescriptions: number;
+  totalMedicinesPrescribed: number;
+  uniqueMedicinesPrescribed: number;
+  avgMedicinesPerPrescription: number;
   topPrescribedMedicines: IMedicineCountEntry[];
   categoryBreakdown: ICategoryCountEntry[];
   rarelyUsedMedicines: IMedicineCountEntry[];
@@ -60,6 +69,11 @@ export interface IDoctorLeaderboardEntry {
   medicinesPrescribed: number;
   avgRxPerConsultation: number;
   avgMedsPerRx: number;
+}
+
+// US-073, hospital-wide (all doctors) — reported in Bangladesh Time (UTC+6), always 24 entries
+export interface IBusiestConsultationHoursResponse {
+  hours: IHourBucket[];
 }
 
 // US-074 (also reused by US-072's embedded trend chart)
@@ -113,6 +127,7 @@ export interface IMyDoctorAnalyticsResponse {
 export interface IAssignedDoctorEntry {
   doctorId: number;
   fullName: string;
+  department?: string | null;
 }
 
 export interface IMyStaffAnalyticsResponse {

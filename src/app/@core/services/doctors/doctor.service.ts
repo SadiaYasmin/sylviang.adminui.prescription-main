@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { ApiResponse } from '@core/interfaces/ApiResponse';
+import { AnalyticsGranularity } from '@core/interfaces/analytics/analytics.interface';
 import {
   ICreateDoctorRequest,
   ICreateDoctorResponse,
@@ -31,8 +32,10 @@ export class DoctorService {
     return this.httpClient.get<ApiResponse<IDoctorListResponse>>(`${this.API_URL}`, { params });
   }
 
-  getDoctorById(id: number) {
-    return this.httpClient.get<ApiResponse<IDoctorDetailsResponse>>(`${this.API_URL}/${id}`);
+  getDoctorById(id: number, activityGranularity: AnalyticsGranularity = 'Day') {
+    return this.httpClient.get<ApiResponse<IDoctorDetailsResponse>>(`${this.API_URL}/${id}`, {
+      params: { activityGranularity },
+    });
   }
 
   addDoctor(request: ICreateDoctorRequest) {

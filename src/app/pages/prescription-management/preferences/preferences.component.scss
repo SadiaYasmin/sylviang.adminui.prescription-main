@@ -4,8 +4,8 @@
 }
 
 .prefs-card {
-  background: var(--surface-0, #fff);
-  border: 1px solid var(--surface-200, #e5e7eb);
+  background: var(--p-surface-0, #fff);
+  border: 1px solid var(--p-surface-200, #e5e7eb);
   border-radius: 0.75rem;
   padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -13,6 +13,11 @@
   h3 {
     margin-top: 0;
   }
+}
+
+:host-context(.dark) .prefs-card {
+  background: var(--p-surface-900, #18181b);
+  border-color: var(--p-surface-700, #3f3f46);
 }
 
 .empty {
@@ -35,8 +40,8 @@
   gap: 0.5rem;
   padding: 0.5rem;
   border-radius: 0.75rem;
-  border: 2px solid var(--surface-200, #e5e7eb);
-  background: var(--surface-0, #fff);
+  border: 2px solid var(--p-surface-200, #e5e7eb);
+  background: var(--p-surface-0, #fff);
   cursor: pointer;
   text-align: left;
 
@@ -48,6 +53,16 @@
   &:disabled {
     opacity: 0.6;
     cursor: default;
+  }
+}
+
+:host-context(.dark) .template-option {
+  border-color: var(--p-surface-700, #3f3f46);
+  background: var(--p-surface-900, #18181b);
+
+  &.selected {
+    border-color: #14b8a6;
+    background: rgba(20, 184, 166, 0.12);
   }
 }
 
@@ -73,7 +88,11 @@
   top: 0.75rem;
   right: 0.75rem;
   color: #0f766e;
-  background: var(--surface-0, #fff);
+  background: var(--p-surface-0, #fff);
   border-radius: 50%;
   padding: 1px;
+}
+
+:host-context(.dark) .template-option-check {
+  background: var(--p-surface-900, #18181b);
 }

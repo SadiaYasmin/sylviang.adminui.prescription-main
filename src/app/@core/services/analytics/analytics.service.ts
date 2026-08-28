@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { ApiResponse } from '@core/interfaces/ApiResponse';
 import {
   AnalyticsGranularity,
+  IBusiestConsultationHoursResponse,
   IDoctorLeaderboardEntry,
   IExecutiveSummaryResponse,
   IMedicineAnalyticsResponse,
@@ -29,14 +30,21 @@ export class AnalyticsService {
     return this.httpClient.get<ApiResponse<IDoctorLeaderboardEntry[]>>(`${this.API_URL}/doctors/leaderboard`);
   }
 
-  getPrescriptionTrend(granularity: AnalyticsGranularity) {
-    return this.httpClient.get<ApiResponse<IPrescriptionVolumeTrendResponse>>(`${this.API_URL}/prescription-trend`, {
-      params: { granularity },
-    });
+  getBusiestConsultationHours() {
+    return this.httpClient.get<ApiResponse<IBusiestConsultationHoursResponse>>(`${this.API_URL}/doctors/busiest-hours`);
   }
 
-  getPatientAnalytics() {
-    return this.httpClient.get<ApiResponse<IPatientAnalyticsResponse>>(`${this.API_URL}/patients`);
+  getPrescriptionTrend(granularity: AnalyticsGranularity, from?: string, to?: string) {
+    const params: Record<string, string> = { granularity };
+    if (from) params['from'] = from;
+    if (to) params['to'] = to;
+    return this.httpClient.get<ApiResponse<IPrescriptionVolumeTrendResponse>>(`${this.API_URL}/prescription-trend`, { params });
+  }
+
+  getPatientAnalytics(granularity: AnalyticsGranularity = 'Day') {
+    return this.httpClient.get<ApiResponse<IPatientAnalyticsResponse>>(`${this.API_URL}/patients`, {
+      params: { granularity },
+    });
   }
 
   getExecutiveSummary() {

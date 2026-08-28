@@ -30,4 +30,5 @@ export const BASE_URL_DoctorPreferences = `${BASE_URL_Backend}/doctors/me/prefer
 export const BASE_URL_DoctorProfile = `${BASE_URL_Backend}/doctors/me`;
 export const BASE_URL_Analytics = `${BASE_URL_Backend}/analytics`;
 export const BASE_URL_Departments = `${BASE_URL_Backend}/departments`;
+export const BASE_URL_AssignedDoctors = `${BASE_URL_Backend}/assigned-doctors`;
 export const BASE_URL_Me = `${BASE_URL_Backend}/auth/me`;

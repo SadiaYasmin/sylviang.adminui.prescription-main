@@ -4,8 +4,8 @@
 }
 
 .prefs-card {
-  background: var(--surface-0, #fff);
-  border: 1px solid var(--surface-200, #e5e7eb);
+  background: var(--p-surface-0, #fff);
+  border: 1px solid var(--p-surface-200, #e5e7eb);
   border-radius: 0.75rem;
   padding: 1.25rem;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -13,6 +13,11 @@
   h3 {
     margin-top: 0;
   }
+}
+
+:host-context(.dark) .prefs-card {
+  background: var(--p-surface-900, #18181b);
+  border-color: var(--p-surface-700, #3f3f46);
 }
 
 .upload-btn {

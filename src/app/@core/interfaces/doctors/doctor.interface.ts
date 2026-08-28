@@ -93,9 +93,11 @@ export interface IDoctorPerformanceStats {
   avgMedicinesPerPrescription: number;
   totalMedicinesPrescribed: number;
   topMedicines: IDoctorTopMedicine[];
+  /** Every medicine this doctor has ever prescribed, sorted by count descending — never truncated, unlike topMedicines. */
+  allMedicines: IDoctorTopMedicine[];
   recentPrescriptions: IDoctorRecentPrescription[];
   activityTrend: IDoctorActivityTrendPoint[];
-  /** US-073: 24-hour histogram (Hour 0–23) of this doctor's consultation check-in times, UTC. */
+  /** US-073: 24-hour histogram (Hour 0–23) of this doctor's consultation check-in times, Bangladesh Time. */
   busiestHours: IHourBucket[];
 }
 
@@ -107,4 +109,33 @@ export interface IHourBucket {
 export interface IDoctorDetailsResponse {
   profile: IDoctorSummary;
   performance: IDoctorPerformanceStats;
+}
+
+/** A staff member's own "assigned to me" view of doctors — list row shape. */
+export interface IAssignedDoctorListItem {
+  doctorId: number;
+  fullName: string;
+  department?: string | null;
+  phone: string;
+  isActive: boolean;
+}
+
+/**
+ * A staff member's read-only detail view of one assigned doctor — deliberately not the full
+ * Admin IDoctorDetailsResponse (no prescribing analytics), just identity/contact fields plus
+ * two counts.
+ */
+export interface IAssignedDoctorDetails {
+  doctorId: number;
+  fullName: string;
+  specialization?: string | null;
+  department?: string | null;
+  email?: string | null;
+  phone: string;
+  isActive: boolean;
+  photoUrl?: string | null;
+  /** Null for assignments made before this field started being tracked. */
+  assignedDate?: string | null;
+  todayAppointments: number;
+  completedConsultations: number;
 }

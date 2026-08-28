@@ -49,6 +49,12 @@ const routes: Routes = [
       loadChildren: () => import('./patient-management/patient-management.module').then((m) => m.PatientManagementModule),
     },
     {
+      path: 'assigned-doctors',
+      canActivate: [roleGuard],
+      data: { roles: ['Staff'] },
+      loadChildren: () => import('./assigned-doctors/assigned-doctors.module').then((m) => m.AssignedDoctorsModule),
+    },
+    {
       path: 'templates',
       canActivate: [roleGuard],
       data: { roles: ['Admin'] },

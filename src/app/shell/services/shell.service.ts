@@ -33,7 +33,11 @@ export class ShellService {
   }
 
   activeNavTab(items: IMenuItem[], extendedItem: number): void {
-    const urlSegments = this._router.url.split('/').filter((segment) => segment.length > 0);
+    // Strip query string/fragment before splitting into path segments — a route like
+    // /analytics?tab=medicines otherwise glues "?tab=medicines" onto the last segment,
+    // which never matches any menu item's href and leaves the sidebar showing nothing active.
+    const path = this._router.url.split('?')[0].split('#')[0];
+    const urlSegments = path.split('/').filter((segment) => segment.length > 0);
     const bestTopHref = this.findBestMatchingHref(items, urlSegments);
 
     items.forEach((item, index) => {
@@ -57,16 +61,30 @@ export class ShellService {
    * Among sibling hrefs, several can match a route as a prefix (e.g. `/prescriptions`
    * is a prefix of `/prescriptions/preferences`). Only the longest matching href should
    * be treated as active, otherwise a shorter sibling route falsely lights up alongside it.
+   *
+   * Also checks `item.activeMatch` (a broader prefix an item should stay lit up under, e.g.
+   * `/quick-add` for the item whose concrete `href` is `/quick-add/medicine`) — this must stay
+   * in sync with MenuService.findBestMatchingHref's identical activeMatch handling, since both
+   * run on every NavigationEnd and this one runs last, overwriting the other's `.active` flags.
+   * Without it, only the Medicine tab (the item's literal href) ever lit up in the sidebar and
+   * every other Quick Add tab (Investigation, Diagnosis, Advice, Follow-Up) showed nothing selected.
    */
   private findBestMatchingHref(items: IMenuItem[], urlSegments: string[]): string | undefined {
     let best: string | undefined;
     let bestSegmentCount = -1;
+    const segmentsOf = (path: string) => path.split('/').filter((segment) => segment.length > 0);
+    const matches = (segments: string[]) => segments.every((segment, i) => segment === urlSegments[i]);
+
     for (const item of items) {
       if (!item.href) continue;
-      const hrefSegments = item.href.split('/').filter((segment) => segment.length > 0);
-      const isMatch = hrefSegments.every((segment, i) => segment === urlSegments[i]);
-      if (isMatch && hrefSegments.length > bestSegmentCount) {
-        bestSegmentCount = hrefSegments.length;
+      const hrefSegments = segmentsOf(item.href);
+      const activeMatchSegments = item.activeMatch ? segmentsOf(item.activeMatch) : null;
+
+      const matchedSegments = matches(hrefSegments) ? hrefSegments : activeMatchSegments && matches(activeMatchSegments) ? activeMatchSegments : null;
+      if (!matchedSegments) continue;
+
+      if (matchedSegments.length > bestSegmentCount) {
+        bestSegmentCount = matchedSegments.length;
         best = item.href;
       }
     }

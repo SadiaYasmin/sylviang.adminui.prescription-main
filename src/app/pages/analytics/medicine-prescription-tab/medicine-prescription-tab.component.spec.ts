@@ -8,6 +8,10 @@ describe('MedicinePrescriptionTabComponent', () => {
   let fixture: ComponentFixture<MedicinePrescriptionTabComponent>;
 
   const analytics: IMedicineAnalyticsResponse = {
+    totalPrescriptions: 2,
+    totalMedicinesPrescribed: 3,
+    uniqueMedicinesPrescribed: 2,
+    avgMedicinesPerPrescription: 1.5,
     topPrescribedMedicines: [{ name: 'Napa', count: 10 }],
     categoryBreakdown: [{ category: 'Analgesic', count: 10 }],
     rarelyUsedMedicines: [{ name: 'NeverUsed', count: 0 }],
@@ -37,8 +41,8 @@ describe('MedicinePrescriptionTabComponent', () => {
 
   it('should build chart data and render tables once analytics data arrives', () => {
     component.loading = false;
-    component.analytics = analytics;
-    component.trend = { granularity: 'Day', points: [{ bucketKey: '2026-01-01', count: 2 }] };
+    fixture.componentRef.setInput('analytics', analytics);
+    fixture.componentRef.setInput('trend', { granularity: 'Day', points: [{ bucketKey: '2026-01-01', count: 2 }] });
 
     expect(() => fixture.detectChanges()).not.toThrow();
     expect(component.topMedicinesChartData?.labels).toEqual(['Napa']);

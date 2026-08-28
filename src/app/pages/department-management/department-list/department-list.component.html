@@ -10,7 +10,7 @@
     </button>
   </div>
 
-  <div class="rounded-xl border border-surface-200 bg-surface-0 shadow-sm overflow-hidden">
+  <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-sm overflow-hidden">
     <p-table [value]="departments" [loading]="loading" responsiveLayout="scroll">
       <ng-template pTemplate="header">
         <tr>
@@ -56,7 +56,7 @@
 <p-dialog [visible]="showDialog" (visibleChange)="showDialog = $event" [modal]="true" [header]="editingDepartment ? 'Edit Department' : 'Add Department'" [style]="{ width: '24rem' }">
   <form [formGroup]="form" (ngSubmit)="save()" novalidate>
     <div class="mb-3">
-      <label class="block text-xs font-medium mb-1">Name</label>
+      <label class="block text-xs font-medium mb-1">Name <span class="text-red-600">*</span></label>
       <input type="text" pInputText class="w-full" formControlName="name" placeholder="e.g. General Medicine" />
       <div *ngIf="hasError('name')" class="text-xs text-red-600 mt-1">Name is required.</div>
     </div>

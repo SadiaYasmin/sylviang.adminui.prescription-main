@@ -59,7 +59,7 @@
             @for (col of columns; track col.field) {
               <th [style.width]="col.width">{{ col.label }}</th>
             }
-            <th style="width: 10rem">Total Prescribed</th>
+            <th *ngIf="!isStaffView" style="width: 10rem">Total Prescribed</th>
             <th style="width: 8rem">DGDA</th>
             <th style="width: 8rem">Status</th>
             <th *ngIf="canManage" style="width: 8rem">Actions</th>
@@ -70,7 +70,7 @@
           @if (loading) {
             <tr>
               <td *ngFor="let col of columns"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
-              <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
+              <td *ngIf="!isStaffView"><p-skeleton width="100%" height="1rem"></p-skeleton></td>
               <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
               <td><p-skeleton width="100%" height="1rem"></p-skeleton></td>
               <td *ngIf="canManage"><p-skeleton width="3rem" height="1rem"></p-skeleton></td>
@@ -82,7 +82,7 @@
               <td>{{ medicine.strength || '-' }}</td>
               <td>{{ medicine.dosageForm || '-' }}</td>
               <td>{{ medicine.category || '-' }}</td>
-              <td>{{ medicine.totalPrescribed }}</td>
+              <td *ngIf="!isStaffView">{{ medicine.totalPrescribed }}</td>
               <td>
                 <span [class]="medicine.dgdaRegistered ? 'text-green-600 font-medium' : 'text-red-500 font-medium'">
                   {{ medicine.dgdaRegistered ? 'Yes' : 'No' }}
@@ -112,7 +112,7 @@
 
         <ng-template pTemplate="emptymessage">
           <tr>
-            <td [attr.colspan]="columns.length + 3 + (canManage ? 1 : 0)" class="not-found">
+            <td [attr.colspan]="columns.length + (isStaffView ? 2 : 3) + (canManage ? 1 : 0)" class="not-found">
               <div>
                 <i class="fa fa-magnifying-glass-minus"></i>
                 <p>No medicines match your search.</p>

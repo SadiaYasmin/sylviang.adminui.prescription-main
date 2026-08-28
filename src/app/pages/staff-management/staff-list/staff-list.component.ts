@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UI_CONFIG } from '@app/@core/constants';
 import { IStaffSummary } from '@core/interfaces/staff/staff.interface';
 import { AuthService } from '@core/services/auth/auth.service';
+import { DepartmentService } from '@core/services/departments/department.service';
 import { ToastService } from '@core/services/misc/toast.service';
 import { StaffService } from '@core/services/staff/staff.service';
 import { ConfirmationService } from 'primeng/api';
@@ -17,6 +18,7 @@ export class StaffListComponent implements OnInit {
   constructor(
     private staffService: StaffService,
     private authService: AuthService,
+    private departmentService: DepartmentService,
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
@@ -32,6 +34,7 @@ export class StaffListComponent implements OnInit {
   searchTerm = '';
   departmentFilter = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  departmentOptions: { label: string; value: string }[] = [];
 
   columns = StaffListColumns;
 
@@ -47,6 +50,18 @@ export class StaffListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadStaff();
+    if (!this.isDoctorView) {
+      this.loadDepartments();
+    }
+  }
+
+  private loadDepartments(): void {
+    this.departmentService.getAll().subscribe({
+      next: (response) => {
+        const departments = !response.hasError && response.content ? response.content : [];
+        this.departmentOptions = departments.filter((d) => d.isActive).map((d) => ({ label: d.name, value: d.name }));
+      },
+    });
   }
 
   applySearch(): void {

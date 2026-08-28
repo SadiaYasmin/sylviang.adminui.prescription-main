@@ -40,19 +40,25 @@ export class BreadcrumbService {
   }
 
   setBreadcrumbs(breadcrumbs: BreadcrumbConfig[]): void {
-    const currentUrl = this.router.url;
-    this.customBreadcrumbs.set(currentUrl, breadcrumbs);
+    this.customBreadcrumbs.set(this.currentPath(), breadcrumbs);
     this.updateBreadcrumbs();
   }
 
   clearBreadcrumbs(): void {
-    const currentUrl = this.router.url;
-    this.customBreadcrumbs.delete(currentUrl);
+    this.customBreadcrumbs.delete(this.currentPath());
     this.updateBreadcrumbs();
   }
 
+  // Strip query string/fragment so a route like /analytics?tab=medicines still keys off
+  // /analytics — otherwise a page whose query param changes after setBreadcrumbs() ran in
+  // ngOnInit (e.g. a tab param) loses its custom breadcrumb lookup and falls back to the
+  // raw-route auto-generated one, which also used to render the query string as crumb text.
+  private currentPath(): string {
+    return this.router.url.split('?')[0].split('#')[0];
+  }
+
   private updateBreadcrumbs(): void {
-    const currentUrl = this.router.url;
+    const currentUrl = this.currentPath();
     const customBreadcrumbs = this.customBreadcrumbs.get(currentUrl);
 
     if (customBreadcrumbs && customBreadcrumbs.length > 0) {
@@ -75,7 +81,7 @@ export class BreadcrumbService {
   }
 
   private createBreadcrumbsFromRoute(): BreadcrumbItem[] {
-    const url = this.router.url;
+    const url = this.currentPath();
     const urlSegments = url.split('/').filter((segment) => segment);
 
     if (urlSegments.length === 0) {

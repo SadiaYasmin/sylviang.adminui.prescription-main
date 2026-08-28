@@ -557,3 +557,41 @@
 .p-popover-content {
   @apply p-0 !important;
 }
+
+// --------------------------------------------PrimeNG Chart Sizing--------------------------------------------
+// Chart.js runs with { responsive: true, maintainAspectRatio: false }, which means it sizes
+// the <canvas> to the height of the canvas's DIRECT parent. PrimeNG's <p-chart> host and its
+// inner wrapper default to height:auto, so that direct parent has NO definite height even when
+// a fixed height (e.g. 12rem) is set on the surrounding card — Chart.js then falls back to a
+// stale height (often the one computed while the tab was still display:none), and the line/bars
+// render far taller than the card and bleed into the sections below.
+//
+// Making the whole element chain carry height:100% gives the canvas's parent a definite height
+// equal to the card, so Chart.js always sizes correctly. min-height:0 stops the canvas's own
+// intrinsic size from establishing a larger flex/grid minimum. max-height is a last-resort clip
+// so a mid-animation miscalculation can never paint outside the box.
+p-chart {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+
+  // PrimeNG v19 renders the canvas's direct wrapper as a plain <div style="position:relative">
+  // with NO class — the old `.p-chart` selector never matched it, so the wrapper kept height:auto
+  // and the canvas grew unbounded on every tab switch (150px -> 302px -> ...). Target the direct
+  // child div so it inherits the card's definite height instead. `.p-chart` kept as a fallback in
+  // case a future PrimeNG version restores the class.
+  .p-chart,
+  > div {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    min-height: 0;
+  }
+
+  canvas {
+    max-width: 100% !important;
+    max-height: 100% !important;
+  }
+}

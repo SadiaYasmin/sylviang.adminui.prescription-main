@@ -1,15 +1,29 @@
-<div class="flex items-center justify-between mb-3">
-  <div class="text-xs font-semibold uppercase tracking-wide text-muted-color">Prescription Volume</div>
-  <div class="inline-flex rounded-lg border border-surface-200 overflow-hidden text-xs">
-    <button
-      type="button"
-      *ngFor="let opt of granularityOptions"
-      (click)="selectGranularity(opt.value)"
-      class="px-3 py-1.5 font-medium"
-      [class]="opt.value === granularity ? 'bg-primary text-primary-contrast' : 'bg-surface-0 text-muted-color hover:bg-surface-50'"
-    >
-      {{ opt.label }}
-    </button>
+<div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+  <div class="text-xs font-semibold uppercase tracking-wide text-muted-color">Prescription Volume — {{ rangeLabel }}</div>
+  <div class="flex flex-wrap items-center gap-2">
+    <div class="inline-flex rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden text-xs">
+      <button
+        type="button"
+        *ngFor="let opt of granularityOptions"
+        (click)="selectGranularity(opt.value)"
+        class="px-3 py-1.5 font-medium"
+        [class]="opt.value === granularity ? 'bg-primary text-primary-contrast' : 'bg-surface-0 dark:bg-surface-900 text-muted-color hover:bg-surface-50 dark:hover:bg-surface-800'"
+      >
+        {{ opt.label }}
+      </button>
+    </div>
+    <p-select
+      [options]="rangePresetOptions"
+      [ngModel]="rangePreset"
+      optionLabel="label"
+      optionValue="value"
+      (ngModelChange)="selectRangePreset($event)"
+      styleClass="text-xs"
+    ></p-select>
+    <ng-container *ngIf="isCustomRange">
+      <p-datepicker [(ngModel)]="customFrom" dateFormat="yy-mm-dd" placeholder="From" (onSelect)="onCustomRangeSelected()"></p-datepicker>
+      <p-datepicker [(ngModel)]="customTo" dateFormat="yy-mm-dd" placeholder="To" (onSelect)="onCustomRangeSelected()"></p-datepicker>
+    </ng-container>
   </div>
 </div>
 
@@ -17,6 +31,32 @@
 
 <div *ngIf="!loading && !trend" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
 
-<div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm" *ngIf="!loading && chartData" style="height: 22rem">
+<div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm mb-4 overflow-hidden" *ngIf="!loading && chartData" style="height: 12rem">
   <p-chart type="line" [data]="chartData" [options]="chartOptions"></p-chart>
+</div>
+
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-4">
+  <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
+    <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Prescriptions per Doctor</div>
+    <p-skeleton *ngIf="leaderboardLoading" height="14rem"></p-skeleton>
+    <ng-container *ngIf="!leaderboardLoading">
+      <div class="overflow-hidden" [style.height]="prescriptionsPerDoctorChartHeight" *ngIf="prescriptionsPerDoctorChartData">
+        <p-chart type="bar" [data]="prescriptionsPerDoctorChartData" [options]="prescriptionsPerDoctorChartOptions"></p-chart>
+      </div>
+      <div *ngIf="!prescriptionsPerDoctorChartData && leaderboard" class="text-sm text-muted-color py-8 text-center">No doctors registered yet.</div>
+      <div *ngIf="!prescriptionsPerDoctorChartData && !leaderboard" class="text-sm text-muted-color py-8 text-center">Analytics data isn't available right now.</div>
+    </ng-container>
+  </div>
+
+  <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
+    <div class="text-xs font-semibold uppercase tracking-wide text-muted-color mb-2">Peak Consultation Hours (Bangladesh Time)</div>
+    <p-skeleton *ngIf="busiestHoursLoading" height="14rem"></p-skeleton>
+    <ng-container *ngIf="!busiestHoursLoading">
+      <div class="overflow-hidden" [style.height]="peakHoursChartHeight" *ngIf="peakHoursChartData">
+        <p-chart type="bar" [data]="peakHoursChartData" [options]="peakHoursChartOptions"></p-chart>
+      </div>
+      <div *ngIf="!peakHoursChartData && busiestHours" class="text-sm text-muted-color py-8 text-center">No consultation check-ins recorded yet.</div>
+      <div *ngIf="!peakHoursChartData && !busiestHours" class="text-sm text-muted-color py-8 text-center">Analytics data isn't available right now.</div>
+    </ng-container>
+  </div>
 </div>

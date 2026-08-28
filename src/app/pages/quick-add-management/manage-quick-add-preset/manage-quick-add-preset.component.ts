@@ -230,7 +230,13 @@ export class ManageQuickAddPresetComponent implements OnInit, OnDestroy {
         const preset = response.content?.find((p) => p.quickAddPresetId === this.presetId);
         if (preset) {
           try {
-            const payload = JSON.parse(preset.payloadJson);
+            let payload = JSON.parse(preset.payloadJson);
+            // Older seeded 'text'-shape rows stored the payload as a bare JSON string (e.g.
+            // "CBC") instead of { text: "CBC" } — normalize so patchValue() targets the
+            // actual 'text' control instead of silently no-op'ing on a raw string.
+            if (this.section.payloadShape === 'text' && typeof payload === 'string') {
+              payload = { text: payload };
+            }
             this.form.patchValue(payload);
             // A pre-existing preset's instructions text might not be one of the predefined
             // options (typed before this dropdown existed, or picked "Custom" originally) —

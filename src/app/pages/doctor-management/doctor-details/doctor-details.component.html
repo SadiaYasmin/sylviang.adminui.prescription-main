@@ -6,8 +6,8 @@
   <div *ngIf="loading" class="py-16 text-center text-sm text-muted-color">Loading doctor...</div>
 
   <ng-container *ngIf="!loading && details as d">
-    <div class="mb-6 flex items-center gap-4 rounded-2xl border border-surface-200 bg-surface-0 p-5 shadow-sm">
-      <div class="h-20 w-20 rounded-full overflow-hidden bg-surface-100 flex items-center justify-center">
+    <div class="mb-6 flex items-center gap-4 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-5 shadow-sm">
+      <div class="h-20 w-20 rounded-full overflow-hidden bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
         <img *ngIf="d.profile.photoUrl" [src]="resolveAssetUrl(d.profile.photoUrl)" [alt]="d.profile.fullName" class="h-full w-full object-cover" />
         <i *ngIf="!d.profile.photoUrl" class="fa fa-user-doctor text-2xl text-muted-color"></i>
       </div>
@@ -20,27 +20,27 @@
 
     <section class="mb-6">
       <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Personal Information</div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 rounded-2xl border border-surface-200 bg-surface-0 p-4">
-        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-x-8 rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4">
+        <div class="flex justify-between border-b border-surface-100 dark:border-surface-700 py-2 text-sm">
           <span class="text-muted-color">Full Name</span><span class="font-medium">{{ d.profile.fullName }}</span>
         </div>
-        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+        <div class="flex justify-between border-b border-surface-100 dark:border-surface-700 py-2 text-sm">
           <span class="text-muted-color">BM&amp;DC Reg. No.</span><span class="font-medium">{{ d.profile.licenseNumber || '-' }}</span>
         </div>
-        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+        <div class="flex justify-between border-b border-surface-100 dark:border-surface-700 py-2 text-sm">
           <span class="text-muted-color">Qualification</span><span class="font-medium">{{ d.profile.qualification || '-' }}</span>
         </div>
-        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+        <div class="flex justify-between border-b border-surface-100 dark:border-surface-700 py-2 text-sm">
           <span class="text-muted-color">Experience</span
           ><span class="font-medium">{{ d.profile.experienceYears ? d.profile.experienceYears + ' years' : '-' }}</span>
         </div>
-        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+        <div class="flex justify-between border-b border-surface-100 dark:border-surface-700 py-2 text-sm">
           <span class="text-muted-color">Gender</span><span class="font-medium">{{ d.profile.gender || '-' }}</span>
         </div>
-        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+        <div class="flex justify-between border-b border-surface-100 dark:border-surface-700 py-2 text-sm">
           <span class="text-muted-color">Email</span><span class="font-medium">{{ d.profile.email || '-' }}</span>
         </div>
-        <div class="flex justify-between border-b border-surface-100 py-2 text-sm">
+        <div class="flex justify-between border-b border-surface-100 dark:border-surface-700 py-2 text-sm">
           <span class="text-muted-color">Phone</span><span class="font-medium">{{ d.profile.phone }}</span>
         </div>
         <div class="flex justify-between py-2 text-sm">
@@ -55,31 +55,46 @@
     <section class="mb-6">
       <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Prescription Analytics</div>
       <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <div
+          class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+          [routerLink]="['/consultations/consultation-list']"
+          [queryParams]="consultationsAllTimeQueryParams"
+        >
           <div class="text-xs uppercase tracking-wide text-muted-color">Total Prescriptions</div>
           <div class="text-2xl font-semibold">{{ d.performance.totalPrescriptions }}</div>
         </div>
-        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <div
+          class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+          [routerLink]="['/consultations/consultation-list']"
+          [queryParams]="consultationsTodayQueryParams"
+        >
           <div class="text-xs uppercase tracking-wide text-muted-color">Today's Prescriptions</div>
           <div class="text-2xl font-semibold">{{ d.performance.todayPrescriptions }}</div>
         </div>
-        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <div
+          class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+          [routerLink]="['/consultations/consultation-list']"
+          [queryParams]="consultationsThisMonthQueryParams"
+        >
           <div class="text-xs uppercase tracking-wide text-muted-color">This Month's Prescriptions</div>
           <div class="text-2xl font-semibold">{{ d.performance.thisMonthPrescriptions }}</div>
         </div>
-        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <div
+          class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
+          (click)="openAllMedicinesDialog()"
+        >
           <div class="text-xs uppercase tracking-wide text-muted-color">Total Medicines Prescribed</div>
           <div class="text-2xl font-semibold">{{ d.performance.totalMedicinesPrescribed }}</div>
         </div>
-        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
           <div class="text-xs uppercase tracking-wide text-muted-color">Patients Consulted</div>
           <div class="text-2xl font-semibold">{{ d.performance.totalPatientsConsulted }}</div>
         </div>
-        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
           <div class="text-xs uppercase tracking-wide text-muted-color">Avg Rx / Consultation</div>
           <div class="text-2xl font-semibold">{{ d.performance.avgPrescriptionsPerConsultation }}</div>
         </div>
-        <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+        <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
           <div class="text-xs uppercase tracking-wide text-muted-color">Avg Medicines / Rx</div>
           <div class="text-2xl font-semibold">{{ d.performance.avgMedicinesPerPrescription }}</div>
         </div>
@@ -87,48 +102,108 @@
     </section>
 
     <section class="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4">
-      <div *ngIf="activityTrendChartData">
-        <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Activity Trend</div>
-        <div class="rounded-2xl border border-surface-200 bg-surface-0 p-4 shadow-sm" style="height: 14rem">
-          <p-chart type="line" [data]="activityTrendChartData" [options]="chartOptions"></p-chart>
+      <div>
+        <div class="mb-3 flex items-center justify-between">
+          <div class="text-sm font-semibold uppercase tracking-wide text-muted-color">Activity Trend</div>
+          <div class="inline-flex rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden text-xs">
+            <button
+              type="button"
+              *ngFor="let opt of activityGranularityOptions"
+              (click)="selectActivityGranularity(opt.value)"
+              class="px-3 py-1.5 font-medium"
+              [class]="opt.value === activityGranularity ? 'bg-primary text-primary-contrast' : 'bg-surface-0 dark:bg-surface-900 text-muted-color hover:bg-surface-50 dark:hover:bg-surface-800'"
+            >
+              {{ opt.label }}
+            </button>
+          </div>
+        </div>
+        <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm overflow-hidden" style="height: 14rem">
+          <p-skeleton *ngIf="activityTrendLoading" height="100%"></p-skeleton>
+          <p-chart *ngIf="!activityTrendLoading && activityTrendChartData" type="line" [data]="activityTrendChartData" [options]="chartOptions"></p-chart>
+          <div *ngIf="!activityTrendLoading && !activityTrendChartData" class="flex h-full items-center justify-center text-sm text-muted-color">
+            No activity recorded for this period.
+          </div>
         </div>
       </div>
       <div *ngIf="busiestHoursChartData">
-        <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Busiest Consultation Hours (UTC)</div>
-        <div class="rounded-2xl border border-surface-200 bg-surface-0 p-4 shadow-sm" style="height: 14rem">
-          <p-chart type="bar" [data]="busiestHoursChartData" [options]="chartOptions"></p-chart>
+        <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Busiest Consultation Hours (Bangladesh Time)</div>
+        <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm overflow-hidden" style="height: 14rem">
+          <p-chart type="bar" [data]="busiestHoursChartData" [options]="hourChartOptions"></p-chart>
         </div>
       </div>
     </section>
 
-    <section class="mb-6">
-      <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Top Prescribed Medicines</div>
-      <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-hidden">
-        <table class="w-full text-sm">
-          <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
-            <tr>
-              <th class="px-4 py-2.5 text-left font-medium">Medicine Name</th>
-              <th class="px-4 py-2.5 text-right font-medium">Times Prescribed</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let m of d.performance.topMedicines">
-              <td class="px-4 py-2.5">{{ m.name }}</td>
-              <td class="px-4 py-2.5 text-right font-medium">{{ m.count }}</td>
-            </tr>
-            <tr *ngIf="d.performance.topMedicines.length === 0">
-              <td colspan="2" class="px-4 py-6 text-center text-muted-color">No medicines prescribed yet.</td>
-            </tr>
-          </tbody>
-        </table>
+    <section class="mb-6 grid grid-cols-1 lg:grid-cols-2 gap-4 items-stretch">
+      <div class="flex flex-col min-h-0">
+        <div class="mb-3 flex items-center justify-between">
+          <div class="text-sm font-semibold uppercase tracking-wide text-muted-color">Top Prescribed Medicines</div>
+          <button
+            *ngIf="d.performance.allMedicines.length > 0"
+            type="button"
+            class="text-xs font-medium text-primary hover:underline"
+            (click)="openAllMedicinesDialog()"
+          >
+            View All
+          </button>
+        </div>
+        <!-- Minimum height = header row + 5 data rows worth of space, always, regardless of how many
+             medicines actually exist — 1..5 real rows render and the rest of the card stays blank;
+             topMedicines is already backend-capped at 5, so this never needs to scroll or clip. This
+             is the row's height floor: the Medicine Distribution card stretches to match it via the
+             grid's items-stretch, never the other way around. -->
+        <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 overflow-hidden" style="min-height: 15rem">
+          <table class="w-full text-sm">
+            <thead class="bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-muted-color">
+              <tr>
+                <th class="px-4 py-2.5 text-left font-medium">Medicine Name</th>
+                <th class="px-4 py-2.5 text-right font-medium">Times Prescribed</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of d.performance.topMedicines">
+                <td class="px-4 py-2.5">{{ m.name }}</td>
+                <td class="px-4 py-2.5 text-right font-medium">{{ m.count }}</td>
+              </tr>
+              <tr *ngIf="d.performance.topMedicines.length === 0">
+                <td colspan="2" class="px-4 py-6 text-center text-muted-color">No medicines prescribed yet.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div *ngIf="medicineDistributionChartData" class="flex flex-col min-h-0">
+        <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Medicine Distribution</div>
+        <!--
+          min-h-0 on both this card and its grid-item ancestor above is load-bearing: a flex/grid
+          item's automatic minimum size is its content's intrinsic size unless overridden, and a
+          Chart.js canvas has a non-zero intrinsic size. Without min-h-0, that intrinsic size wins
+          the grid's row-height computation BEFORE items-stretch is applied, so the whole row (and
+          the left card with it) balloons to fit the chart instead of the chart shrinking to the
+          row height the left card set. With it, this card can shrink to (and then stretch to
+          exactly) the left card's height, and the chart fills whatever height that turns out to be.
+        -->
+        <!--
+          A percentage height (h-full) on the chart wrapper below needed every ancestor from
+          here to the grid to resolve to a *definite* size for it to work — through a
+          grid → flex-col → flex-1 chain that's fragile in practice (Chart.js's canvas kept
+          winning and the card grew to fit it instead of the reverse). Making this card a flex
+          row and giving the wrapper flex-1 instead sidesteps percentage-height resolution
+          entirely: flex stretch always yields a definite cross-axis size.
+        -->
+        <div class="flex-1 min-h-0 overflow-hidden rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm flex">
+          <div class="flex-1 min-h-0 mx-auto" style="max-width: 78%">
+            <p-chart type="doughnut" [data]="medicineDistributionChartData" [options]="donutChartOptions"></p-chart>
+          </div>
+        </div>
       </div>
     </section>
 
     <section>
       <div class="mb-3 text-sm font-semibold uppercase tracking-wide text-muted-color">Recent Prescriptions</div>
-      <div class="rounded-2xl border border-surface-200 bg-surface-0 overflow-x-auto">
+      <div class="rounded-2xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 overflow-x-auto">
         <table class="w-full text-sm">
-          <thead class="bg-surface-50 text-xs uppercase tracking-wide text-muted-color">
+          <thead class="bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-muted-color">
             <tr>
               <th class="px-4 py-2.5 text-left font-medium">Prescription ID</th>
               <th class="px-4 py-2.5 text-left font-medium">Patient Name</th>
@@ -150,5 +225,41 @@
         </table>
       </div>
     </section>
+
+    <p-dialog
+      [(visible)]="showAllMedicinesDialog"
+      [header]="'All Prescribed Medicines — ' + d.profile.fullName"
+      [modal]="true"
+      [dismissableMask]="true"
+      [style]="{ width: '32rem' }"
+      [breakpoints]="{ '640px': '92vw' }"
+    >
+      <p-floatlabel variant="in" class="mb-3 block">
+        <input type="text" pInputText id="allMedicinesSearch" [(ngModel)]="allMedicinesSearchTerm" name="allMedicinesSearch" class="w-full" />
+        <label for="allMedicinesSearch">Search medicine name</label>
+      </p-floatlabel>
+
+      <div class="rounded-2xl border border-surface-200 dark:border-surface-700 overflow-hidden">
+        <div class="overflow-y-auto" style="max-height: 60vh">
+          <table class="w-full text-sm">
+            <thead class="bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-muted-color sticky top-0">
+              <tr>
+                <th class="px-4 py-2.5 text-left font-medium">Medicine Name</th>
+                <th class="px-4 py-2.5 text-right font-medium">Times Prescribed</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let m of filteredAllMedicines">
+                <td class="px-4 py-2.5">{{ m.name }}</td>
+                <td class="px-4 py-2.5 text-right font-medium">{{ m.count }}</td>
+              </tr>
+              <tr *ngIf="filteredAllMedicines.length === 0">
+                <td colspan="2" class="px-4 py-6 text-center text-muted-color">No medicines match "{{ allMedicinesSearchTerm }}".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </p-dialog>
   </ng-container>
 </section>

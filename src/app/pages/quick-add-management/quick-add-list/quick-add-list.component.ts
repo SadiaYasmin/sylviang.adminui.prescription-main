@@ -78,7 +78,9 @@ export class QuickAddListComponent implements OnInit {
           return payload.bn ? `${payload.en} / ${payload.bn}` : payload.en;
         case 'text':
         default:
-          return payload.text;
+          // Older seeded rows stored the payload as a bare JSON string (e.g. "CBC") instead
+          // of { text: "CBC" } — handle both so those presets don't render blank.
+          return typeof payload === 'string' ? payload : payload.text;
       }
     } catch {
       return preset.payloadJson;

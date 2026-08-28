@@ -2,12 +2,12 @@
   <div *ngIf="loading" class="text-muted-color">Loading hospital settings...</div>
 
   <form *ngIf="!loading" [formGroup]="settingsForm" (ngSubmit)="onSubmit()" novalidate class="max-w-3xl">
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm mb-4">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm mb-4">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label class="block text-xs font-medium mb-2">Hospital Logo</label>
           <div class="flex items-center gap-4">
-            <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 flex items-center justify-center">
+            <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
               <img *ngIf="currentLogoUrl" [src]="currentLogoUrl" alt="Hospital logo" class="h-full w-full object-contain" />
               <i *ngIf="!currentLogoUrl" class="fa fa-hospital text-2xl text-muted-color"></i>
             </div>
@@ -28,7 +28,7 @@
         <div>
           <label class="block text-xs font-medium mb-2">Hospital Seal</label>
           <div class="flex items-center gap-4">
-            <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 flex items-center justify-center">
+            <div class="h-20 w-20 rounded-xl overflow-hidden bg-surface-100 dark:bg-surface-800 flex items-center justify-center">
               <img *ngIf="currentSealUrl" [src]="currentSealUrl" alt="Hospital seal" class="h-full w-full object-contain" />
               <i *ngIf="!currentSealUrl" class="fa fa-stamp text-2xl text-muted-color"></i>
             </div>
@@ -48,22 +48,22 @@
       </div>
     </div>
 
-    <div class="rounded-xl border border-surface-200 bg-surface-0 p-4 shadow-sm">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
       <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div class="sm:col-span-2">
-          <label class="block text-xs font-medium mb-1">Hospital Name</label>
+          <label class="block text-xs font-medium mb-1">Hospital Name <span class="text-red-600">*</span></label>
           <input type="text" pInputText class="w-full" formControlName="name" />
           <div *ngIf="hasError('name')" class="text-xs text-red-600 mt-1">Hospital name is required.</div>
         </div>
 
         <div class="sm:col-span-2">
-          <label class="block text-xs font-medium mb-1">Address</label>
+          <label class="block text-xs font-medium mb-1">Address <span class="text-red-600">*</span></label>
           <input type="text" pInputText class="w-full" formControlName="address" />
           <div *ngIf="hasError('address')" class="text-xs text-red-600 mt-1">Address is required.</div>
         </div>
 
         <div>
-          <label class="block text-xs font-medium mb-1">Phone</label>
+          <label class="block text-xs font-medium mb-1">Phone <span class="text-red-600">*</span></label>
           <input type="text" pInputText class="w-full" formControlName="phone" />
           <div *ngIf="hasError('phone')" class="text-xs text-red-600 mt-1">Phone is required.</div>
         </div>
@@ -91,7 +91,7 @@
 
         <div>
           <label class="block text-xs font-medium mb-1">Slogan (Bangla)</label>
-          <input type="text" pInputText class="w-full" formControlName="sloganBn" />
+          <input type="text" pInputText class="w-full" formControlName="sloganBn" autocomplete="off" [appBanglaPhoneticInput]="true" />
         </div>
 
         <div>

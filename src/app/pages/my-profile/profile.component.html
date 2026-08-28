@@ -64,12 +64,12 @@
 
       <div class="profile-grid">
         <div>
-          <label class="block text-xs font-medium mb-1">Full Name</label>
+          <label class="block text-xs font-medium mb-1">Full Name <span class="text-red-600">*</span></label>
           <input type="text" pInputText class="w-full" formControlName="fullName" />
           <small class="error-text" *ngIf="hasProfileError('fullName')">Full name is required.</small>
         </div>
         <div>
-          <label class="block text-xs font-medium mb-1">Phone</label>
+          <label class="block text-xs font-medium mb-1">Phone <span class="text-red-600">*</span></label>
           <input type="text" pInputText class="w-full" formControlName="phone" />
           <small class="error-text" *ngIf="hasProfileError('phone')">Enter a valid Bangladesh mobile number.</small>
         </div>
@@ -89,7 +89,7 @@
       </div>
 
       <div class="flex justify-end mt-3">
-        <button type="submit" pButton [loading]="savingProfile">Save Profile</button>
+        <button type="submit" pButton [loading]="savingProfile" [disabled]="profileForm.pristine || profileForm.invalid">Save Profile</button>
       </div>
     </form>
 
@@ -101,7 +101,7 @@
       <form *ngIf="emailStep === 'idle'" [formGroup]="emailForm" (ngSubmit)="requestEmailChange()" novalidate>
         <div class="profile-grid">
           <div>
-            <label class="block text-xs font-medium mb-1">Email</label>
+            <label class="block text-xs font-medium mb-1">Email <span class="text-red-600">*</span></label>
             <input type="email" pInputText class="w-full" formControlName="newEmail" />
             <small class="error-text" *ngIf="hasCodeError(emailForm, 'newEmail')">Enter a valid email address.</small>
           </div>
@@ -114,7 +114,7 @@
       <form *ngIf="emailStep === 'codeSent'" [formGroup]="emailCodeForm" (ngSubmit)="confirmEmailChange()" novalidate>
         <div class="profile-grid">
           <div>
-            <label class="block text-xs font-medium mb-1">Confirmation Code</label>
+            <label class="block text-xs font-medium mb-1">Confirmation Code <span class="text-red-600">*</span></label>
             <input type="text" pInputText class="w-full" formControlName="code" maxlength="6" placeholder="6-digit code" />
             <small class="error-text" *ngIf="hasCodeError(emailCodeForm, 'code')">Enter the 6-digit code.</small>
           </div>
@@ -143,17 +143,17 @@
       <form *ngIf="passwordStep === 'codeSent'" [formGroup]="passwordCodeForm" (ngSubmit)="confirmPasswordChange()" novalidate>
         <div class="profile-grid">
           <div>
-            <label class="block text-xs font-medium mb-1">Confirmation Code</label>
+            <label class="block text-xs font-medium mb-1">Confirmation Code <span class="text-red-600">*</span></label>
             <input type="text" pInputText class="w-full" formControlName="code" maxlength="6" placeholder="6-digit code" />
             <small class="error-text" *ngIf="hasCodeError(passwordCodeForm, 'code')">Enter the 6-digit code.</small>
           </div>
           <div>
-            <label class="block text-xs font-medium mb-1">New Password</label>
+            <label class="block text-xs font-medium mb-1">New Password <span class="text-red-600">*</span></label>
             <input type="password" pInputText class="w-full" formControlName="newPassword" />
             <small class="error-text" *ngIf="hasCodeError(passwordCodeForm, 'newPassword')">At least 8 characters.</small>
           </div>
           <div>
-            <label class="block text-xs font-medium mb-1">Confirm New Password</label>
+            <label class="block text-xs font-medium mb-1">Confirm New Password <span class="text-red-600">*</span></label>
             <input type="password" pInputText class="w-full" formControlName="confirmPassword" />
             <small class="error-text" *ngIf="passwordsMismatch()">Passwords do not match.</small>
           </div>

@@ -2,13 +2,13 @@
   <form [formGroup]="patientForm" (ngSubmit)="onSubmit()" novalidate>
     <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="sm:col-span-2">
-        <label class="block text-xs font-medium mb-1">Name</label>
+        <label class="block text-xs font-medium mb-1">Name <span class="text-red-600">*</span></label>
         <input type="text" pInputText class="w-full" formControlName="name" placeholder="Jane Roy" />
         <div *ngIf="hasError('name')" class="text-xs text-red-600 mt-1">Name is required.</div>
       </div>
 
       <div>
-        <label class="block text-xs font-medium mb-1">Phone</label>
+        <label class="block text-xs font-medium mb-1">Phone <span class="text-red-600">*</span></label>
         <input type="text" pInputText class="w-full" formControlName="phone" maxlength="11" placeholder="e.g. 01712345678" />
         <div *ngIf="hasError('phone')" class="text-xs text-red-600 mt-1">Enter a valid Bangladesh mobile number (11 digits, starting with 013-019).</div>
       </div>

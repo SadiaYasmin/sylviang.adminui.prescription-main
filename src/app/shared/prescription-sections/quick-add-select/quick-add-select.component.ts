@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, Output } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, Output } from '@angular/core';
 import { QuickAddService } from '@core/services/quick-add/quick-add.service';
 import { IQuickAddPreset, QuickAddSectionType, resolveQuickAddOptionLabel } from '@core/interfaces/quick-add/quick-add.interface';
 
@@ -23,7 +23,10 @@ export class QuickAddSelectComponent implements OnChanges {
   presets: IQuickAddPreset[] = [];
   open = false;
 
-  constructor(private quickAddService: QuickAddService) {}
+  constructor(
+    private quickAddService: QuickAddService,
+    private elementRef: ElementRef<HTMLElement>,
+  ) {}
 
   ngOnChanges(): void {
     if (this.sectionType) {
@@ -33,6 +36,13 @@ export class QuickAddSelectComponent implements OnChanges {
 
   toggle(): void {
     this.open = !this.open;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    if (this.open && !this.elementRef.nativeElement.contains(event.target as Node)) {
+      this.open = false;
+    }
   }
 
   optionLabel(preset: IQuickAddPreset): string {

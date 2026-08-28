@@ -2,6 +2,7 @@ import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { UI_CONFIG } from '@app/@core/constants';
 import { IDoctorListSummary, IDoctorSummary } from '@core/interfaces/doctors/doctor.interface';
 import { DoctorService } from '@core/services/doctors/doctor.service';
+import { DepartmentService } from '@core/services/departments/department.service';
 import { ToastService } from '@core/services/misc/toast.service';
 import { ConfirmationService } from 'primeng/api';
 import { DoctorListColumns } from './doctor-list.component.constants';
@@ -15,6 +16,7 @@ import { DoctorListColumns } from './doctor-list.component.constants';
 export class DoctorListComponent implements OnInit {
   constructor(
     private doctorService: DoctorService,
+    private departmentService: DepartmentService,
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
@@ -31,6 +33,7 @@ export class DoctorListComponent implements OnInit {
   searchTerm = '';
   departmentFilter = '';
   statusFilter: 'all' | 'active' | 'inactive' = 'all';
+  departmentOptions: { label: string; value: string }[] = [];
 
   columns = DoctorListColumns;
 
@@ -42,6 +45,16 @@ export class DoctorListComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadDoctors();
+    this.loadDepartments();
+  }
+
+  private loadDepartments(): void {
+    this.departmentService.getAll().subscribe({
+      next: (response) => {
+        const departments = !response.hasError && response.content ? response.content : [];
+        this.departmentOptions = departments.filter((d) => d.isActive).map((d) => ({ label: d.name, value: d.name }));
+      },
+    });
   }
 
   applySearch(): void {
@@ -53,6 +66,18 @@ export class DoctorListComponent implements OnInit {
     this.searchTerm = '';
     this.departmentFilter = '';
     this.statusFilter = 'all';
+    this.currentPage = 1;
+    this.loadDoctors();
+  }
+
+  showAllDoctors(): void {
+    this.resetSearch();
+  }
+
+  showActiveDoctors(): void {
+    this.searchTerm = '';
+    this.departmentFilter = '';
+    this.statusFilter = 'active';
     this.currentPage = 1;
     this.loadDoctors();
   }
