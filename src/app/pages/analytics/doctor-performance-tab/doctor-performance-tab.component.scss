@@ -1,0 +1,8 @@
+// Tailwind's `primary` utility color is a literal hex baked in by this app's own
+// tailwind.config.js (which shadows tailwindcss-primeui's CSS-variable-driven definition), so
+// it doesn't respond to the `--p-primary-*` override in analytics-dashboard.component.scss.
+// Angular's view encapsulation still scopes this override to this component's own template
+// (an attribute gets appended to the selector), so this can't leak into other pages.
+.text-primary {
+  color: #0d9488;
+}

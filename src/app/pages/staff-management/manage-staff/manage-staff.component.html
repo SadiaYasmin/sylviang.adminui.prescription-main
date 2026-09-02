@@ -42,18 +42,55 @@
         <span class="text-muted-color">{{ derivedDepartments.length ? ' ' + derivedDepartments.join(', ') : ' — (assign a doctor to derive this)' }}</span>
       </p>
       <div *ngIf="doctors.length === 0" class="text-xs text-muted-color">No doctors registered yet.</div>
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div *ngFor="let doctor of doctors" class="flex items-center gap-2">
-          <p-checkbox
-            [binary]="true"
-            [ngModel]="isDoctorAssigned(doctor.doctorId)"
+
+      <ng-container *ngIf="doctors.length > 0">
+        <div class="relative mb-2">
+          <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-color"></i>
+          <input
+            type="text"
+            [(ngModel)]="doctorSearchTerm"
             [ngModelOptions]="{ standalone: true }"
-            (onChange)="toggleDoctor(doctor.doctorId, $event.checked)"
-            [inputId]="'staff-doctor-' + doctor.doctorId"
-          ></p-checkbox>
-          <label [for]="'staff-doctor-' + doctor.doctorId" class="text-sm">{{ doctor.fullName }}</label>
+            placeholder="Search doctors by name or department"
+            class="!pl-8"
+          />
         </div>
-      </div>
+
+        <div class="rounded-lg border border-surface-200 dark:border-surface-700 max-h-64 overflow-y-auto">
+          <table class="w-full text-sm">
+            <thead class="sticky top-0 bg-surface-50 dark:bg-surface-800 text-xs uppercase tracking-wide text-muted-color">
+              <tr>
+                <th class="px-3 py-2 text-left font-medium w-8"></th>
+                <th class="px-3 py-2 text-left font-medium">Doctor</th>
+                <th class="px-3 py-2 text-left font-medium">Department</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr
+                *ngFor="let doctor of filteredDoctors"
+                class="border-t border-surface-100 dark:border-surface-700 hover:bg-surface-50 dark:hover:bg-surface-800 cursor-pointer"
+                (click)="toggleDoctor(doctor.doctorId, !isDoctorAssigned(doctor.doctorId))"
+              >
+                <td class="px-3 py-2" (click)="$event.stopPropagation()">
+                  <p-checkbox
+                    [binary]="true"
+                    [ngModel]="isDoctorAssigned(doctor.doctorId)"
+                    [ngModelOptions]="{ standalone: true }"
+                    (onChange)="toggleDoctor(doctor.doctorId, $event.checked)"
+                    [inputId]="'staff-doctor-' + doctor.doctorId"
+                  ></p-checkbox>
+                </td>
+                <td class="px-3 py-2">
+                  <label [for]="'staff-doctor-' + doctor.doctorId">{{ doctor.fullName }}</label>
+                </td>
+                <td class="px-3 py-2 text-muted-color">{{ doctor.department || '-' }}</td>
+              </tr>
+              <tr *ngIf="filteredDoctors.length === 0">
+                <td colspan="3" class="px-3 py-4 text-center text-muted-color">No doctors match "{{ doctorSearchTerm }}".</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </ng-container>
     </div>
 
     <div class="flex justify-between gap-3 mt-6">

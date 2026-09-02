@@ -1,10 +1,13 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
+import { ActivatedRoute } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { AllergyPresetOptions } from '@app/@core/constants/allergy-presets';
 import { BloodGroupLabels } from '@app/@core/constants/blood-group-options';
 import { UI_CONFIG } from '@app/@core/constants';
 import { IPatientSummary } from '@core/interfaces/patients/patient.interface';
 import { AuthService } from '@core/services/auth/auth.service';
 import { PatientService } from '@core/services/patients/patient.service';
+import { DOCTOR_STATS_PERIOD_OPTIONS, DoctorStatsPeriod } from '@app/shared/utils/doctor-stats-period.util';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
@@ -19,7 +22,18 @@ export class PatientListComponent implements OnInit, OnDestroy {
     private patientService: PatientService,
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
+    private route: ActivatedRoute,
+    private breadcrumbService: BreadcrumbService,
   ) {}
+
+  /** One-shot registration-date range from navigation context (e.g. Executive Summary's "Total Patients" card) — read once on init, applied to every load, never shown as a visible filter control on this page. */
+  private navFrom: string | null = null;
+  private navTo: string | null = null;
+  private navNewOnly = false;
+  private navReturningOnly = false;
+  /** Public (not private) so the template can show a small "Showing patients consulted: X" context label near the page title — this page still gets no visible date-range filter control, just this label. */
+  navCompletedWithMeOnly = false;
+  navPeriodLabel = '';
 
   private readonly destroy$ = new Subject<void>();
   private readonly searchTermChanges$ = new Subject<string>();
@@ -62,6 +76,19 @@ export class PatientListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([{ title: 'Patient Management', icon: 'fa-solid fa-user-injured', href: '/patients/patient-list' }]);
+
+    const params = this.route.snapshot.queryParamMap;
+    this.navFrom = params.get('from');
+    this.navTo = params.get('to');
+    this.navNewOnly = params.get('newOnly') === 'true';
+    this.navReturningOnly = params.get('returningOnly') === 'true';
+    this.navCompletedWithMeOnly = params.get('completedWithMeOnly') === 'true';
+    if (this.navCompletedWithMeOnly) {
+      const requestedPeriod = params.get('period') as DoctorStatsPeriod | null;
+      this.navPeriodLabel = DOCTOR_STATS_PERIOD_OPTIONS.find((opt) => opt.value === requestedPeriod)?.label ?? 'This Month';
+    }
+
     this.searchTermChanges$.pipe(debounceTime(UI_CONFIG.searchDebounceTime), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(() => {
       this.currentPage = 1;
       this.loadPatients();
@@ -94,6 +121,11 @@ export class PatientListComponent implements OnInit, OnDestroy {
         page: this.currentPage,
         pageSize: this.rows,
         searchTerm: this.searchTerm || undefined,
+        from: this.navFrom || undefined,
+        to: this.navTo || undefined,
+        newOnly: this.navNewOnly || undefined,
+        returningOnly: this.navReturningOnly || undefined,
+        completedWithMeOnly: this.navCompletedWithMeOnly || undefined,
       })
       .subscribe({
         next: (response) => {

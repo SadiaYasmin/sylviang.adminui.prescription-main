@@ -1,3 +1,12 @@
+<div class="flex justify-end mb-3">
+  <app-analytics-date-range-filter
+    [mono]="true"
+    [preset]="rangePreset"
+    (presetChange)="rangePresetChange.emit($event)"
+    (customRangeChange)="customRangeChange.emit($event)"
+  ></app-analytics-date-range-filter>
+</div>
+
 <div *ngIf="loading" class="space-y-2">
   <p-skeleton height="2.5rem" *ngFor="let i of [1, 2, 3, 4, 5]"></p-skeleton>
 </div>

@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { PrescriptionService } from '@core/services/prescriptions/prescription.service';
 import { IPrescriptionDocument } from '@core/interfaces/prescriptions/prescription.interface';
 import { downloadPrescriptionPdf } from '../pdf/prescription-pdf.util';
@@ -16,9 +17,15 @@ export class PrescriptionViewComponent implements OnInit {
   loading = true;
   downloading = false;
 
-  constructor(private route: ActivatedRoute, private prescriptionService: PrescriptionService) {}
+  constructor(private route: ActivatedRoute, private prescriptionService: PrescriptionService, private breadcrumbService: BreadcrumbService) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Prescriptions', icon: 'fa-solid fa-file-prescription', href: '/prescriptions' },
+      { title: 'Finalized Prescriptions', icon: 'fa-solid fa-file-circle-check', href: '/prescriptions/finalized' },
+      { title: 'Prescription Details', icon: 'fa-solid fa-eye', href: `/prescriptions/view/${this.route.snapshot.paramMap.get('id')}` },
+    ]);
+
     const id = Number(this.route.snapshot.paramMap.get('id'));
     this.prescriptionService.getById(id).subscribe({
       next: (res) => {

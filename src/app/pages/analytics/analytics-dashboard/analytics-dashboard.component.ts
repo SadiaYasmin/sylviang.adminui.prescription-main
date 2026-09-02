@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { AnalyticsService } from '@core/services/analytics/analytics.service';
 import {
   AnalyticsGranularity,
@@ -12,6 +13,7 @@ import {
   PrescriptionTrendRangePreset,
 } from '@core/interfaces/analytics/analytics.interface';
 import { resolvePrescriptionTrendRange } from '@app/shared/utils/prescription-trend-range.util';
+import { ANALYTICS_MONO_TABS_DT } from '@app/shared/utils/analytics-mono-tokens.util';
 
 type AnalyticsTabKey = 'summary' | 'medicines' | 'doctors' | 'trends' | 'patients';
 
@@ -23,6 +25,11 @@ const ANALYTICS_TAB_KEYS: AnalyticsTabKey[] = ['summary', 'medicines', 'doctors'
  * upfront, and cached for the rest of the session (switching tabs back and forth doesn't
  * re-fetch). The backend does all aggregation (US-079); this component only orchestrates
  * which endpoint to call and hands the response straight to a presentational tab component.
+ *
+ * Every tab owns ONE independent date-range filter (Last 7/30/90 Days/Custom, default
+ * Last 30 Days) — Doctor Performance and Prescription Trends both need the doctor
+ * leaderboard/busiest-hours data, but with their own separate range, so those are fetched
+ * twice (once per tab) rather than shared like before this filter existed.
  */
 @Component({
   selector: 'app-analytics-dashboard',
@@ -33,11 +40,15 @@ const ANALYTICS_TAB_KEYS: AnalyticsTabKey[] = ['summary', 'medicines', 'doctors'
 export class AnalyticsDashboardComponent implements OnInit {
   activeTab: AnalyticsTabKey = 'summary';
   private loadedTabs = new Set<AnalyticsTabKey>();
-  /** Backs both the Doctor Performance table and the two charts on the Trends tab — fetched once regardless of which tab is opened first. */
-  private doctorPerfDataLoaded = false;
+
+  /** Scoped design-token override so the tab indicator/active-tab text match this page's monochromatic teal instead of the app's global primary color — see analytics-mono-tokens.util.ts. */
+  readonly tabsDt = ANALYTICS_MONO_TABS_DT;
 
   summary: IExecutiveSummaryResponse | null = null;
   summaryLoading = false;
+  summaryRangePreset: PrescriptionTrendRangePreset = 'Last30Days';
+  private summaryCustomFrom: Date | null = null;
+  private summaryCustomTo: Date | null = null;
 
   medicineAnalytics: IMedicineAnalyticsResponse | null = null;
   medicineLoading = false;
@@ -45,18 +56,25 @@ export class AnalyticsDashboardComponent implements OnInit {
   medicineTrend: IPrescriptionVolumeTrendResponse | null = null;
   medicineTrendLoading = false;
   medicineTrendGranularity: AnalyticsGranularity = 'Day';
+  /** Doubles as the Medicine & Prescription tab's one global date-range filter — drives the KPI cards/tables and the trend chart alike. */
   medicineTrendRangePreset: PrescriptionTrendRangePreset = 'Last30Days';
   private medicineTrendCustomFrom: Date | null = null;
   private medicineTrendCustomTo: Date | null = null;
 
-  leaderboard: IDoctorLeaderboardEntry[] | null = null;
-  leaderboardLoading = false;
+  doctorPerfLeaderboard: IDoctorLeaderboardEntry[] | null = null;
+  doctorPerfLoading = false;
+  doctorPerfRangePreset: PrescriptionTrendRangePreset = 'Last30Days';
+  private doctorPerfCustomFrom: Date | null = null;
+  private doctorPerfCustomTo: Date | null = null;
 
-  busiestHours: IBusiestConsultationHoursResponse | null = null;
-  busiestHoursLoading = false;
+  trendsLeaderboard: IDoctorLeaderboardEntry[] | null = null;
+  trendsLeaderboardLoading = false;
+  trendsBusiestHours: IBusiestConsultationHoursResponse | null = null;
+  trendsBusiestHoursLoading = false;
 
   trend: IPrescriptionVolumeTrendResponse | null = null;
   trendGranularity: AnalyticsGranularity = 'Day';
+  /** Doubles as the Prescription Trends tab's one global date-range filter — drives the volume chart, the per-doctor chart, and the peak-hours chart alike. */
   trendRangePreset: PrescriptionTrendRangePreset = 'Last30Days';
   trendLoading = false;
   private trendCustomFrom: Date | null = null;
@@ -66,14 +84,20 @@ export class AnalyticsDashboardComponent implements OnInit {
   patientLoading = false;
   patientTrendLoading = false;
   patientTrendGranularity: AnalyticsGranularity = 'Day';
+  patientRangePreset: PrescriptionTrendRangePreset = 'Last30Days';
+  private patientCustomFrom: Date | null = null;
+  private patientCustomTo: Date | null = null;
 
   constructor(
     private analyticsService: AnalyticsService,
     private route: ActivatedRoute,
     private router: Router,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([{ title: 'Analytics & Reports', icon: 'fa-solid fa-chart-pie', href: '/analytics' }]);
+
     const requestedTab = this.route.snapshot.queryParamMap.get('tab');
     if (requestedTab && (ANALYTICS_TAB_KEYS as string[]).includes(requestedTab)) {
       this.activeTab = requestedTab as AnalyticsTabKey;
@@ -122,14 +146,13 @@ export class AnalyticsDashboardComponent implements OnInit {
         this.loadSummary();
         break;
       case 'medicines':
-        this.loadMedicineAnalytics();
+        this.loadMedicineTabData();
         break;
       case 'doctors':
-        this.ensureDoctorPerfDataLoaded();
+        this.loadDoctorPerfLeaderboard();
         break;
       case 'trends':
-        this.loadTrend();
-        this.ensureDoctorPerfDataLoaded();
+        this.loadTrendsTabData();
         break;
       case 'patients':
         this.loadPatientAnalytics();
@@ -137,9 +160,20 @@ export class AnalyticsDashboardComponent implements OnInit {
     }
   }
 
+  /** Exposed to the tab so its "Total Patients"/"Completed Prescriptions" cards can carry the exact same resolved range into their destination pages. */
+  summaryRangeFrom = '';
+  summaryRangeTo = '';
+
+  private resolveSummaryRange() {
+    return resolvePrescriptionTrendRange(this.summaryRangePreset, this.summaryCustomFrom, this.summaryCustomTo);
+  }
+
   private loadSummary(): void {
     this.summaryLoading = true;
-    this.analyticsService.getExecutiveSummary().subscribe({
+    const { from, to } = this.resolveSummaryRange();
+    this.summaryRangeFrom = from;
+    this.summaryRangeTo = to;
+    this.analyticsService.getExecutiveSummary(from, to).subscribe({
       next: (response) => {
         this.summary = !response.hasError && response.content ? response.content : null;
         this.summaryLoading = false;
@@ -150,9 +184,34 @@ export class AnalyticsDashboardComponent implements OnInit {
     });
   }
 
-  private loadMedicineAnalytics(): void {
+  onSummaryRangePresetChange(preset: PrescriptionTrendRangePreset): void {
+    this.summaryRangePreset = preset;
+    if (preset !== 'Custom') {
+      this.loadSummary();
+    }
+  }
+
+  onSummaryCustomRangeChange(range: { from: Date; to: Date }): void {
+    this.summaryCustomFrom = range.from;
+    this.summaryCustomTo = range.to;
+    this.loadSummary();
+  }
+
+  /** Exposed to the tab so its "Total/Unique Medicines Prescribed" cards can carry the exact same resolved range into the Medicine List navigation. */
+  medicineRangeFrom = '';
+  medicineRangeTo = '';
+
+  private resolveMedicineTrendRange() {
+    return resolvePrescriptionTrendRange(this.medicineTrendRangePreset, this.medicineTrendCustomFrom, this.medicineTrendCustomTo);
+  }
+
+  private loadMedicineTabData(): void {
+    const { from, to } = this.resolveMedicineTrendRange();
+    this.medicineRangeFrom = from;
+    this.medicineRangeTo = to;
+
     this.medicineLoading = true;
-    this.analyticsService.getMedicineAnalytics().subscribe({
+    this.analyticsService.getMedicineAnalytics(from, to).subscribe({
       next: (response) => {
         this.medicineAnalytics = !response.hasError && response.content ? response.content : null;
         this.medicineLoading = false;
@@ -162,16 +221,8 @@ export class AnalyticsDashboardComponent implements OnInit {
         this.medicineLoading = false;
       },
     });
-    this.loadMedicineTrend();
-  }
 
-  private loadMedicineTrend(): void {
     this.medicineTrendLoading = true;
-    const { from, to } = resolvePrescriptionTrendRange(
-      this.medicineTrendRangePreset,
-      this.medicineTrendCustomFrom,
-      this.medicineTrendCustomTo,
-    );
     this.analyticsService.getPrescriptionTrend(this.medicineTrendGranularity, from, to).subscribe({
       next: (response) => {
         this.medicineTrend = !response.hasError && response.content ? response.content : null;
@@ -186,59 +237,62 @@ export class AnalyticsDashboardComponent implements OnInit {
 
   onMedicineTrendGranularityChange(granularity: AnalyticsGranularity): void {
     this.medicineTrendGranularity = granularity;
-    this.loadMedicineTrend();
+    this.loadMedicineTabData();
   }
 
   onMedicineTrendRangePresetChange(preset: PrescriptionTrendRangePreset): void {
     this.medicineTrendRangePreset = preset;
     if (preset !== 'Custom') {
-      this.loadMedicineTrend();
+      this.loadMedicineTabData();
     }
   }
 
   onMedicineTrendCustomRangeChange(range: { from: Date; to: Date }): void {
     this.medicineTrendCustomFrom = range.from;
     this.medicineTrendCustomTo = range.to;
-    this.loadMedicineTrend();
+    this.loadMedicineTabData();
   }
 
-  private ensureDoctorPerfDataLoaded(): void {
-    if (this.doctorPerfDataLoaded) {
-      return;
+  private resolveDoctorPerfRange() {
+    return resolvePrescriptionTrendRange(this.doctorPerfRangePreset, this.doctorPerfCustomFrom, this.doctorPerfCustomTo);
+  }
+
+  private loadDoctorPerfLeaderboard(): void {
+    this.doctorPerfLoading = true;
+    const { from, to } = this.resolveDoctorPerfRange();
+    this.analyticsService.getDoctorLeaderboard(from, to).subscribe({
+      next: (response) => {
+        this.doctorPerfLeaderboard = !response.hasError && response.content ? response.content : null;
+        this.doctorPerfLoading = false;
+        this.nudgeChartResize();
+      },
+      error: () => {
+        this.doctorPerfLoading = false;
+      },
+    });
+  }
+
+  onDoctorPerfRangePresetChange(preset: PrescriptionTrendRangePreset): void {
+    this.doctorPerfRangePreset = preset;
+    if (preset !== 'Custom') {
+      this.loadDoctorPerfLeaderboard();
     }
-    this.doctorPerfDataLoaded = true;
-    this.loadLeaderboard();
   }
 
-  private loadLeaderboard(): void {
-    this.leaderboardLoading = true;
-    this.analyticsService.getDoctorLeaderboard().subscribe({
-      next: (response) => {
-        this.leaderboard = !response.hasError && response.content ? response.content : null;
-        this.leaderboardLoading = false;
-        this.nudgeChartResize();
-      },
-      error: () => {
-        this.leaderboardLoading = false;
-      },
-    });
-
-    this.busiestHoursLoading = true;
-    this.analyticsService.getBusiestConsultationHours().subscribe({
-      next: (response) => {
-        this.busiestHours = !response.hasError && response.content ? response.content : null;
-        this.busiestHoursLoading = false;
-        this.nudgeChartResize();
-      },
-      error: () => {
-        this.busiestHoursLoading = false;
-      },
-    });
+  onDoctorPerfCustomRangeChange(range: { from: Date; to: Date }): void {
+    this.doctorPerfCustomFrom = range.from;
+    this.doctorPerfCustomTo = range.to;
+    this.loadDoctorPerfLeaderboard();
   }
 
-  private loadTrend(): void {
+  private resolveTrendRange() {
+    return resolvePrescriptionTrendRange(this.trendRangePreset, this.trendCustomFrom, this.trendCustomTo);
+  }
+
+  private loadTrendsTabData(): void {
+    const { from, to } = this.resolveTrendRange();
+
     this.trendLoading = true;
-    const { from, to } = resolvePrescriptionTrendRange(this.trendRangePreset, this.trendCustomFrom, this.trendCustomTo);
     this.analyticsService.getPrescriptionTrend(this.trendGranularity, from, to).subscribe({
       next: (response) => {
         this.trend = !response.hasError && response.content ? response.content : null;
@@ -249,30 +303,65 @@ export class AnalyticsDashboardComponent implements OnInit {
         this.trendLoading = false;
       },
     });
+
+    this.trendsLeaderboardLoading = true;
+    this.analyticsService.getDoctorLeaderboard(from, to).subscribe({
+      next: (response) => {
+        this.trendsLeaderboard = !response.hasError && response.content ? response.content : null;
+        this.trendsLeaderboardLoading = false;
+        this.nudgeChartResize();
+      },
+      error: () => {
+        this.trendsLeaderboardLoading = false;
+      },
+    });
+
+    this.trendsBusiestHoursLoading = true;
+    this.analyticsService.getBusiestConsultationHours(from, to).subscribe({
+      next: (response) => {
+        this.trendsBusiestHours = !response.hasError && response.content ? response.content : null;
+        this.trendsBusiestHoursLoading = false;
+        this.nudgeChartResize();
+      },
+      error: () => {
+        this.trendsBusiestHoursLoading = false;
+      },
+    });
   }
 
   onTrendGranularityChange(granularity: AnalyticsGranularity): void {
     this.trendGranularity = granularity;
-    this.loadTrend();
+    this.loadTrendsTabData();
   }
 
   onTrendRangePresetChange(preset: PrescriptionTrendRangePreset): void {
     this.trendRangePreset = preset;
     if (preset !== 'Custom') {
-      this.loadTrend();
+      this.loadTrendsTabData();
     }
   }
 
   onTrendCustomRangeChange(range: { from: Date; to: Date }): void {
     this.trendCustomFrom = range.from;
     this.trendCustomTo = range.to;
-    this.loadTrend();
+    this.loadTrendsTabData();
+  }
+
+  /** Exposed to the tab so its "New Patients" card can carry the exact same resolved range into the Patient List navigation. */
+  patientRangeFrom = '';
+  patientRangeTo = '';
+
+  private resolvePatientRange() {
+    return resolvePrescriptionTrendRange(this.patientRangePreset, this.patientCustomFrom, this.patientCustomTo);
   }
 
   private loadPatientAnalytics(isInitialLoad = true): void {
     this.patientLoading = isInitialLoad;
     this.patientTrendLoading = !isInitialLoad;
-    this.analyticsService.getPatientAnalytics(this.patientTrendGranularity).subscribe({
+    const { from, to } = this.resolvePatientRange();
+    this.patientRangeFrom = from;
+    this.patientRangeTo = to;
+    this.analyticsService.getPatientAnalytics(this.patientTrendGranularity, from, to).subscribe({
       next: (response) => {
         this.patientAnalytics = !response.hasError && response.content ? response.content : null;
         this.patientLoading = false;
@@ -288,6 +377,19 @@ export class AnalyticsDashboardComponent implements OnInit {
 
   onPatientTrendGranularityChange(granularity: AnalyticsGranularity): void {
     this.patientTrendGranularity = granularity;
+    this.loadPatientAnalytics(false);
+  }
+
+  onPatientRangePresetChange(preset: PrescriptionTrendRangePreset): void {
+    this.patientRangePreset = preset;
+    if (preset !== 'Custom') {
+      this.loadPatientAnalytics(false);
+    }
+  }
+
+  onPatientCustomRangeChange(range: { from: Date; to: Date }): void {
+    this.patientCustomFrom = range.from;
+    this.patientCustomTo = range.to;
     this.loadPatientAnalytics(false);
   }
 }

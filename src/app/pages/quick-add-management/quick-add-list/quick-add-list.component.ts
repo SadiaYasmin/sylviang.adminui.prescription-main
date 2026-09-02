@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { findQuickAddSectionByRoute, IQuickAddSectionOption, QUICK_ADD_SECTION_OPTIONS } from '@core/constants/quick-add-section-options';
 import { IQuickAddPreset } from '@core/interfaces/quick-add/quick-add.interface';
 import { QuickAddService } from '@core/services/quick-add/quick-add.service';
@@ -20,6 +21,7 @@ export class QuickAddListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   section!: IQuickAddSectionOption;
@@ -45,6 +47,7 @@ export class QuickAddListComponent implements OnInit {
   ngOnInit(): void {
     this.route.paramMap.subscribe((params) => {
       this.section = findQuickAddSectionByRoute(params.get('section')!);
+      this.breadcrumbService.setBreadcrumbs([{ title: this.section.label, icon: this.section.icon, href: `/quick-add/${this.section.routeSegment}` }]);
       this.searchTerm = '';
       this.loadPresets();
     });

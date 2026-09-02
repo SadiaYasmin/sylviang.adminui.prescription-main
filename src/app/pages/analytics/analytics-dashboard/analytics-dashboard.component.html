@@ -1,7 +1,7 @@
 <section class="page-container">
-  <h2 class="text-xl font-semibold mb-4">Analytics &amp; Reports</h2>
+  <h2 class="text-xl font-semibold mb-4 analytics-heading">Analytics &amp; Reports</h2>
 
-  <p-tabs [value]="activeTab" (valueChange)="onTabChange($event)">
+  <p-tabs [value]="activeTab" [dt]="tabsDt" (valueChange)="onTabChange($event)">
     <p-tablist>
       <p-tab value="summary">Executive Summary</p-tab>
       <p-tab value="medicines">Medicine &amp; Prescription</p-tab>
@@ -12,7 +12,15 @@
 
     <p-tabpanels>
       <p-tabpanel value="summary">
-        <app-executive-summary-tab [summary]="summary" [loading]="summaryLoading"></app-executive-summary-tab>
+        <app-executive-summary-tab
+          [summary]="summary"
+          [loading]="summaryLoading"
+          [rangePreset]="summaryRangePreset"
+          [rangeFrom]="summaryRangeFrom"
+          [rangeTo]="summaryRangeTo"
+          (rangePresetChange)="onSummaryRangePresetChange($event)"
+          (customRangeChange)="onSummaryCustomRangeChange($event)"
+        ></app-executive-summary-tab>
       </p-tabpanel>
 
       <p-tabpanel value="medicines">
@@ -23,6 +31,8 @@
           [trendLoading]="medicineTrendLoading"
           [trendGranularity]="medicineTrendGranularity"
           [trendRangePreset]="medicineTrendRangePreset"
+          [rangeFrom]="medicineRangeFrom"
+          [rangeTo]="medicineRangeTo"
           (trendGranularityChange)="onMedicineTrendGranularityChange($event)"
           (trendRangePresetChange)="onMedicineTrendRangePresetChange($event)"
           (trendCustomRangeChange)="onMedicineTrendCustomRangeChange($event)"
@@ -30,7 +40,13 @@
       </p-tabpanel>
 
       <p-tabpanel value="doctors">
-        <app-doctor-performance-tab [leaderboard]="leaderboard" [loading]="leaderboardLoading"></app-doctor-performance-tab>
+        <app-doctor-performance-tab
+          [leaderboard]="doctorPerfLeaderboard"
+          [loading]="doctorPerfLoading"
+          [rangePreset]="doctorPerfRangePreset"
+          (rangePresetChange)="onDoctorPerfRangePresetChange($event)"
+          (customRangeChange)="onDoctorPerfCustomRangeChange($event)"
+        ></app-doctor-performance-tab>
       </p-tabpanel>
 
       <p-tabpanel value="trends">
@@ -42,10 +58,10 @@
           (granularityChange)="onTrendGranularityChange($event)"
           (rangePresetChange)="onTrendRangePresetChange($event)"
           (customRangeChange)="onTrendCustomRangeChange($event)"
-          [leaderboard]="leaderboard"
-          [leaderboardLoading]="leaderboardLoading"
-          [busiestHours]="busiestHours"
-          [busiestHoursLoading]="busiestHoursLoading"
+          [leaderboard]="trendsLeaderboard"
+          [leaderboardLoading]="trendsLeaderboardLoading"
+          [busiestHours]="trendsBusiestHours"
+          [busiestHoursLoading]="trendsBusiestHoursLoading"
         ></app-prescription-trends-tab>
       </p-tabpanel>
 
@@ -56,6 +72,11 @@
           [trendLoading]="patientTrendLoading"
           [trendGranularity]="patientTrendGranularity"
           (trendGranularityChange)="onPatientTrendGranularityChange($event)"
+          [rangePreset]="patientRangePreset"
+          [rangeFrom]="patientRangeFrom"
+          [rangeTo]="patientRangeTo"
+          (rangePresetChange)="onPatientRangePresetChange($event)"
+          (customRangeChange)="onPatientCustomRangeChange($event)"
         ></app-patient-analytics-tab>
       </p-tabpanel>
     </p-tabpanels>

@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { BreadcrumbService } from '@app/@core/services';
 import { UI_CONFIG } from '@app/@core/constants';
 import { IDoctorListSummary, IDoctorSummary } from '@core/interfaces/doctors/doctor.interface';
 import { DoctorService } from '@core/services/doctors/doctor.service';
@@ -20,6 +21,7 @@ export class DoctorListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   doctors: IDoctorSummary[] = [];
@@ -44,6 +46,7 @@ export class DoctorListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([{ title: 'Doctor Management', icon: 'fa-solid fa-user-doctor', href: '/doctors/doctor-list' }]);
     this.loadDoctors();
     this.loadDepartments();
   }

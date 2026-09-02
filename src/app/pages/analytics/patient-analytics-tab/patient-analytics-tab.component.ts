@@ -1,8 +1,11 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
-import { AnalyticsGranularity, IPatientAnalyticsResponse } from '@core/interfaces/analytics/analytics.interface';
-import { buildBarChartData, buildLineChartData } from '@app/shared/utils/analytics-chart.util';
+import { AnalyticsGranularity, IPatientAnalyticsResponse, PrescriptionTrendRangePreset } from '@core/interfaces/analytics/analytics.interface';
+import { ANALYTICS_MONO_CHART_COLORS, buildBarChartData, buildLineChartData } from '@app/shared/utils/analytics-chart.util';
 
-const ZERO_BASED_SCALES = { y: { beginAtZero: true, ticks: { precision: 0 } } };
+const ZERO_BASED_SCALES = {
+  x: { ticks: { color: '#737373' }, grid: { display: false } },
+  y: { beginAtZero: true, ticks: { precision: 0, color: '#737373' }, grid: { color: '#e5e5e5' } },
+};
 
 const TREND_CHART_OPTIONS = {
   responsive: true,
@@ -39,6 +42,13 @@ export class PatientAnalyticsTabComponent implements OnChanges {
   @Input() trendGranularity: AnalyticsGranularity = 'Day';
   @Output() trendGranularityChange = new EventEmitter<AnalyticsGranularity>();
 
+  @Input() rangePreset: PrescriptionTrendRangePreset = 'Last30Days';
+  @Output() rangePresetChange = new EventEmitter<PrescriptionTrendRangePreset>();
+  @Output() customRangeChange = new EventEmitter<{ from: Date; to: Date }>();
+  /** Resolved concrete bounds of the above — "New Patients" navigates to Patient List filtered to this exact registration-date range. */
+  @Input() rangeFrom = '';
+  @Input() rangeTo = '';
+
   trendChartOptions = TREND_CHART_OPTIONS;
   barChartOptions = BAR_CHART_OPTIONS;
 
@@ -61,12 +71,18 @@ export class PatientAnalyticsTabComponent implements OnChanges {
     if (changes['analytics']) {
       this.registrationTrendChartData =
         this.analytics && this.analytics.newRegistrationTrend.length > 0
-          ? buildLineChartData(this.analytics.newRegistrationTrend, 'New registrations')
+          ? buildLineChartData(
+              this.analytics.newRegistrationTrend,
+              'New registrations',
+              ANALYTICS_MONO_CHART_COLORS.primary,
+              ANALYTICS_MONO_CHART_COLORS.areaFill,
+            )
           : null;
       this.topDiagnosesChartData = this.analytics
         ? buildBarChartData(
             this.analytics.topDiagnoses.map((d) => ({ name: d.diagnosis, count: d.count })),
             'Prescriptions',
+            ANALYTICS_MONO_CHART_COLORS.primary,
           )
         : null;
     }

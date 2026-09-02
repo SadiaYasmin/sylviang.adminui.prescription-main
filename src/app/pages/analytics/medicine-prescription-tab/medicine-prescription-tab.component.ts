@@ -5,11 +5,12 @@ import {
   IPrescriptionVolumeTrendResponse,
   PrescriptionTrendRangePreset,
 } from '@core/interfaces/analytics/analytics.interface';
-import { buildBarChartData, buildLineChartData, buildPrescriptionTrendChartOptions } from '@app/shared/utils/analytics-chart.util';
 import {
-  PRESCRIPTION_TREND_RANGE_PRESET_LABELS,
-  PRESCRIPTION_TREND_RANGE_PRESET_OPTIONS,
-} from '@app/shared/utils/prescription-trend-range.util';
+  ANALYTICS_MONO_CHART_COLORS,
+  buildBarChartData,
+  buildLineChartData,
+  buildPrescriptionTrendChartOptions,
+} from '@app/shared/utils/analytics-chart.util';
 
 function buildBarChartOptions() {
   return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
@@ -28,13 +29,14 @@ export class MedicinePrescriptionTabComponent implements OnChanges {
   @Input() trend: IPrescriptionVolumeTrendResponse | null = null;
   @Input() trendLoading = false;
   @Input() trendGranularity: AnalyticsGranularity = 'Day';
+  /** The tab's one global date-range filter — also drives the KPI cards/tables above. */
   @Input() trendRangePreset: PrescriptionTrendRangePreset = 'Last30Days';
+  /** Resolved concrete bounds of the above, for carrying the exact same period into the Medicine List navigation. */
+  @Input() rangeFrom = '';
+  @Input() rangeTo = '';
   @Output() trendGranularityChange = new EventEmitter<AnalyticsGranularity>();
   @Output() trendRangePresetChange = new EventEmitter<PrescriptionTrendRangePreset>();
   @Output() trendCustomRangeChange = new EventEmitter<{ from: Date; to: Date }>();
-
-  customFrom: Date | null = null;
-  customTo: Date | null = null;
 
   topMedicinesChartOptions = buildBarChartOptions();
   categoryChartOptions = buildBarChartOptions();
@@ -45,8 +47,6 @@ export class MedicinePrescriptionTabComponent implements OnChanges {
     { label: 'Week', value: 'Week' },
     { label: 'Month', value: 'Month' },
   ];
-
-  readonly trendRangePresetOptions = PRESCRIPTION_TREND_RANGE_PRESET_OPTIONS;
 
   /**
    * Chart `[data]` objects, computed once per input change rather than as getters — a getter
@@ -61,25 +61,22 @@ export class MedicinePrescriptionTabComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['analytics']) {
-      this.topMedicinesChartData = this.analytics ? buildBarChartData(this.analytics.topPrescribedMedicines, 'Times prescribed') : null;
+      this.topMedicinesChartData = this.analytics
+        ? buildBarChartData(this.analytics.topPrescribedMedicines.slice(0, 10), 'Times prescribed', ANALYTICS_MONO_CHART_COLORS.primary)
+        : null;
       this.categoryChartData = this.analytics
         ? buildBarChartData(
             this.analytics.categoryBreakdown.map((c) => ({ name: c.category, count: c.count })),
             'Prescriptions',
+            ANALYTICS_MONO_CHART_COLORS.primary,
           )
         : null;
     }
     if (changes['trend']) {
-      this.trendChartData = this.trend ? buildLineChartData(this.trend.points, 'Prescriptions') : null;
+      this.trendChartData = this.trend
+        ? buildLineChartData(this.trend.points, 'Prescriptions', ANALYTICS_MONO_CHART_COLORS.primary, ANALYTICS_MONO_CHART_COLORS.areaFill)
+        : null;
     }
-  }
-
-  get trendRangeLabel(): string {
-    return PRESCRIPTION_TREND_RANGE_PRESET_LABELS[this.trendRangePreset];
-  }
-
-  get isCustomTrendRange(): boolean {
-    return this.trendRangePreset === 'Custom';
   }
 
   selectTrendGranularity(value: AnalyticsGranularity): void {
@@ -91,12 +88,6 @@ export class MedicinePrescriptionTabComponent implements OnChanges {
   selectTrendRangePreset(value: PrescriptionTrendRangePreset): void {
     if (value !== this.trendRangePreset) {
       this.trendRangePresetChange.emit(value);
-    }
-  }
-
-  onCustomRangeSelected(): void {
-    if (this.customFrom && this.customTo) {
-      this.trendCustomRangeChange.emit({ from: this.customFrom, to: this.customTo });
     }
   }
 

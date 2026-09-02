@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { PrescriptionService } from '@core/services/prescriptions/prescription.service';
 import { IPrescriptionListItem } from '@core/interfaces/prescriptions/prescription.interface';
 import { UI_CONFIG } from '@core/constants';
@@ -9,6 +10,19 @@ import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
 interface NavState {
   justFinalizedId?: number;
+}
+
+/** Parses a "yyyy-MM-dd" query param into a local Date — a plain `new Date(str)` parses as UTC midnight, which can land on the wrong calendar day once displayed in a datepicker. */
+function parseDateParam(value: string | null): Date | null {
+  if (!value) {
+    return null;
+  }
+  const match = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value);
+  if (!match) {
+    return null;
+  }
+  const [, year, month, day] = match;
+  return new Date(Number(year), Number(month) - 1, Number(day));
 }
 
 /** US-030: a doctor's own finalized prescriptions; a just-finalized one is banner-highlighted. */
@@ -35,7 +49,7 @@ export class FinalizedListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly searchTermChanges$ = new Subject<string>();
 
-  constructor(private prescriptionService: PrescriptionService, private router: Router) {
+  constructor(private prescriptionService: PrescriptionService, private router: Router, private route: ActivatedRoute, private breadcrumbService: BreadcrumbService) {
     const state = this.router.getCurrentNavigation()?.extras?.state as NavState | undefined;
     this.justFinalizedId = state?.justFinalizedId ?? null;
   }
@@ -52,6 +66,22 @@ export class FinalizedListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Prescriptions', icon: 'fa-solid fa-file-prescription', href: '/prescriptions' },
+      { title: 'Finalized Prescriptions', icon: 'fa-solid fa-file-circle-check', href: '/prescriptions/finalized' },
+    ]);
+
+    // Doctor Dashboard's "Finalized Prescriptions" card carries its selected period here as
+    // `fromDate`/`toDate` query params — populate this page's own existing From/To fields
+    // from them rather than adding a second period control. The dashboard's resolver sends an
+    // EXCLUSIVE `toDate` (the day after the last included day, this app's usual convention),
+    // but this page's own filter is inclusive (backend does `EndOfDayUtc(toDate)`) — subtract
+    // a day so the two conventions line up and the card's count matches what renders here.
+    const params = this.route.snapshot.queryParamMap;
+    this.fromDate = parseDateParam(params.get('fromDate'));
+    const exclusiveToDate = parseDateParam(params.get('toDate'));
+    this.toDate = exclusiveToDate ? new Date(exclusiveToDate.getFullYear(), exclusiveToDate.getMonth(), exclusiveToDate.getDate() - 1) : null;
+
     this.searchTermChanges$.pipe(debounceTime(UI_CONFIG.searchDebounceTime), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(() => {
       this.currentPage = 1;
       this.loadFinalized();

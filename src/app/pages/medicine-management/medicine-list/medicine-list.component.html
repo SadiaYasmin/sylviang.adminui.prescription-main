@@ -17,17 +17,32 @@
       </button>
     </div>
 
-    <div class="flex items-center gap-2" *ngIf="canManage">
-      <input #csvFileInput type="file" accept=".csv" class="hidden" (change)="onCsvSelected($event)" />
-      <button severity="secondary" pButton [loading]="importing" (click)="csvFileInput.click()">
-        <i class="fa fa-file-csv"></i>
-        <span>Import CSV</span>
-      </button>
-      <button [routerLink]="['/medicines/manage-medicine']" pButton>
-        <i class="fa fa-plus"></i>
-        <span>Add Medicine</span>
-      </button>
+    <div class="flex items-center gap-2 flex-wrap">
+      <app-analytics-date-range-filter
+        *ngIf="canShowDateFilter"
+        [preset]="rangePreset"
+        [initialCustomFrom]="customFrom"
+        [initialCustomTo]="customTo"
+        (presetChange)="onRangePresetChange($event)"
+        (customRangeChange)="onCustomRangeChange($event)"
+      ></app-analytics-date-range-filter>
+      <ng-container *ngIf="canManage">
+        <input #csvFileInput type="file" accept=".csv" class="hidden" (change)="onCsvSelected($event)" />
+        <button severity="secondary" pButton [loading]="importing" (click)="csvFileInput.click()">
+          <i class="fa fa-file-csv"></i>
+          <span>Import CSV</span>
+        </button>
+        <button [routerLink]="['/medicines/manage-medicine']" pButton>
+          <i class="fa fa-plus"></i>
+          <span>Add Medicine</span>
+        </button>
+      </ng-container>
     </div>
+  </div>
+
+  <div *ngIf="navDoctorId" class="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary flex items-center gap-2">
+    <i class="fa fa-user-doctor"></i>
+    <span>{{ doctorContextLabel }}</span>
   </div>
 
   <div class="table-container mt-4">
@@ -59,7 +74,7 @@
             @for (col of columns; track col.field) {
               <th [style.width]="col.width">{{ col.label }}</th>
             }
-            <th *ngIf="!isStaffView" style="width: 10rem">Total Prescribed</th>
+            <th *ngIf="!isStaffView" style="width: 10rem">{{ prescribedColumnLabel }}</th>
             <th style="width: 8rem">DGDA</th>
             <th style="width: 8rem">Status</th>
             <th *ngIf="canManage" style="width: 8rem">Actions</th>

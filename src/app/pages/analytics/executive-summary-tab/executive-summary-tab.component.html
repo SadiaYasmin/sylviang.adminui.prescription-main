@@ -4,6 +4,15 @@
 
 <div *ngIf="!loading && !summary" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
 
+<div class="flex justify-end mb-3">
+  <app-analytics-date-range-filter
+    [mono]="true"
+    [preset]="rangePreset"
+    (presetChange)="rangePresetChange.emit($event)"
+    (customRangeChange)="customRangeChange.emit($event)"
+  ></app-analytics-date-range-filter>
+</div>
+
 <ng-container *ngIf="!loading && summary as s">
   <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-6">
     <div
@@ -11,68 +20,68 @@
       [routerLink]="['/patients/patient-list']"
     >
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Patients</div>
-      <div class="text-2xl font-semibold">{{ s.totalPatients }}</div>
+      <div class="text-2xl font-semibold kpi-value">{{ s.totalPatients }}</div>
     </div>
     <div
       class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
       [routerLink]="['/consultations/consultation-list']"
-      [queryParams]="{ dateMode: 'All', status: 'Completed' }"
+      [queryParams]="{ dateMode: 'Range', fromDate: rangeFrom, toDate: rangeTo, status: 'Completed' }"
     >
       <div class="text-xs uppercase tracking-wide text-muted-color">Completed Prescriptions</div>
-      <div class="text-2xl font-semibold">{{ s.totalPrescriptions }}</div>
+      <div class="text-2xl font-semibold kpi-value">{{ s.totalPrescriptions }}</div>
     </div>
     <div
       class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
       [routerLink]="['/medicines/medicine-list']"
     >
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Medicines</div>
-      <div class="text-2xl font-semibold">{{ s.totalMedicines }}</div>
+      <div class="text-2xl font-semibold kpi-value">{{ s.totalMedicines }}</div>
     </div>
     <div
       class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
       [routerLink]="['/doctors/doctor-list']"
     >
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Doctors</div>
-      <div class="text-2xl font-semibold">{{ s.totalDoctors }}</div>
+      <div class="text-2xl font-semibold kpi-value">{{ s.totalDoctors }}</div>
     </div>
     <div
       class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
       [routerLink]="['/staff/staff-list']"
     >
       <div class="text-xs uppercase tracking-wide text-muted-color">Total Staff</div>
-      <div class="text-2xl font-semibold">{{ s.totalStaff }}</div>
+      <div class="text-2xl font-semibold kpi-value">{{ s.totalStaff }}</div>
     </div>
   </div>
 
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-6">
     <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
-      <div class="text-xs uppercase tracking-wide text-muted-color mb-1">Prescriptions — Month over Month</div>
+      <div class="text-xs uppercase tracking-wide text-muted-color mb-1">Prescriptions</div>
       <div class="flex items-baseline gap-2">
-        <span class="text-2xl font-semibold">{{ s.prescriptionTrend.current }}</span>
+        <span class="text-2xl font-semibold kpi-value">{{ s.prescriptionTrend.current }}</span>
         <span
           *ngIf="s.prescriptionTrend.percentChange !== null; else newTrendA"
-          [class]="s.prescriptionTrend.percentChange >= 0 ? 'text-green-600 text-sm font-medium' : 'text-red-500 text-sm font-medium'"
+          [class]="s.prescriptionTrend.percentChange >= 0 ? 'trend-up text-sm font-medium' : 'trend-down text-sm font-medium'"
         >
           {{ s.prescriptionTrend.percentChange >= 0 ? '↑' : '↓' }} {{ s.prescriptionTrend.percentChange }}%
         </span>
         <ng-template #newTrendA><span class="text-sm font-medium text-primary">New</span></ng-template>
       </div>
-      <div class="text-xs text-muted-color">vs. {{ s.prescriptionTrend.previous }} last month</div>
+      <div class="text-xs text-muted-color">vs. {{ s.prescriptionTrend.previous }} {{ previousPeriodLabel }}</div>
     </div>
 
     <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
-      <div class="text-xs uppercase tracking-wide text-muted-color mb-1">New Patients — Month over Month</div>
+      <div class="text-xs uppercase tracking-wide text-muted-color mb-1">New Patients</div>
       <div class="flex items-baseline gap-2">
-        <span class="text-2xl font-semibold">{{ s.newPatientTrend.current }}</span>
+        <span class="text-2xl font-semibold kpi-value">{{ s.newPatientTrend.current }}</span>
         <span
           *ngIf="s.newPatientTrend.percentChange !== null; else newTrendB"
-          [class]="s.newPatientTrend.percentChange >= 0 ? 'text-green-600 text-sm font-medium' : 'text-red-500 text-sm font-medium'"
+          [class]="s.newPatientTrend.percentChange >= 0 ? 'trend-up text-sm font-medium' : 'trend-down text-sm font-medium'"
         >
           {{ s.newPatientTrend.percentChange >= 0 ? '↑' : '↓' }} {{ s.newPatientTrend.percentChange }}%
         </span>
         <ng-template #newTrendB><span class="text-sm font-medium text-primary">New</span></ng-template>
       </div>
-      <div class="text-xs text-muted-color">vs. {{ s.newPatientTrend.previous }} last month</div>
+      <div class="text-xs text-muted-color">vs. {{ s.newPatientTrend.previous }} {{ previousPeriodLabel }}</div>
     </div>
   </div>
 

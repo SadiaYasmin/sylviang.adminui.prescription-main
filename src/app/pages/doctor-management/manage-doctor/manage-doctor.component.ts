@@ -137,6 +137,7 @@ export class ManageDoctorComponent implements OnInit {
     try {
       const dataUrl = await this.readImageAsDataUrl(file);
       this.doctorForm.patchValue({ photoBase64: dataUrl });
+      this.doctorForm.markAsDirty();
       this.currentPhotoUrl = dataUrl;
     } catch {
       this.photoError = 'Could not read that image — please try another file.';
@@ -151,6 +152,7 @@ export class ManageDoctorComponent implements OnInit {
     // UpdateDoctorHandler). Not relevant on create (isEditMode false), where there's no
     // existing photo to preserve either way.
     this.doctorForm.patchValue({ photoBase64: this.isEditMode ? '' : null });
+    this.doctorForm.markAsDirty();
     this.currentPhotoUrl = null;
   }
 

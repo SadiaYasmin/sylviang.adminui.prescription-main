@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { BreadcrumbService } from '@app/@core/services';
 import { IShiftResponse } from '@app/@core/interfaces/attendance-management/shift.interface';
 import { ShiftService } from '@app/@core/services/attendance/shift/shift.service';
 import { ToastService } from '@app/@core/services/misc/toast.service';
@@ -18,6 +19,7 @@ export class ShiftListComponent implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   shifts: IShiftResponse[] = [];
@@ -44,6 +46,10 @@ export class ShiftListComponent implements OnInit, AfterViewInit {
   columns = ShiftListColumns;
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Attendance', icon: 'fa-solid fa-clock', href: '/attendance/shift-list' },
+      { title: 'Shift List', icon: 'fa-solid fa-list', href: '/attendance/shift-list' },
+    ]);
     this.loadShifts();
     this.isLoading = false;
   }

@@ -7,6 +7,9 @@ import { AuthService } from '@core/services/auth/auth.service';
 import { ConsultationService } from '@core/services/consultations/consultation.service';
 import { DoctorPreferencesService } from '@core/services/doctor-preferences/doctor-preferences.service';
 import { ToastService } from '@core/services/misc/toast.service';
+import { DOCTOR_STATS_PERIOD_OPTIONS, DoctorStatsPeriod, resolveDoctorStatsPeriod } from '@app/shared/utils/doctor-stats-period.util';
+import { BreadcrumbService } from '@app/@core/services';
+import { ANALYTICS_MONO_BUTTON_DT, ANALYTICS_MONO_SELECT_DT } from '@app/shared/utils/analytics-mono-tokens.util';
 
 @Component({
   selector: 'app-dashboard',
@@ -29,6 +32,24 @@ export class DashboardComponent implements OnInit {
   myDoctorStats: IMyDoctorAnalyticsResponse | null = null;
   myStaffStats: IMyStaffAnalyticsResponse | null = null;
 
+  readonly statsPeriodOptions = DOCTOR_STATS_PERIOD_OPTIONS;
+  /** Matches the queue action buttons to the Analytics dashboard's monochromatic teal instead of the app's global primary color — see analytics-mono-tokens.util.ts. */
+  readonly buttonDt = ANALYTICS_MONO_BUTTON_DT;
+  readonly selectDt = ANALYTICS_MONO_SELECT_DT;
+
+  /** "Patients Consulted" card's own independent period selector — separate from "Finalized Prescriptions"'s, each card controls only itself. */
+  consultedPeriod: DoctorStatsPeriod = 'ThisMonth';
+  consultedCount: number | null = null;
+  /** Resolved concrete bounds, exposed to the template for this card's navigation query params. Empty strings for "All Time" — the routerLink then just omits them. */
+  consultedRangeFrom = '';
+  consultedRangeTo = '';
+
+  /** "Finalized Prescriptions" card's own independent period selector. */
+  finalizedPeriod: DoctorStatsPeriod = 'ThisMonth';
+  finalizedCount: number | null = null;
+  finalizedRangeFrom = '';
+  finalizedRangeTo = '';
+
   constructor(
     private authService: AuthService,
     private consultationService: ConsultationService,
@@ -36,6 +57,7 @@ export class DashboardComponent implements OnInit {
     private analyticsService: AnalyticsService,
     private toast: ToastService,
     private router: Router,
+    private breadcrumbService: BreadcrumbService,
   ) {
     this.role = this.authService.getRole();
   }
@@ -53,10 +75,14 @@ export class DashboardComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([{ title: 'Dashboard', icon: 'fa-solid fa-chart-line', href: '/dashboard' }]);
+
     if (this.isDoctor) {
       this.loadTodaysQueue();
       this.checkTemplateChoice();
       this.loadMyDoctorStats();
+      this.loadConsultedCount();
+      this.loadFinalizedCount();
     } else if (this.isStaff) {
       this.loadMyQueue();
       this.loadMyStaffStats();
@@ -126,6 +152,8 @@ export class DashboardComponent implements OnInit {
 
   // US-077: a doctor's own scoped stats card, alongside Today's Queue. Fetch failures are
   // non-critical (matches checkTemplateChoice's pattern) — the queue table still renders.
+  // My Patients/Draft Prescriptions/Assigned Staff/Top Medicines are all-time regardless of
+  // either card's period selector, so this call needs no date range of its own.
   loadMyDoctorStats(): void {
     this.analyticsService.getMyDoctorStats().subscribe({
       next: (response) => {
@@ -135,6 +163,46 @@ export class DashboardComponent implements OnInit {
         this.myDoctorStats = null;
       },
     });
+  }
+
+  // "Patients Consulted" card owns its own period, independent of "Finalized Prescriptions".
+  loadConsultedCount(): void {
+    const { from, to } = resolveDoctorStatsPeriod(this.consultedPeriod);
+    this.consultedRangeFrom = from ?? '';
+    this.consultedRangeTo = to ?? '';
+    this.analyticsService.getMyDoctorStats(from, to).subscribe({
+      next: (response) => {
+        this.consultedCount = !response.hasError && response.content ? response.content.patientsConsulted : null;
+      },
+      error: () => {
+        this.consultedCount = null;
+      },
+    });
+  }
+
+  onConsultedPeriodChange(period: DoctorStatsPeriod): void {
+    this.consultedPeriod = period;
+    this.loadConsultedCount();
+  }
+
+  // "Finalized Prescriptions" card owns its own period, independent of "Patients Consulted".
+  loadFinalizedCount(): void {
+    const { from, to } = resolveDoctorStatsPeriod(this.finalizedPeriod);
+    this.finalizedRangeFrom = from ?? '';
+    this.finalizedRangeTo = to ?? '';
+    this.analyticsService.getMyDoctorStats(from, to).subscribe({
+      next: (response) => {
+        this.finalizedCount = !response.hasError && response.content ? response.content.finalizedPrescriptionCount : null;
+      },
+      error: () => {
+        this.finalizedCount = null;
+      },
+    });
+  }
+
+  onFinalizedPeriodChange(period: DoctorStatsPeriod): void {
+    this.finalizedPeriod = period;
+    this.loadFinalizedCount();
   }
 
   // US-078: a staff member's own scoped stats card, alongside My Queue.

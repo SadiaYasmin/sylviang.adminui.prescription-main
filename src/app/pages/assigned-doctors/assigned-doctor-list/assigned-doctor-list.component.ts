@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { BreadcrumbService } from '@app/@core/services';
 import { IAssignedDoctorListItem } from '@core/interfaces/doctors/doctor.interface';
 import { AssignedDoctorsService } from '@core/services/doctors/assigned-doctors.service';
 
@@ -13,6 +14,7 @@ export class AssignedDoctorListComponent implements OnInit {
   constructor(
     private assignedDoctorsService: AssignedDoctorsService,
     private cdr: ChangeDetectorRef,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   doctors: IAssignedDoctorListItem[] = [];
@@ -25,6 +27,7 @@ export class AssignedDoctorListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([{ title: 'Assigned Doctors', icon: 'fa-solid fa-user-doctor', href: '/assigned-doctors' }]);
     this.loadDoctors();
   }
 

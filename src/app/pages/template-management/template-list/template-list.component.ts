@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { BreadcrumbService } from '@app/@core/services';
 import { IHospitalSettings } from '@core/interfaces/hospital-settings/hospital-settings.interface';
 import { ITemplateDetails, ITemplateSummary } from '@core/interfaces/templates/template.interface';
 import { HospitalSettingsService } from '@core/services/hospital-settings/hospital-settings.service';
@@ -21,6 +22,7 @@ export class TemplateListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   templates: ITemplateDetails[] = [];
@@ -34,6 +36,11 @@ export class TemplateListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Prescription Templates', icon: 'fa-solid fa-file-medical', href: '/templates/template-list' },
+      { title: 'Template List', icon: 'fa-solid fa-list', href: '/templates/template-list' },
+    ]);
+
     this.hospitalSettingsService.get().subscribe({
       next: (response) => {
         if (response && !response.hasError && response.content) {

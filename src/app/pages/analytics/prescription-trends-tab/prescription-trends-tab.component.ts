@@ -7,16 +7,13 @@ import {
   PrescriptionTrendRangePreset,
 } from '@core/interfaces/analytics/analytics.interface';
 import {
+  ANALYTICS_MONO_CHART_COLORS,
   buildDoctorPrescriptionsChartData,
   buildHorizontalBarChartOptions,
   buildLineChartData,
   buildPeakHoursChartData,
   buildPrescriptionTrendChartOptions,
 } from '@app/shared/utils/analytics-chart.util';
-import {
-  PRESCRIPTION_TREND_RANGE_PRESET_LABELS,
-  PRESCRIPTION_TREND_RANGE_PRESET_OPTIONS,
-} from '@app/shared/utils/prescription-trend-range.util';
 
 /** Minimum pixel height for the horizontal bar charts below, then ~2rem per row so long lists (many doctors, many active hours) stay readable instead of being squeezed into a fixed card height. */
 const MIN_CHART_HEIGHT_PX = 224;
@@ -31,6 +28,7 @@ const ROW_HEIGHT_PX = 32;
 export class PrescriptionTrendsTabComponent implements OnChanges {
   @Input() trend: IPrescriptionVolumeTrendResponse | null = null;
   @Input() granularity: AnalyticsGranularity = 'Day';
+  /** The tab's one global date-range filter — also drives the per-doctor and peak-hours charts below. */
   @Input() rangePreset: PrescriptionTrendRangePreset = 'Last30Days';
   @Input() loading = false;
   @Output() granularityChange = new EventEmitter<AnalyticsGranularity>();
@@ -42,9 +40,6 @@ export class PrescriptionTrendsTabComponent implements OnChanges {
   @Input() busiestHours: IBusiestConsultationHoursResponse | null = null;
   @Input() busiestHoursLoading = false;
 
-  customFrom: Date | null = null;
-  customTo: Date | null = null;
-
   chartOptions = buildPrescriptionTrendChartOptions();
   prescriptionsPerDoctorChartOptions = buildHorizontalBarChartOptions();
   peakHoursChartOptions = buildHorizontalBarChartOptions();
@@ -54,8 +49,6 @@ export class PrescriptionTrendsTabComponent implements OnChanges {
     { label: 'Week', value: 'Week' },
     { label: 'Month', value: 'Month' },
   ];
-
-  readonly rangePresetOptions = PRESCRIPTION_TREND_RANGE_PRESET_OPTIONS;
 
   /**
    * Chart `[data]` objects, computed once per input change rather than as getters — a getter
@@ -69,7 +62,9 @@ export class PrescriptionTrendsTabComponent implements OnChanges {
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['trend']) {
-      this.chartData = this.trend ? buildLineChartData(this.trend.points, 'Finalized prescriptions') : null;
+      this.chartData = this.trend
+        ? buildLineChartData(this.trend.points, 'Finalized prescriptions', ANALYTICS_MONO_CHART_COLORS.primary, ANALYTICS_MONO_CHART_COLORS.areaFill)
+        : null;
     }
     if (changes['leaderboard']) {
       this.prescriptionsPerDoctorChartData =
@@ -77,22 +72,19 @@ export class PrescriptionTrendsTabComponent implements OnChanges {
           ? buildDoctorPrescriptionsChartData(
               [...this.leaderboard].sort((a, b) => b.prescriptionsCreated - a.prescriptionsCreated).map((d) => ({ name: d.fullName, count: d.prescriptionsCreated })),
               'Prescriptions created',
+              ANALYTICS_MONO_CHART_COLORS.primary,
+              ANALYTICS_MONO_CHART_COLORS.zero,
             )
           : null;
     }
     if (changes['busiestHours']) {
       const hours = this.busiestHours?.hours;
       const activeCount = hours?.filter((h) => h.count > 0).length ?? 0;
-      this.peakHoursChartData = hours && activeCount > 0 ? buildPeakHoursChartData(hours, 'Consultations checked in (Bangladesh Time)') : null;
+      this.peakHoursChartData =
+        hours && activeCount > 0
+          ? buildPeakHoursChartData(hours, 'Consultations checked in (Bangladesh Time)', ANALYTICS_MONO_CHART_COLORS.primary)
+          : null;
     }
-  }
-
-  get rangeLabel(): string {
-    return PRESCRIPTION_TREND_RANGE_PRESET_LABELS[this.rangePreset];
-  }
-
-  get isCustomRange(): boolean {
-    return this.rangePreset === 'Custom';
   }
 
   selectGranularity(value: AnalyticsGranularity): void {
@@ -104,12 +96,6 @@ export class PrescriptionTrendsTabComponent implements OnChanges {
   selectRangePreset(value: PrescriptionTrendRangePreset): void {
     if (value !== this.rangePreset) {
       this.rangePresetChange.emit(value);
-    }
-  }
-
-  onCustomRangeSelected(): void {
-    if (this.customFrom && this.customTo) {
-      this.customRangeChange.emit({ from: this.customFrom, to: this.customTo });
     }
   }
 

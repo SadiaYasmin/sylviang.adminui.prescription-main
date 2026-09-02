@@ -1,11 +1,13 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
-import { AnalyticsGranularity } from '@core/interfaces/analytics/analytics.interface';
-import { IDoctorDetailsResponse, IDoctorTopMedicine } from '@core/interfaces/doctors/doctor.interface';
+import { BreadcrumbService } from '@app/@core/services';
+import { AnalyticsGranularity, PrescriptionTrendRangePreset } from '@core/interfaces/analytics/analytics.interface';
+import { IDoctorDetailsResponse } from '@core/interfaces/doctors/doctor.interface';
 import { DoctorService } from '@core/services/doctors/doctor.service';
 import { ToastService } from '@core/services/misc/toast.service';
 import { resolveAssetUrl } from '@app/shared/utils/asset-url.util';
 import { DateTimeUtility } from '@app/@core/utils/date-time.utility';
+import { resolvePrescriptionTrendRange } from '@app/shared/utils/prescription-trend-range.util';
 import {
   buildDonutChartOptions,
   buildHourBarChartDataAmPm,
@@ -37,6 +39,7 @@ export class DoctorDetailsComponent implements OnInit {
     private router: Router,
     private doctorService: DoctorService,
     private toast: ToastService,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   details: IDoctorDetailsResponse | null = null;
@@ -49,15 +52,17 @@ export class DoctorDetailsComponent implements OnInit {
   hourChartOptions = buildHourBarChartOptions();
   donutChartOptions = buildDonutChartOptions();
 
-  showAllMedicinesDialog = false;
-  allMedicinesSearchTerm = '';
-
   activityGranularity: AnalyticsGranularity = 'Day';
   readonly activityGranularityOptions: { label: string; value: AnalyticsGranularity }[] = [
     { label: 'Day', value: 'Day' },
     { label: 'Week', value: 'Week' },
     { label: 'Month', value: 'Month' },
   ];
+
+  /** The page's one global date-range filter — drives every KPI/chart except Today's/This Month's Prescriptions. */
+  rangePreset: PrescriptionTrendRangePreset = 'Last30Days';
+  private customFrom: Date | null = null;
+  private customTo: Date | null = null;
 
   /**
    * Chart `[data]` objects, computed once per load rather than as getters — a getter is
@@ -93,31 +98,22 @@ export class DoctorDetailsComponent implements OnInit {
       allMedicines && allMedicines.length > 0 ? buildMedicineDistributionChartData(allMedicines, MEDICINE_DISTRIBUTION_TOP_N) : null;
   }
 
-  get filteredAllMedicines(): IDoctorTopMedicine[] {
-    const all = this.details?.performance.allMedicines ?? [];
-    const term = this.allMedicinesSearchTerm.trim().toLowerCase();
-    if (!term) {
-      return all;
-    }
-    return all.filter((m) => m.name.toLowerCase().includes(term));
+  private resolveRange() {
+    return resolvePrescriptionTrendRange(this.rangePreset, this.customFrom, this.customTo);
   }
 
-  openAllMedicinesDialog(): void {
-    this.allMedicinesSearchTerm = '';
-    this.showAllMedicinesDialog = true;
+  /** Total Prescriptions card → Consultations, this doctor, the page's selected date range. */
+  get consultationsFilteredQueryParams(): Record<string, string | number> {
+    const { from, to } = this.resolveRange();
+    return { doctorId: this.doctorId!, dateMode: 'Range', fromDate: from, toDate: to };
   }
 
-  /** Total Prescriptions card → Consultations, this doctor, no date filter. */
-  get consultationsAllTimeQueryParams(): Record<string, number> {
-    return { doctorId: this.doctorId! };
-  }
-
-  /** Today's Prescriptions card → Consultations, this doctor, today only. */
+  /** Today's Prescriptions card → Consultations, this doctor, today only — independent of the page's date filter. */
   get consultationsTodayQueryParams(): Record<string, string | number> {
     return { doctorId: this.doctorId!, dateMode: 'Today' };
   }
 
-  /** This Month's Prescriptions card → Consultations, this doctor, current calendar month. */
+  /** This Month's Prescriptions card → Consultations, this doctor, current calendar month — independent of the page's date filter. */
   get consultationsThisMonthQueryParams(): Record<string, string | number> {
     const now = new Date();
     const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
@@ -130,7 +126,18 @@ export class DoctorDetailsComponent implements OnInit {
     };
   }
 
+  /** Total Medicines Prescribed card → Medicine List, scoped to this doctor + the page's selected date range. `preset` lets Medicine List show/select the same filter option; `from`/`to` are the resolved concrete bounds it needs for Custom (and to query with immediately). */
+  get medicineListQueryParams(): Record<string, string | number> {
+    const { from, to } = this.resolveRange();
+    return { doctorId: this.doctorId!, doctorName: this.details?.profile.fullName ?? '', preset: this.rangePreset, from, to };
+  }
+
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Doctor Management', icon: 'fa-solid fa-user-doctor', href: '/doctors/doctor-list' },
+      { title: 'Doctor Details', icon: 'fa-solid fa-eye', href: `/doctors/doctor-details/${this.route.snapshot.paramMap.get('id')}` },
+    ]);
+
     const idParam = this.route.snapshot.paramMap.get('id');
     if (!idParam) {
       this.router.navigate(['/doctors/doctor-list']);
@@ -149,13 +156,27 @@ export class DoctorDetailsComponent implements OnInit {
     this.loadDetails(false);
   }
 
+  onRangePresetChange(preset: PrescriptionTrendRangePreset): void {
+    this.rangePreset = preset;
+    if (preset !== 'Custom') {
+      this.loadDetails(false);
+    }
+  }
+
+  onCustomRangeChange(range: { from: Date; to: Date }): void {
+    this.customFrom = range.from;
+    this.customTo = range.to;
+    this.loadDetails(false);
+  }
+
   private loadDetails(isInitialLoad: boolean): void {
     if (!this.doctorId) {
       return;
     }
     this.loading = isInitialLoad;
     this.activityTrendLoading = !isInitialLoad;
-    this.doctorService.getDoctorById(this.doctorId, this.activityGranularity).subscribe({
+    const { from, to } = this.resolveRange();
+    this.doctorService.getDoctorById(this.doctorId, this.activityGranularity, from, to).subscribe({
       next: (response) => {
         if (response && !response.hasError && response.content) {
           this.details = response.content;

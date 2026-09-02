@@ -1,5 +1,5 @@
-import { Component, Input } from '@angular/core';
-import { IDoctorLeaderboardEntry } from '@core/interfaces/analytics/analytics.interface';
+import { Component, EventEmitter, Input, Output } from '@angular/core';
+import { IDoctorLeaderboardEntry, PrescriptionTrendRangePreset } from '@core/interfaces/analytics/analytics.interface';
 
 @Component({
   selector: 'app-doctor-performance-tab',
@@ -10,4 +10,8 @@ import { IDoctorLeaderboardEntry } from '@core/interfaces/analytics/analytics.in
 export class DoctorPerformanceTabComponent {
   @Input() leaderboard: IDoctorLeaderboardEntry[] | null = null;
   @Input() loading = false;
+
+  @Input() rangePreset: PrescriptionTrendRangePreset = 'Last30Days';
+  @Output() rangePresetChange = new EventEmitter<PrescriptionTrendRangePreset>();
+  @Output() customRangeChange = new EventEmitter<{ from: Date; to: Date }>();
 }

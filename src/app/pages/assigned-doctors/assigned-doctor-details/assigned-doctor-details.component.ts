@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { resolveAssetUrl } from '@app/shared/utils/asset-url.util';
 import { IAssignedDoctorDetails } from '@core/interfaces/doctors/doctor.interface';
 import { AssignedDoctorsService } from '@core/services/doctors/assigned-doctors.service';
@@ -16,6 +17,7 @@ export class AssignedDoctorDetailsComponent implements OnInit {
     private assignedDoctorsService: AssignedDoctorsService,
     private route: ActivatedRoute,
     private cdr: ChangeDetectorRef,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   readonly resolveAssetUrl = resolveAssetUrl;
@@ -24,6 +26,11 @@ export class AssignedDoctorDetailsComponent implements OnInit {
   loading = true;
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Assigned Doctors', icon: 'fa-solid fa-user-doctor', href: '/assigned-doctors' },
+      { title: 'Doctor Details', icon: 'fa-solid fa-eye', href: `/assigned-doctors/${this.route.snapshot.paramMap.get('id')}` },
+    ]);
+
     const doctorId = Number(this.route.snapshot.paramMap.get('id'));
     this.assignedDoctorsService.getDetails(doctorId).subscribe({
       next: (response) => {

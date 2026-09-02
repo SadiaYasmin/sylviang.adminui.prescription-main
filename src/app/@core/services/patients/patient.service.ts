@@ -26,6 +26,11 @@ export class PatientService {
     if (request.page) params['page'] = String(request.page);
     if (request.pageSize) params['pageSize'] = String(request.pageSize);
     if (request.searchTerm?.trim()) params['searchTerm'] = request.searchTerm.trim();
+    if (request.from) params['from'] = request.from;
+    if (request.to) params['to'] = request.to;
+    if (request.newOnly) params['newOnly'] = 'true';
+    if (request.returningOnly) params['returningOnly'] = 'true';
+    if (request.completedWithMeOnly) params['completedWithMeOnly'] = 'true';
 
     return this.httpClient.get<ApiResponse<IPatientListResponse>>(`${this.API_URL}`, { params });
   }

@@ -46,6 +46,7 @@ export const webSidebarMenuItems: IMenuItem[] = [
   },
   {
     href: '/doctors/doctor-list',
+    activeMatch: '/doctors',
     title: 'Doctor Management',
     active: false,
     icon: 'fa-solid fa-user-doctor',

@@ -38,6 +38,17 @@ export class ManageStaffComponent implements OnInit {
 
   doctors: IDoctorSummary[] = [];
 
+  /** Client-side filter over `doctors` for the Assigned Doctors picker — the doctor roster
+   * isn't paginated from the backend today, so this keeps the picker usable once a clinic has
+   * more doctors than fit on screen without needing a server-side search endpoint. */
+  doctorSearchTerm = '';
+
+  get filteredDoctors(): IDoctorSummary[] {
+    const term = this.doctorSearchTerm.trim().toLowerCase();
+    if (!term) return this.doctors;
+    return this.doctors.filter((d) => d.fullName.toLowerCase().includes(term) || (d.department ?? '').toLowerCase().includes(term));
+  }
+
   /** Staff has no own Department field — a staff member can support doctors from more
    * than one department, so it's shown read-only, derived from whichever doctors are
    * currently checked below (live, before saving — not a round trip to the backend). */

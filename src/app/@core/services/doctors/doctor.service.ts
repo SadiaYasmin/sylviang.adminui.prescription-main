@@ -32,10 +32,12 @@ export class DoctorService {
     return this.httpClient.get<ApiResponse<IDoctorListResponse>>(`${this.API_URL}`, { params });
   }
 
-  getDoctorById(id: number, activityGranularity: AnalyticsGranularity = 'Day') {
-    return this.httpClient.get<ApiResponse<IDoctorDetailsResponse>>(`${this.API_URL}/${id}`, {
-      params: { activityGranularity },
-    });
+  /** `from`/`to` are optional — omitted by callers (e.g. the manage-doctor edit form) that only need the profile, not a date-filtered performance view. */
+  getDoctorById(id: number, activityGranularity: AnalyticsGranularity = 'Day', from?: string, to?: string) {
+    const params: Record<string, string> = { activityGranularity };
+    if (from) params['from'] = from;
+    if (to) params['to'] = to;
+    return this.httpClient.get<ApiResponse<IDoctorDetailsResponse>>(`${this.API_URL}/${id}`, { params });
   }
 
   addDoctor(request: ICreateDoctorRequest) {

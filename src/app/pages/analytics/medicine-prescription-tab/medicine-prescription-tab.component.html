@@ -9,6 +9,15 @@
 
 <div *ngIf="!loading && !analytics" class="py-16 text-center text-sm text-muted-color">Analytics data isn't available right now.</div>
 
+<div class="flex justify-end mb-3">
+  <app-analytics-date-range-filter
+    [mono]="true"
+    [preset]="trendRangePreset"
+    (presetChange)="selectTrendRangePreset($event)"
+    (customRangeChange)="trendCustomRangeChange.emit($event)"
+  ></app-analytics-date-range-filter>
+</div>
+
 <ng-container *ngIf="!loading && analytics as a">
   <!-- Prescription Overview -->
   <div class="mb-4">
@@ -17,28 +26,30 @@
       <div
         class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
         [routerLink]="['/consultations/consultation-list']"
-        [queryParams]="{ dateMode: 'All', status: 'Completed' }"
+        [queryParams]="{ dateMode: 'Range', fromDate: rangeFrom, toDate: rangeTo, status: 'Completed' }"
       >
         <div class="text-xs uppercase tracking-wide text-muted-color">COMPLETED PRESCRIPTIONS</div>
-        <div class="text-2xl font-semibold">{{ a.totalPrescriptions }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ a.totalPrescriptions }}</div>
       </div>
       <div
         class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
         [routerLink]="['/medicines/medicine-list']"
+        [queryParams]="{ preset: trendRangePreset, from: rangeFrom, to: rangeTo }"
       >
         <div class="text-xs uppercase tracking-wide text-muted-color">TOTAL MEDICINES PRESCRIBED</div>
-        <div class="text-2xl font-semibold">{{ a.totalMedicinesPrescribed }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ a.totalMedicinesPrescribed }}</div>
       </div>
       <div
         class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm cursor-pointer transition-colors hover:border-primary hover:bg-surface-50 dark:hover:bg-surface-800"
         [routerLink]="['/medicines/medicine-list']"
+        [queryParams]="{ preset: trendRangePreset, from: rangeFrom, to: rangeTo }"
       >
         <div class="text-xs uppercase tracking-wide text-muted-color">UNIQUE MEDICINES PRESCRIBED</div>
-        <div class="text-2xl font-semibold">{{ a.uniqueMedicinesPrescribed }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ a.uniqueMedicinesPrescribed }}</div>
       </div>
       <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">AVG. MEDICINES / PRESCRIPTION</div>
-        <div class="text-2xl font-semibold">{{ formatAvg(a.avgMedicinesPerPrescription) }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ formatAvg(a.avgMedicinesPerPrescription) }}</div>
       </div>
     </div>
   </div>
@@ -62,31 +73,17 @@
 
   <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm mb-4">
     <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-      <div class="text-xs font-semibold uppercase tracking-wide text-muted-color">Prescriptions — {{ trendRangeLabel }}</div>
-      <div class="flex flex-wrap items-center gap-2">
-        <div class="inline-flex rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden text-xs">
-          <button
-            type="button"
-            *ngFor="let opt of trendGranularityOptions"
-            (click)="selectTrendGranularity(opt.value)"
-            class="px-3 py-1.5 font-medium"
-            [class]="opt.value === trendGranularity ? 'bg-primary text-primary-contrast' : 'bg-surface-0 dark:bg-surface-900 text-muted-color hover:bg-surface-50 dark:hover:bg-surface-800'"
-          >
-            {{ opt.label }}
-          </button>
-        </div>
-        <p-select
-          [options]="trendRangePresetOptions"
-          [ngModel]="trendRangePreset"
-          optionLabel="label"
-          optionValue="value"
-          (ngModelChange)="selectTrendRangePreset($event)"
-          styleClass="text-xs"
-        ></p-select>
-        <ng-container *ngIf="isCustomTrendRange">
-          <p-datepicker [(ngModel)]="customFrom" dateFormat="yy-mm-dd" placeholder="From" (onSelect)="onCustomRangeSelected()"></p-datepicker>
-          <p-datepicker [(ngModel)]="customTo" dateFormat="yy-mm-dd" placeholder="To" (onSelect)="onCustomRangeSelected()"></p-datepicker>
-        </ng-container>
+      <div class="text-xs font-semibold uppercase tracking-wide text-muted-color">Prescriptions</div>
+      <div class="inline-flex rounded-lg border border-surface-200 dark:border-surface-700 overflow-hidden text-xs">
+        <button
+          type="button"
+          *ngFor="let opt of trendGranularityOptions"
+          (click)="selectTrendGranularity(opt.value)"
+          class="px-3 py-1.5 font-medium"
+          [class]="opt.value === trendGranularity ? 'bg-primary text-primary-contrast' : 'bg-surface-0 dark:bg-surface-900 text-muted-color hover:bg-surface-50 dark:hover:bg-surface-800'"
+        >
+          {{ opt.label }}
+        </button>
       </div>
     </div>
     <div class="overflow-hidden" style="height: 12rem">

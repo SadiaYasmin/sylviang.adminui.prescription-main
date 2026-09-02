@@ -1,9 +1,11 @@
 import { Component, OnInit, ViewChild, HostListener } from '@angular/core';
+import { NavigationEnd, Router } from '@angular/router';
 import { ShellService } from '@app/shell/services/shell.service';
 import { UntilDestroy, untilDestroyed } from '@ngneat/until-destroy';
 import { SidebarComponent } from './components/sidebar/sidebar.component';
 import { MenuService } from '@app/@core/services/menu.service';
 import { AuthService } from '@core/services/auth/auth.service';
+import { filter } from 'rxjs/operators';
 
 @UntilDestroy()
 @Component({
@@ -28,6 +30,7 @@ export class ShellComponent implements OnInit {
   constructor(
     private readonly _menuService: MenuService,
     private readonly _authService: AuthService,
+    private readonly _router: Router,
   ) {}
 
   @HostListener('window:resize', ['$event'])
@@ -52,6 +55,14 @@ export class ShellComponent implements OnInit {
 
     this._authService.currentUser$.pipe(untilDestroyed(this)).subscribe((user) => {
       this.username = user?.username || 'User';
+    });
+
+    // Router's own scrollPositionRestoration only tracks `window` scroll — this shell scrolls
+    // an inner .flex-1.overflow-auto div instead, which the router never touches. Without this,
+    // navigating from a scrolled-down list page (e.g. a newly created doctor at the bottom of
+    // doctor-list) lands the next page still scrolled down, hiding everything above the fold.
+    this._router.events.pipe(filter((event): event is NavigationEnd => event instanceof NavigationEnd), untilDestroyed(this)).subscribe(() => {
+      this.mainContentElement?.scrollTo({ top: 0 });
     });
   }
 

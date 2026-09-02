@@ -1,0 +1,23 @@
+// Monochromatic tokens inherited from the parent analytics-dashboard :host — see
+// analytics-dashboard.component.scss for the palette definition.
+.kpi-value {
+  color: var(--analytics-kpi, inherit);
+}
+
+// Tailwind's `primary` utility colors are literal hexes baked in by this app's own
+// tailwind.config.js (which shadows tailwindcss-primeui's CSS-variable-driven definition), so
+// they don't respond to the `--p-primary-*` override in analytics-dashboard.component.scss.
+// Angular's view encapsulation still scopes these overrides to this component's own template
+// (an attribute gets appended to the selector), so this can't leak into other pages.
+.bg-primary {
+  background-color: #0d9488;
+}
+
+.text-primary-contrast {
+  color: #ffffff;
+}
+
+.border-primary,
+.hover\:border-primary:hover {
+  border-color: #14b8a6;
+}

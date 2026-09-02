@@ -26,24 +26,53 @@
     <div class="grid grid-cols-2 lg:grid-cols-5 gap-3 mb-4">
       <a [routerLink]="['/patients/patient-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">My Patients</div>
-        <div class="text-2xl font-semibold">{{ s.ownPatientCount }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ s.ownPatientCount }}</div>
       </a>
-      <!-- No dedicated "consulted patients" page — stays a plain, non-clickable card. -->
       <div class="stat-card rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
-        <div class="text-xs uppercase tracking-wide text-muted-color">Patients Consulted</div>
-        <div class="text-2xl font-semibold">{{ s.patientsConsulted }}</div>
+        <div class="text-xs uppercase tracking-wide text-muted-color whitespace-nowrap">Patients Consulted</div>
+        <a
+          [routerLink]="['/patients/patient-list']"
+          [queryParams]="{ completedWithMeOnly: true, from: consultedRangeFrom, to: consultedRangeTo, period: consultedPeriod }"
+          class="text-2xl font-semibold kpi-value block hover:text-primary"
+        >
+          {{ consultedCount }}
+        </a>
+        <p-select
+          [options]="statsPeriodOptions"
+          [ngModel]="consultedPeriod"
+          optionLabel="label"
+          optionValue="value"
+          (ngModelChange)="onConsultedPeriodChange($event)"
+          styleClass="stat-card-period-select"
+          [dt]="selectDt"
+        ></p-select>
       </div>
       <a [routerLink]="['/prescriptions/drafts']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Draft Prescriptions</div>
-        <div class="text-2xl font-semibold">{{ s.draftPrescriptionCount }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ s.draftPrescriptionCount }}</div>
       </a>
-      <a [routerLink]="['/prescriptions/finalized']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
-        <div class="text-xs uppercase tracking-wide text-muted-color">Finalized Prescriptions</div>
-        <div class="text-2xl font-semibold">{{ s.finalizedPrescriptionCount }}</div>
-      </a>
+      <div class="stat-card rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
+        <div class="text-xs uppercase tracking-wide text-muted-color whitespace-nowrap">Finalized Prescriptions</div>
+        <a
+          [routerLink]="['/prescriptions/finalized']"
+          [queryParams]="{ fromDate: finalizedRangeFrom, toDate: finalizedRangeTo }"
+          class="text-2xl font-semibold kpi-value block hover:text-primary"
+        >
+          {{ finalizedCount }}
+        </a>
+        <p-select
+          [options]="statsPeriodOptions"
+          [ngModel]="finalizedPeriod"
+          optionLabel="label"
+          optionValue="value"
+          (ngModelChange)="onFinalizedPeriodChange($event)"
+          styleClass="stat-card-period-select"
+          [dt]="selectDt"
+        ></p-select>
+      </div>
       <a [routerLink]="['/staff/staff-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Assigned Staff</div>
-        <div class="text-2xl font-semibold">{{ s.assignedStaffCount }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ s.assignedStaffCount }}</div>
       </a>
     </div>
 
@@ -65,11 +94,11 @@
     <div class="grid grid-cols-2 gap-3 mb-4">
       <a [routerLink]="['/patients/patient-list']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Patients Registered By Me</div>
-        <div class="text-2xl font-semibold">{{ s.patientsRegisteredByMe }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ s.patientsRegisteredByMe }}</div>
       </a>
       <a [routerLink]="['/assigned-doctors']" class="stat-card stat-card-link rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm">
         <div class="text-xs uppercase tracking-wide text-muted-color">Assigned Doctors</div>
-        <div class="text-2xl font-semibold">{{ s.assignedDoctors.length }}</div>
+        <div class="text-2xl font-semibold kpi-value">{{ s.assignedDoctors.length }}</div>
       </a>
     </div>
   </div>
@@ -110,15 +139,15 @@
           <td>{{ item.checkInAt | date: 'short' }}</td>
           <td>{{ displayStatus(item.status) }}</td>
           <td *ngIf="isDoctor">
-            <button *ngIf="item.status === 'Waiting'" pButton size="small" (click)="openConsultation(item)">
+            <button *ngIf="item.status === 'Waiting'" pButton size="small" [dt]="buttonDt" (click)="openConsultation(item)">
               <i class="fa fa-play"></i>
               <span>Open</span>
             </button>
-            <button *ngIf="item.status !== 'Waiting' && item.hasSavedDraft" pButton size="small" (click)="openConsultation(item)">
+            <button *ngIf="item.status !== 'Waiting' && item.hasSavedDraft" pButton size="small" [dt]="buttonDt" (click)="openConsultation(item)">
               <i class="fa fa-arrow-right"></i>
               <span>Continue Draft</span>
             </button>
-            <button *ngIf="item.status !== 'Waiting' && !item.hasSavedDraft" pButton size="small" (click)="openConsultation(item)">
+            <button *ngIf="item.status !== 'Waiting' && !item.hasSavedDraft" pButton size="small" [dt]="buttonDt" (click)="openConsultation(item)">
               <i class="fa fa-arrow-right"></i>
               <span>Continue</span>
             </button>

@@ -1,5 +1,6 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
 import { ActivatedRoute } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { UI_CONFIG } from '@app/@core/constants';
 import { DateTimeUtility } from '@app/@core/utils/date-time.utility';
 import {
@@ -41,6 +42,7 @@ export class ConsultationListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private toast: ToastService,
     private route: ActivatedRoute,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   consultations: IConsultationListItem[] = [];
@@ -98,6 +100,10 @@ export class ConsultationListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Consultations', icon: 'fa-solid fa-notes-medical', href: '/consultations/consultation-list' },
+    ]);
+
     const params = this.route.snapshot.queryParamMap;
 
     const requestedDateMode = params.get('dateMode');

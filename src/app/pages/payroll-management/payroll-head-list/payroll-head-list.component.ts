@@ -1,4 +1,5 @@
 import { AfterViewInit, ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { BreadcrumbService } from '@app/@core/services';
 import { IPayrollHeadResponse } from '@app/@core/interfaces/payroll-management/payroll-head.interface';
 import { PayrollHeadService } from '@app/@core/services/payroll/payroll-head/payroll-head.service';
 import { ToastService } from '@app/@core/services/misc/toast.service';
@@ -18,6 +19,7 @@ export class PayrollHeadListComponent implements OnInit, AfterViewInit {
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   payrollHeads: IPayrollHeadResponse[] = [];
@@ -43,6 +45,10 @@ export class PayrollHeadListComponent implements OnInit, AfterViewInit {
   columns = PayrollHeadListColumns;
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Payroll', icon: 'fa-solid fa-money-bill-wave', href: '/payroll/payroll-head-list' },
+      { title: 'Payroll Head', icon: 'fa-solid fa-list', href: '/payroll/payroll-head-list' },
+    ]);
     this.loadPayrollHeads();
     this.isLoading = false;
   }

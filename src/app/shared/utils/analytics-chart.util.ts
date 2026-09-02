@@ -11,29 +11,46 @@ import { ITrendPoint } from '@core/interfaces/analytics/analytics.interface';
 const CHART_COLOR = '#6366f1';
 const ZERO_BAR_COLOR = '#e5e7eb';
 
-export function buildLineChartData(points: ITrendPoint[], label: string) {
+/**
+ * Monochromatic teal palette for the Analytics & Reports dashboard's charts (US-072–076).
+ * Kept separate from {@link CHART_COLOR}/{@link ZERO_BAR_COLOR} above, which stay the default
+ * for every caller that doesn't opt in (the doctor-details drill-down page) — this page's
+ * redesign must not change that page's chart colors.
+ */
+export const ANALYTICS_MONO_CHART_COLORS = {
+  primary: '#0d9488',
+  areaFill: 'rgba(13, 148, 136, 0.12)',
+  zero: '#99f6e4',
+};
+
+/**
+ * `areaColor` is opt-in (default `undefined` keeps `fill: false`, matching every existing
+ * caller) — passing one turns the line into a soft filled area under the trend.
+ */
+export function buildLineChartData(points: ITrendPoint[], label: string, color: string = CHART_COLOR, areaColor?: string) {
   return {
     labels: points.map((p) => p.bucketKey),
     datasets: [
       {
         label,
         data: points.map((p) => p.count),
-        fill: false,
-        borderColor: CHART_COLOR,
+        fill: !!areaColor,
+        backgroundColor: areaColor,
+        borderColor: color,
         tension: 0.3,
       },
     ],
   };
 }
 
-export function buildBarChartData(entries: { name: string; count: number }[], label: string) {
+export function buildBarChartData(entries: { name: string; count: number }[], label: string, color: string = CHART_COLOR) {
   return {
     labels: entries.map((e) => e.name),
     datasets: [
       {
         label,
         data: entries.map((e) => e.count),
-        backgroundColor: CHART_COLOR,
+        backgroundColor: color,
       },
     ],
   };
@@ -45,14 +62,19 @@ export function buildBarChartData(entries: { name: string; count: number }[], la
  * `minBarLength` so a literal 0 stays visible on the axis instead of vanishing entirely)
  * rather than being dropped from the Y-axis.
  */
-export function buildDoctorPrescriptionsChartData(entries: { name: string; count: number }[], label: string) {
+export function buildDoctorPrescriptionsChartData(
+  entries: { name: string; count: number }[],
+  label: string,
+  color: string = CHART_COLOR,
+  zeroColor: string = ZERO_BAR_COLOR,
+) {
   return {
     labels: entries.map((e) => e.name),
     datasets: [
       {
         label,
         data: entries.map((e) => e.count),
-        backgroundColor: entries.map((e) => (e.count === 0 ? ZERO_BAR_COLOR : CHART_COLOR)),
+        backgroundColor: entries.map((e) => (e.count === 0 ? zeroColor : color)),
         minBarLength: 3,
       },
     ],
@@ -108,10 +130,12 @@ export function buildHorizontalBarChartOptions() {
     scales: {
       x: {
         beginAtZero: true,
-        ticks: { precision: 0 },
+        ticks: { precision: 0, color: '#737373' },
+        grid: { color: '#e5e5e5' },
       },
       y: {
-        ticks: { autoSkip: false },
+        ticks: { autoSkip: false, color: '#737373' },
+        grid: { display: false },
       },
     },
   };
@@ -151,7 +175,7 @@ export function buildHourBarChartDataAmPm(buckets: IHourBucket[], label: string)
  * Explicitly re-sorted by hour (0-23, i.e. 12 AM through 11 PM) rather than trusting caller
  * order, so the chart always reads chronologically top to bottom.
  */
-export function buildPeakHoursChartData(buckets: IHourBucket[], label: string) {
+export function buildPeakHoursChartData(buckets: IHourBucket[], label: string, color: string = CHART_COLOR) {
   const active = buckets
     .filter((b) => b.count > 0)
     .slice()
@@ -162,7 +186,7 @@ export function buildPeakHoursChartData(buckets: IHourBucket[], label: string) {
       {
         label,
         data: active.map((b) => b.count),
-        backgroundColor: CHART_COLOR,
+        backgroundColor: color,
       },
     ],
   };
@@ -246,7 +270,8 @@ export function buildPrescriptionTrendChartOptions() {
       },
     },
     scales: {
-      y: { beginAtZero: true, ticks: { precision: 0 } },
+      x: { ticks: { color: '#737373' }, grid: { display: false } },
+      y: { beginAtZero: true, ticks: { precision: 0, color: '#737373' }, grid: { color: '#e5e5e5' } },
     },
   };
 }

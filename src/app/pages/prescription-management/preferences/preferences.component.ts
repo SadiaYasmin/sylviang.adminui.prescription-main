@@ -7,6 +7,7 @@ import { IHospitalSettings } from '@core/interfaces/hospital-settings/hospital-s
 import { ITemplateDetails, TemplateLanguage } from '@core/interfaces/templates/template.interface';
 import { DoctorPreferencesService } from '@core/services/doctor-preferences/doctor-preferences.service';
 import { HospitalSettingsService } from '@core/services/hospital-settings/hospital-settings.service';
+import { BreadcrumbService } from '@app/@core/services';
 import { ToastService } from '@core/services/misc/toast.service';
 import { TemplateService } from '@core/services/templates/template.service';
 
@@ -33,10 +34,16 @@ export class PreferencesComponent implements OnInit {
     private doctorPreferencesService: DoctorPreferencesService,
     private templateService: TemplateService,
     private hospitalSettingsService: HospitalSettingsService,
+    private breadcrumbService: BreadcrumbService,
     private toast: ToastService,
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Prescriptions', icon: 'fa-solid fa-file-prescription', href: '/prescriptions' },
+      { title: 'Prescription Preferences', icon: 'fa-solid fa-gear', href: '/prescriptions/preferences' },
+    ]);
+
     this.hospitalSettingsService.get().subscribe({
       next: (response) => {
         if (response && !response.hasError && response.content) {

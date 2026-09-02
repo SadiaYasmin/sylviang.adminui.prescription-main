@@ -14,8 +14,10 @@ import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
 import { TooltipModule } from 'primeng/tooltip';
+import { AnalyticsDateRangeFilterComponent } from '@app/shared/components/analytics-date-range-filter/analytics-date-range-filter.component';
 
 @NgModule({
+  declarations: [AnalyticsDateRangeFilterComponent],
   imports: [
     CommonModule,
     ReactiveFormsModule,
@@ -49,6 +51,7 @@ import { TooltipModule } from 'primeng/tooltip';
     SkeletonModule,
     TableModule,
     TooltipModule,
+    AnalyticsDateRangeFilterComponent,
   ],
 })
 export class SharedModule {}

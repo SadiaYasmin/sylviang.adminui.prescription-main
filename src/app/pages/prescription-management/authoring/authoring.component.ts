@@ -3,6 +3,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PrescriptionService } from '@core/services/prescriptions/prescription.service';
 import { DoctorPreferencesService } from '@core/services/doctor-preferences/doctor-preferences.service';
 import { PatientService } from '@core/services/patients/patient.service';
+import { BreadcrumbService } from '@app/@core/services';
 import { ToastService } from '@core/services/misc/toast.service';
 import { IDoctorPatientQueueItem, PatientQueueFilter } from '@core/interfaces/patients/patient.interface';
 import { DefaultPatientQueueFilter, PatientQueueFilterOptions } from '@core/constants/patient-queue-filter-options';
@@ -66,10 +67,16 @@ export class AuthoringComponent implements OnInit, OnDestroy {
     private prescriptionService: PrescriptionService,
     private doctorPreferencesService: DoctorPreferencesService,
     private patientService: PatientService,
+    private breadcrumbService: BreadcrumbService,
     private toast: ToastService,
   ) {}
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Prescriptions', icon: 'fa-solid fa-file-prescription', href: '/prescriptions' },
+      { title: 'Start a Prescription', icon: 'fa-solid fa-file-pen', href: '/prescriptions' },
+    ]);
+
     // Auto-save (US: data protection): persists the working copy while the prescription stays
     // InProgress — deliberately does NOT promote it to Draft (that only happens on leave or an
     // explicit Save as Draft), so it never leaks into the Draft Prescriptions list mid-edit.

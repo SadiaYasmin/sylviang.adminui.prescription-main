@@ -1,5 +1,6 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { PrescriptionService } from '@core/services/prescriptions/prescription.service';
 import { IPrescriptionListItem } from '@core/interfaces/prescriptions/prescription.interface';
 import { UI_CONFIG } from '@core/constants';
@@ -28,7 +29,7 @@ export class DraftListComponent implements OnInit, OnDestroy {
   private readonly destroy$ = new Subject<void>();
   private readonly searchTermChanges$ = new Subject<string>();
 
-  constructor(private prescriptionService: PrescriptionService, private router: Router) {}
+  constructor(private prescriptionService: PrescriptionService, private router: Router, private breadcrumbService: BreadcrumbService) {}
 
   get skeletonItems() {
     return Array(this.rows)
@@ -37,6 +38,11 @@ export class DraftListComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([
+      { title: 'Prescriptions', icon: 'fa-solid fa-file-prescription', href: '/prescriptions' },
+      { title: 'Draft Prescriptions', icon: 'fa-solid fa-file-circle-question', href: '/prescriptions/drafts' },
+    ]);
+
     this.searchTermChanges$.pipe(debounceTime(UI_CONFIG.searchDebounceTime), distinctUntilChanged(), takeUntil(this.destroy$)).subscribe(() => {
       this.currentPage = 1;
       this.loadDrafts();

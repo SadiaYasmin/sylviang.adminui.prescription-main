@@ -100,6 +100,6 @@ describe('PrescriptionTrendsTabComponent', () => {
     const result = component.prescriptionsPerDoctorChartData;
     expect(result?.labels).toEqual(['Dr. Idle']);
     expect(result?.datasets[0].data).toEqual([0]);
-    expect(result?.datasets[0].backgroundColor).toEqual(['#e5e7eb']);
+    expect(result?.datasets[0].backgroundColor).toEqual(['#99f6e4']);
   });
 });

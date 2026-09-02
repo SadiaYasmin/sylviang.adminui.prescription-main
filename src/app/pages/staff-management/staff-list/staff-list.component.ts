@@ -1,4 +1,5 @@
 import { ChangeDetectorRef, Component, OnInit } from '@angular/core';
+import { BreadcrumbService } from '@app/@core/services';
 import { UI_CONFIG } from '@app/@core/constants';
 import { IStaffSummary } from '@core/interfaces/staff/staff.interface';
 import { AuthService } from '@core/services/auth/auth.service';
@@ -22,6 +23,7 @@ export class StaffListComponent implements OnInit {
     private cdr: ChangeDetectorRef,
     private confirmationService: ConfirmationService,
     private toast: ToastService,
+    private breadcrumbService: BreadcrumbService,
   ) {}
 
   staff: IStaffSummary[] = [];
@@ -49,6 +51,7 @@ export class StaffListComponent implements OnInit {
   }
 
   ngOnInit(): void {
+    this.breadcrumbService.setBreadcrumbs([{ title: 'Staff Management', icon: 'fa-solid fa-users', href: '/staff/staff-list' }]);
     this.loadStaff();
     if (!this.isDoctorView) {
       this.loadDepartments();

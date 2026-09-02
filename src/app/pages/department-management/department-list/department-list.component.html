@@ -26,19 +26,10 @@
             <span [class]="department.isActive ? 'badge badge-enabled' : 'badge badge-disabled'">{{ department.isActive ? 'Active' : 'Inactive' }}</span>
           </td>
           <td>
-            <button pButton size="small" severity="secondary" [outlined]="true" (click)="openEdit(department)" title="Edit">
+            <button class="text-primary mr-2" (click)="openEdit(department)" title="Edit">
               <i class="fa fa-edit"></i>
             </button>
-            <button
-              *ngIf="department.isActive"
-              pButton
-              size="small"
-              severity="danger"
-              [outlined]="true"
-              class="ml-2"
-              (click)="deactivate(department, $event)"
-              title="Deactivate"
-            >
+            <button *ngIf="department.isActive" class="text-danger" (click)="deactivate(department, $event)" title="Deactivate">
               <i class="fa fa-ban"></i>
             </button>
           </td>

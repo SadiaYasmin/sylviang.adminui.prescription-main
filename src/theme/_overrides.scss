@@ -267,8 +267,38 @@
 .p-button-text.p-button-danger:not(:disabled):hover {
   @apply bg-danger-500 dark:bg-danger-700;
 }
+// Was `bg-neutral` (#6b7280) + white text — reads fine most of the time, but PrimeNG's own
+// (lighter) secondary token can win the race on first paint before this rule's stylesheet is
+// in place, leaving near-white text on a near-white background for a flash. Pinned to this
+// app's own neutral scale (light gray + dark text) removes the ambiguity either way and matches
+// the conventional "Cancel" button look.
 .p-button-secondary {
-  @apply bg-neutral hover:bg-borderDark border-neutral text-white border-none !important;
+  background-color: var(--neutral-200) !important;
+  border: none !important;
+  color: var(--neutral-700) !important;
+
+  i,
+  span {
+    color: var(--neutral-700) !important;
+  }
+
+  &:hover {
+    background-color: var(--neutral-300) !important;
+  }
+}
+
+.dark .p-button-secondary {
+  background-color: var(--neutral-700) !important;
+  color: var(--neutral-100) !important;
+
+  i,
+  span {
+    color: var(--neutral-100) !important;
+  }
+
+  &:hover {
+    background-color: var(--neutral-600) !important;
+  }
 }
 .p-ripple.p-button.p-component.p-button-icon-only.p-button-secondary.p-button-rounded.p-button-text.p-dialog-close-button {
   @apply bg-transparent hover:bg-danger-100 duration-200 text-danger-500 !important;

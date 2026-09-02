@@ -1,0 +1,43 @@
+// Monochromatic (teal) design tokens for the Analytics & Reports dashboard only.
+//
+// PrimeNG's Aura theme and the tailwindcss-primeui plugin both read colors from `--p-*`
+// CSS custom properties (e.g. `bg-primary` -> var(--p-primary-color), `p-tabs`'/`p-select`'s
+// internal styles the same way). Custom properties inherit through the DOM regardless of
+// Angular's view-encapsulation attribute scoping, so redeclaring them here on `:host` recolors
+// every PrimeNG control and every `bg-primary`/`text-primary`/`border-primary` Tailwind
+// utility used by this page and its five tab child components — without touching the app's
+// global theme (src/theme/_variables.scss) or any other page.
+:host {
+  --p-primary-50: #f0fdfa;
+  --p-primary-100: #ccfbf1;
+  --p-primary-200: #99f6e4;
+  --p-primary-300: #5eead4;
+  --p-primary-400: #2dd4bf;
+  --p-primary-500: #14b8a6;
+  --p-primary-600: #0d9488;
+  --p-primary-700: #0f766e;
+  --p-primary-800: #115e59;
+  --p-primary-900: #134e4a;
+  --p-primary-950: #042f2e;
+
+  --p-primary-color: var(--p-primary-500);
+  --p-primary-contrast-color: #ffffff;
+  --p-primary-hover-color: var(--p-primary-600);
+  --p-primary-active-color: var(--p-primary-700);
+
+  --p-highlight-background: var(--p-primary-50);
+  --p-highlight-focus-background: var(--p-primary-100);
+  --p-highlight-color: var(--p-primary-700);
+  --p-highlight-focus-color: var(--p-primary-800);
+  --p-focus-ring-color: var(--p-primary-500);
+
+  // Local aliases used directly by this page's own template/tab components.
+  --analytics-heading: var(--p-primary-900);
+  --analytics-kpi: var(--p-primary-900);
+  --analytics-positive: var(--p-primary-700);
+  --analytics-negative: var(--neutral-500, #737373);
+}
+
+.analytics-heading {
+  color: var(--analytics-heading);
+}
