@@ -1,6 +1,6 @@
 <section class="page-container">
   <form [formGroup]="staffForm" (ngSubmit)="onSubmit()" novalidate>
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+    <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 p-4 shadow-sm grid grid-cols-1 sm:grid-cols-2 gap-4">
       <div class="sm:col-span-2">
         <label class="block text-xs font-medium mb-1">Full Name <span class="text-red-600">*</span></label>
         <input type="text" pInputText class="w-full" formControlName="fullName" placeholder="Jane Roy" />

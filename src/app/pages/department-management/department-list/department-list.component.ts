@@ -24,6 +24,25 @@ export class DepartmentListComponent implements OnInit {
   departments: IDepartment[] = [];
   loading = false;
 
+  /** Small client-side filters — the department list isn't paginated from the backend (it's
+   * always a short, fully-loaded list), so a search endpoint would be overkill here. */
+  searchTerm = '';
+  statusFilter: 'All' | 'Active' | 'Inactive' = 'All';
+  readonly statusFilterOptions: { label: string; value: 'All' | 'Active' | 'Inactive' }[] = [
+    { label: 'All Statuses', value: 'All' },
+    { label: 'Active', value: 'Active' },
+    { label: 'Inactive', value: 'Inactive' },
+  ];
+
+  get filteredDepartments(): IDepartment[] {
+    const term = this.searchTerm.trim().toLowerCase();
+    return this.departments.filter((d) => {
+      const matchesTerm = !term || d.name.toLowerCase().includes(term);
+      const matchesStatus = this.statusFilter === 'All' || d.isActive === (this.statusFilter === 'Active');
+      return matchesTerm && matchesStatus;
+    });
+  }
+
   form!: FormGroup;
   formSubmitted = false;
   showDialog = false;

@@ -66,6 +66,13 @@ export class MedicineListComponent implements OnInit {
   searchTerm = '';
   columns = MedicineListColumns;
 
+  statusFilter: 'All' | 'Active' | 'Inactive' = 'All';
+  readonly statusFilterOptions: { label: string; value: 'All' | 'Active' | 'Inactive' }[] = [
+    { label: 'All Statuses', value: 'All' },
+    { label: 'Active', value: 'Active' },
+    { label: 'Inactive', value: 'Inactive' },
+  ];
+
   // Catalog can run 20k+ rows after a CSV import — server-paginated for every role, same
   // lazy p-table pattern as doctor-list.
   UI_CONFIG = UI_CONFIG;
@@ -171,6 +178,11 @@ export class MedicineListComponent implements OnInit {
     this.loadMedicines();
   }
 
+  onStatusFilterChange(): void {
+    this.currentPage = 1;
+    this.loadMedicines();
+  }
+
   onPageChange(event: { first: number; rows: number }): void {
     this.currentPage = Math.floor(event.first / event.rows) + 1;
     this.rows = event.rows;
@@ -214,7 +226,8 @@ export class MedicineListComponent implements OnInit {
     this.loading = true;
     const { from, to } = this.resolveRange();
 
-    this.medicineService.getCatalog(this.searchTerm, this.currentPage, this.rows, from, to, this.navDoctorId ?? undefined).subscribe({
+    const isActive = this.statusFilter === 'All' ? undefined : this.statusFilter === 'Active';
+    this.medicineService.getCatalog(this.searchTerm, this.currentPage, this.rows, from, to, this.navDoctorId ?? undefined, isActive).subscribe({
       next: (response) => {
         if (!response.hasError && response.content) {
           this.medicines = response.content.medicines || [];

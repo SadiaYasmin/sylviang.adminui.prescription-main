@@ -30,12 +30,13 @@ export class MedicineService {
   }
 
   /** Admin/Doctor only — the Medicine Catalog management screen, includes Total Prescribed. Server-paginated (catalogs can run 20k+ rows after a CSV import). `from`/`to`/`doctorId` are optional: Admin's plain sidebar visit omits them and gets the lifetime hospital-wide count unchanged; a Doctor's own filtered view or an Admin doctor-drill-down passes them. */
-  getCatalog(term: string | undefined, page: number, pageSize: number, from?: string, to?: string, doctorId?: number) {
+  getCatalog(term: string | undefined, page: number, pageSize: number, from?: string, to?: string, doctorId?: number, isActive?: boolean) {
     const params: Record<string, string> = { page: String(page), pageSize: String(pageSize) };
     if (term?.trim()) params['search'] = term.trim();
     if (from) params['from'] = from;
     if (to) params['to'] = to;
     if (doctorId) params['doctorId'] = String(doctorId);
+    if (isActive !== undefined) params['isActive'] = String(isActive);
     return this.httpClient.get<ApiResponse<IMedicineCatalogListResponse>>(`${this.API_URL}/catalog`, { params });
   }
 

@@ -4,14 +4,28 @@
       Departments
       <span class="table-title-info" *ngIf="!loading"> ({{ departments.length }} total)</span>
     </h3>
-    <button pButton (click)="openCreate()">
-      <i class="fa fa-plus"></i>
-      <span>Add Department</span>
-    </button>
+    <div class="flex items-center gap-2">
+      <div class="relative">
+        <i class="fa fa-search absolute left-3 top-1/2 -translate-y-1/2 text-xs text-muted-color"></i>
+        <input type="text" [(ngModel)]="searchTerm" [ngModelOptions]="{ standalone: true }" placeholder="Search departments" class="!pl-8 !py-1.5 !w-56" />
+      </div>
+      <p-select
+        [options]="statusFilterOptions"
+        [(ngModel)]="statusFilter"
+        [ngModelOptions]="{ standalone: true }"
+        optionLabel="label"
+        optionValue="value"
+        styleClass="text-sm"
+      ></p-select>
+      <button pButton (click)="openCreate()">
+        <i class="fa fa-plus"></i>
+        <span>Add Department</span>
+      </button>
+    </div>
   </div>
 
   <div class="rounded-xl border border-surface-200 dark:border-surface-700 bg-surface-0 dark:bg-surface-900 shadow-sm overflow-hidden">
-    <p-table [value]="departments" [loading]="loading" responsiveLayout="scroll">
+    <p-table [value]="filteredDepartments" [loading]="loading" responsiveLayout="scroll">
       <ng-template pTemplate="header">
         <tr>
           <th>Name</th>
@@ -37,7 +51,9 @@
       </ng-template>
       <ng-template pTemplate="emptymessage">
         <tr>
-          <td colspan="3" class="text-center text-muted-color py-4">No departments yet. Add your first one.</td>
+          <td colspan="3" class="text-center text-muted-color py-4">
+            {{ searchTerm || statusFilter !== 'All' ? 'No departments match this search/filter.' : 'No departments yet. Add your first one.' }}
+          </td>
         </tr>
       </ng-template>
     </p-table>
