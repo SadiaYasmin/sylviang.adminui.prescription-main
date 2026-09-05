@@ -8,7 +8,7 @@
     <p-tablist>
       <p-tab value="summary">Executive Summary</p-tab>
       <p-tab value="medicines">Medicine &amp; Prescription</p-tab>
-      <p-tab value="doctors">Doctor Performance</p-tab>
+      <p-tab value="doctors">Doctor Activity</p-tab>
       <p-tab value="trends">Prescription Trends</p-tab>
       <p-tab value="patients">Patient Analytics</p-tab>
     </p-tablist>
@@ -48,13 +48,13 @@
 
       <p-tabpanel value="doctors">
         <div data-pdf-tab="doctors">
-          <app-doctor-performance-tab
-            [leaderboard]="doctorPerfLeaderboard"
-            [loading]="doctorPerfLoading"
-            [rangePreset]="doctorPerfRangePreset"
-            (rangePresetChange)="onDoctorPerfRangePresetChange($event)"
-            (customRangeChange)="onDoctorPerfCustomRangeChange($event)"
-          ></app-doctor-performance-tab>
+          <app-doctor-activity-tab
+            [leaderboard]="doctorActivityLeaderboard"
+            [loading]="doctorActivityLoading"
+            [rangePreset]="doctorActivityRangePreset"
+            (rangePresetChange)="onDoctorActivityRangePresetChange($event)"
+            (customRangeChange)="onDoctorActivityCustomRangeChange($event)"
+          ></app-doctor-activity-tab>
         </div>
       </p-tabpanel>
 

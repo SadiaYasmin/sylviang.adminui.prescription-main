@@ -24,7 +24,7 @@ const ANALYTICS_TAB_KEYS: AnalyticsTabKey[] = ['summary', 'medicines', 'doctors'
 const ANALYTICS_TAB_TITLES: Record<AnalyticsTabKey, string> = {
   summary: 'Executive Summary',
   medicines: 'Medicine & Prescription',
-  doctors: 'Doctor Performance',
+  doctors: 'Doctor Activity',
   trends: 'Prescription Trends',
   patients: 'Patient Analytics',
 };
@@ -37,7 +37,7 @@ const ANALYTICS_TAB_TITLES: Record<AnalyticsTabKey, string> = {
  * which endpoint to call and hands the response straight to a presentational tab component.
  *
  * Every tab owns ONE independent date-range filter (Last 7/30/90 Days/Custom, default
- * Last 30 Days) — Doctor Performance and Prescription Trends both need the doctor
+ * Last 30 Days) — Doctor Activity and Prescription Trends both need the doctor
  * leaderboard/busiest-hours data, but with their own separate range, so those are fetched
  * twice (once per tab) rather than shared like before this filter existed.
  */
@@ -72,11 +72,11 @@ export class AnalyticsDashboardComponent implements OnInit {
   private medicineTrendCustomFrom: Date | null = null;
   private medicineTrendCustomTo: Date | null = null;
 
-  doctorPerfLeaderboard: IDoctorLeaderboardEntry[] | null = null;
-  doctorPerfLoading = false;
-  doctorPerfRangePreset: PrescriptionTrendRangePreset = 'Last30Days';
-  private doctorPerfCustomFrom: Date | null = null;
-  private doctorPerfCustomTo: Date | null = null;
+  doctorActivityLeaderboard: IDoctorLeaderboardEntry[] | null = null;
+  doctorActivityLoading = false;
+  doctorActivityRangePreset: PrescriptionTrendRangePreset = 'Last30Days';
+  private doctorActivityCustomFrom: Date | null = null;
+  private doctorActivityCustomTo: Date | null = null;
 
   trendsLeaderboard: IDoctorLeaderboardEntry[] | null = null;
   trendsLeaderboardLoading = false;
@@ -161,7 +161,7 @@ export class AnalyticsDashboardComponent implements OnInit {
         this.loadMedicineTabData();
         break;
       case 'doctors':
-        this.loadDoctorPerfLeaderboard();
+        this.loadDoctorActivityLeaderboard();
         break;
       case 'trends':
         this.loadTrendsTabData();
@@ -265,36 +265,36 @@ export class AnalyticsDashboardComponent implements OnInit {
     this.loadMedicineTabData();
   }
 
-  private resolveDoctorPerfRange() {
-    return resolvePrescriptionTrendRange(this.doctorPerfRangePreset, this.doctorPerfCustomFrom, this.doctorPerfCustomTo);
+  private resolveDoctorActivityRange() {
+    return resolvePrescriptionTrendRange(this.doctorActivityRangePreset, this.doctorActivityCustomFrom, this.doctorActivityCustomTo);
   }
 
-  private loadDoctorPerfLeaderboard(): void {
-    this.doctorPerfLoading = true;
-    const { from, to } = this.resolveDoctorPerfRange();
+  private loadDoctorActivityLeaderboard(): void {
+    this.doctorActivityLoading = true;
+    const { from, to } = this.resolveDoctorActivityRange();
     this.analyticsService.getDoctorLeaderboard(from, to).subscribe({
       next: (response) => {
-        this.doctorPerfLeaderboard = !response.hasError && response.content ? response.content : null;
-        this.doctorPerfLoading = false;
+        this.doctorActivityLeaderboard = !response.hasError && response.content ? response.content : null;
+        this.doctorActivityLoading = false;
         this.nudgeChartResize();
       },
       error: () => {
-        this.doctorPerfLoading = false;
+        this.doctorActivityLoading = false;
       },
     });
   }
 
-  onDoctorPerfRangePresetChange(preset: PrescriptionTrendRangePreset): void {
-    this.doctorPerfRangePreset = preset;
+  onDoctorActivityRangePresetChange(preset: PrescriptionTrendRangePreset): void {
+    this.doctorActivityRangePreset = preset;
     if (preset !== 'Custom') {
-      this.loadDoctorPerfLeaderboard();
+      this.loadDoctorActivityLeaderboard();
     }
   }
 
-  onDoctorPerfCustomRangeChange(range: { from: Date; to: Date }): void {
-    this.doctorPerfCustomFrom = range.from;
-    this.doctorPerfCustomTo = range.to;
-    this.loadDoctorPerfLeaderboard();
+  onDoctorActivityCustomRangeChange(range: { from: Date; to: Date }): void {
+    this.doctorActivityCustomFrom = range.from;
+    this.doctorActivityCustomTo = range.to;
+    this.loadDoctorActivityLeaderboard();
   }
 
   private resolveTrendRange() {

@@ -1,11 +1,11 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { IDoctorLeaderboardEntry } from '@core/interfaces/analytics/analytics.interface';
-import { DoctorPerformanceTabComponent } from './doctor-performance-tab.component';
+import { DoctorActivityTabComponent } from './doctor-activity-tab.component';
 
-describe('DoctorPerformanceTabComponent', () => {
-  let component: DoctorPerformanceTabComponent;
-  let fixture: ComponentFixture<DoctorPerformanceTabComponent>;
+describe('DoctorActivityTabComponent', () => {
+  let component: DoctorActivityTabComponent;
+  let fixture: ComponentFixture<DoctorActivityTabComponent>;
 
   const leaderboard: IDoctorLeaderboardEntry[] = [
     { doctorId: 1, fullName: 'Dr. Jane', patientsConsulted: 5, prescriptionsCreated: 8, medicinesPrescribed: 12, avgRxPerConsultation: 1.6, avgMedsPerRx: 1.5 },
@@ -13,11 +13,11 @@ describe('DoctorPerformanceTabComponent', () => {
 
   beforeEach(() => {
     TestBed.configureTestingModule({
-      declarations: [DoctorPerformanceTabComponent],
+      declarations: [DoctorActivityTabComponent],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
 
-    fixture = TestBed.createComponent(DoctorPerformanceTabComponent);
+    fixture = TestBed.createComponent(DoctorActivityTabComponent);
     component = fixture.componentInstance;
   });
 

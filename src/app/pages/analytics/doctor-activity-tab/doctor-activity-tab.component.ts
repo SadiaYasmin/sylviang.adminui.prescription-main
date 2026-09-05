@@ -2,12 +2,12 @@ import { Component, EventEmitter, Input, Output } from '@angular/core';
 import { IDoctorLeaderboardEntry, PrescriptionTrendRangePreset } from '@core/interfaces/analytics/analytics.interface';
 
 @Component({
-  selector: 'app-doctor-performance-tab',
+  selector: 'app-doctor-activity-tab',
   standalone: false,
-  templateUrl: './doctor-performance-tab.component.html',
-  styleUrl: './doctor-performance-tab.component.scss',
+  templateUrl: './doctor-activity-tab.component.html',
+  styleUrl: './doctor-activity-tab.component.scss',
 })
-export class DoctorPerformanceTabComponent {
+export class DoctorActivityTabComponent {
   @Input() leaderboard: IDoctorLeaderboardEntry[] | null = null;
   @Input() loading = false;
 
