@@ -1,9 +1,7 @@
 <section class="page-container">
   <div class="flex items-center justify-between gap-3 mb-4">
     <h2 class="text-xl font-semibold analytics-heading truncate">Analytics &amp; Reports</h2>
-    <button type="button" pButton size="small" icon="fa-solid fa-download" class="shrink-0 whitespace-nowrap" [loading]="exportingPdf" (click)="onDownloadPdf()">
-      Download PDF
-    </button>
+    <button type="button" pButton size="small" icon="fa-solid fa-download" label="Download PDF" class="shrink-0 whitespace-nowrap" [loading]="exportingPdf" (click)="onDownloadPdf()"></button>
   </div>
 
   <p-tabs [value]="activeTab" [dt]="tabsDt" (valueChange)="onTabChange($event)">
