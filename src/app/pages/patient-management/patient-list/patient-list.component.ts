@@ -1,5 +1,5 @@
 import { ChangeDetectorRef, Component, OnDestroy, OnInit } from '@angular/core';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbService } from '@app/@core/services';
 import { AllergyPresetOptions } from '@app/@core/constants/allergy-presets';
 import { BloodGroupLabels } from '@app/@core/constants/blood-group-options';
@@ -8,6 +8,8 @@ import { IPatientSummary } from '@core/interfaces/patients/patient.interface';
 import { AuthService } from '@core/services/auth/auth.service';
 import { PatientService } from '@core/services/patients/patient.service';
 import { DOCTOR_STATS_PERIOD_OPTIONS, DoctorStatsPeriod } from '@app/shared/utils/doctor-stats-period.util';
+import { PRESCRIPTION_TREND_RANGE_PRESET_LABELS, resolvePrescriptionTrendRange } from '@app/shared/utils/prescription-trend-range.util';
+import { PrescriptionTrendRangePreset } from '@core/interfaces/analytics/analytics.interface';
 import { Subject } from 'rxjs';
 import { debounceTime, distinctUntilChanged, takeUntil } from 'rxjs/operators';
 
@@ -23,6 +25,7 @@ export class PatientListComponent implements OnInit, OnDestroy {
     private authService: AuthService,
     private cdr: ChangeDetectorRef,
     private route: ActivatedRoute,
+    private router: Router,
     private breadcrumbService: BreadcrumbService,
   ) {}
 
@@ -34,6 +37,83 @@ export class PatientListComponent implements OnInit, OnDestroy {
   /** Public (not private) so the template can show a small "Showing patients consulted: X" context label near the page title — this page still gets no visible date-range filter control, just this label. */
   navCompletedWithMeOnly = false;
   navPeriodLabel = '';
+
+  /** True when we arrived from Patient Analytics (new/returning + registration-date range) — drives the "Showing new patients from ..." banner. */
+  get hasNavPatientFilter(): boolean {
+    return this.navNewOnly || this.navReturningOnly || !!this.navFrom || !!this.navTo;
+  }
+
+  /**
+   * Human-readable banner text that mirrors the navigation filter AND the loaded output, e.g.
+   * "Showing 13 new patients from Last 30 Days" or "Showing 5 returning patients from Aug 6, 2026 – Sep 4, 2026".
+   * The range part prefers the friendly preset label ("Last 30 Days") when the from/to bounds
+   * exactly match a known preset, otherwise it falls back to formatted dates.
+   */
+  get navFilterLabel(): string {
+    const scope = this.navNewOnly ? 'new patient' : this.navReturningOnly ? 'returning patient' : 'patient';
+    const range = this.navRangeLabel;
+    const plural = (n: number) => (n === 1 ? scope : `${scope}s`);
+    if (this.loading) {
+      return range ? `Showing ${plural(2)} from ${range}` : `Showing ${plural(2)}`;
+    }
+    const count = this.totalRecords;
+    const counted = `Showing ${count} ${plural(count)}`;
+    return range ? `${counted} from ${range}` : counted;
+  }
+
+  private get navRangeLabel(): string {
+    if (!this.navFrom && !this.navTo) return '';
+    const matchedPreset = this.matchNavRangeToPreset();
+    if (matchedPreset) return PRESCRIPTION_TREND_RANGE_PRESET_LABELS[matchedPreset];
+    const fromLabel = this.navFrom ? this.formatApiDate(this.navFrom) : '';
+    // `to` is exclusive (day after the last included day) — display the inclusive end date.
+    const toLabel = this.navTo ? this.formatApiDate(this.shiftApiDate(this.navTo, -1)) : '';
+    if (fromLabel && toLabel) return `${fromLabel} – ${toLabel}`;
+    if (fromLabel) return `since ${fromLabel}`;
+    return `until ${toLabel}`;
+  }
+
+  private matchNavRangeToPreset(): PrescriptionTrendRangePreset | null {
+    const presets: PrescriptionTrendRangePreset[] = ['Last7Days', 'Last30Days', 'Last3Months'];
+    for (const preset of presets) {
+      const resolved = resolvePrescriptionTrendRange(preset, null, null);
+      if (resolved.from === this.navFrom && resolved.to === this.navTo) return preset;
+    }
+    return null;
+  }
+
+  private shiftApiDate(apiDate: string, days: number): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(apiDate);
+    if (!match) return apiDate;
+    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    date.setDate(date.getDate() + days);
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
+  }
+
+  private formatApiDate(apiDate: string): string {
+    const match = /^(\d{4})-(\d{2})-(\d{2})/.exec(apiDate);
+    if (!match) return apiDate;
+    const date = new Date(Number(match[1]), Number(match[2]) - 1, Number(match[3]));
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  }
+
+  /** Clears the analytics navigation filter and reloads the full list. */
+  clearNavFilter(): void {
+    this.navFrom = null;
+    this.navTo = null;
+    this.navNewOnly = false;
+    this.navReturningOnly = false;
+    this.currentPage = 1;
+    this.router.navigate([], {
+      relativeTo: this.route,
+      queryParams: { from: null, to: null, newOnly: null, returningOnly: null },
+      queryParamsHandling: 'merge',
+    });
+    this.loadPatients();
+  }
 
   private readonly destroy$ = new Subject<void>();
   private readonly searchTermChanges$ = new Subject<string>();

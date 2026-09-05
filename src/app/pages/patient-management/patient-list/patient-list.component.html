@@ -30,6 +30,12 @@
     <span>Showing patients consulted: {{ navPeriodLabel }}</span>
   </div>
 
+  <div *ngIf="hasNavPatientFilter" class="mt-3 rounded-lg border border-primary/30 bg-primary/5 px-3 py-2 text-sm text-primary flex items-center gap-2 flex-wrap">
+    <i class="fa fa-filter"></i>
+    <span>{{ navFilterLabel }}</span>
+    <button type="button" class="underline hover:no-underline font-medium" (click)="clearNavFilter()">Clear filter</button>
+  </div>
+
   <div class="table-container mt-4">
     <div class="table-title-container">
       <h3 class="table-title">

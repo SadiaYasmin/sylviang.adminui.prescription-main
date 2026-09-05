@@ -24,6 +24,8 @@ export class TemplatePreviewComponent {
 
   @Input() editable = false;
   @Input() document: IPrescriptionDocument | null = null;
+  /** When true the template keeps an empty signature block — the doctor's signature image (and scribble placeholder) is not rendered. Used by the public QR verification page so a scanned prescription never reveals the doctor's signature. */
+  @Input() hideSignature = false;
   @Output() contentChange = new EventEmitter<IPrescriptionContent>();
 
   readonly designWidth = TEMPLATE_PREVIEW_DESIGN_WIDTH;

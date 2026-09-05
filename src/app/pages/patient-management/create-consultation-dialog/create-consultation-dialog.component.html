@@ -6,9 +6,61 @@
     </div>
 
     <div>
-      <label class="block text-xs font-medium mb-1">Doctor</label>
+      <div class="flex items-center justify-between mb-1">
+        <label class="block text-xs font-medium">Doctor</label>
+        <button type="button" class="text-xs text-primary underline cursor-pointer bg-transparent border-none p-0" (click)="toggleSuggestionPanel()">
+          {{ showSuggestionPanel ? 'Hide suggestions' : 'Need help choosing?' }}
+        </button>
+      </div>
       <p-select [options]="doctors" [(ngModel)]="selectedDoctorId" optionLabel="fullName" optionValue="doctorId" styleClass="w-full" placeholder="Select a doctor" appendTo="body"></p-select>
     </div>
+
+    @if (showSuggestionPanel) {
+      <div class="flex flex-col gap-2 p-3 border border-surface-200 dark:border-surface-700 rounded-md">
+        <label class="block text-xs font-medium">Describe the patient's situation</label>
+        <textarea
+          pTextarea
+          class="w-full"
+          rows="2"
+          [(ngModel)]="patientNote"
+          placeholder="e.g. persistent skin rash for two weeks, no fever"
+        ></textarea>
+        <button type="button" pButton size="small" severity="secondary" [disabled]="!patientNote.trim() || suggesting" (click)="getSuggestions()">
+          {{ suggesting ? 'Thinking...' : 'Get Suggestion' }}
+        </button>
+
+        @if (suggestionRequested && !suggesting) {
+          @if (suggestions.length > 0) {
+            @if (suggestionSummary) {
+              <p class="text-xs text-color-secondary italic">{{ suggestionSummary }}</p>
+            }
+            @if (!suggestionAiUsed) {
+              <p class="text-xs text-orange-500">AI suggestion unavailable — ranked by current workload instead.</p>
+            }
+            <div class="flex flex-col gap-2">
+              @for (suggestion of suggestions; track suggestion.doctorId) {
+                <button
+                  type="button"
+                  class="text-left border rounded-md p-2 cursor-pointer transition-colors"
+                  [class.border-primary]="selectedDoctorId === suggestion.doctorId"
+                  [class.border-surface-200]="selectedDoctorId !== suggestion.doctorId"
+                  (click)="pickSuggestion(suggestion)"
+                >
+                  <div class="flex items-center justify-between">
+                    <span class="font-medium text-sm">{{ suggestion.fullName }}</span>
+                    <span class="text-xs text-color-secondary">{{ suggestion.currentQueueLength }} waiting today</span>
+                  </div>
+                  <div class="text-xs text-color-secondary">{{ suggestion.department }}{{ suggestion.department && suggestion.specialization ? ' · ' : '' }}{{ suggestion.specialization }}</div>
+                  <div class="text-xs mt-1">{{ suggestion.reasoning }}</div>
+                </button>
+              }
+            </div>
+          } @else {
+            <p class="text-xs text-color-secondary">No suggestions available.</p>
+          }
+        }
+      </div>
+    }
 
     <p class="text-sm text-color-secondary">This consultation will be created for today.</p>
   </div>

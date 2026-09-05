@@ -2,6 +2,7 @@ import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from
 import {
   AnalyticsGranularity,
   IMedicineAnalyticsResponse,
+  IMedicineCountEntry,
   IPrescriptionVolumeTrendResponse,
   PrescriptionTrendRangePreset,
 } from '@core/interfaces/analytics/analytics.interface';
@@ -15,6 +16,13 @@ import {
 function buildBarChartOptions() {
   return { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } } };
 }
+
+/**
+ * The backend returns every catalog row with a count at/below the "rare" threshold — on a
+ * real catalog that's the whole database and a plain 20k+ row table would balloon the DOM,
+ * freeze tab switches and make the PDF export OOM the tab. Cap what we actually render.
+ */
+const RARELY_USED_DISPLAY_LIMIT = 50;
 
 @Component({
   selector: 'app-medicine-prescription-tab',
@@ -78,6 +86,18 @@ export class MedicinePrescriptionTabComponent implements OnChanges {
         : null;
     }
   }
+
+  get rarelyUsedMedicines(): IMedicineCountEntry[] | null {
+    const list = this.analytics?.rarelyUsedMedicines;
+    if (!list || list.length === 0) return list ?? null;
+    return list.length <= RARELY_USED_DISPLAY_LIMIT ? list : list.slice(0, RARELY_USED_DISPLAY_LIMIT);
+  }
+
+  get rarelyUsedTruncated(): boolean {
+    return (this.analytics?.rarelyUsedMedicines.length ?? 0) > RARELY_USED_DISPLAY_LIMIT;
+  }
+
+  readonly rarelyUsedDisplayLimit = RARELY_USED_DISPLAY_LIMIT;
 
   selectTrendGranularity(value: AnalyticsGranularity): void {
     if (value !== this.trendGranularity) {

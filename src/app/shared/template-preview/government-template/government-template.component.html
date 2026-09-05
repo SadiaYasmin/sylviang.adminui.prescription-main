@@ -137,7 +137,10 @@
         <div class="qr-caption">{{ qrMessage }}</div>
       </div>
       <div class="signature-block">
-        <img *ngIf="document?.doctor?.signatureUrl" [src]="document!.doctor.signatureUrl | assetUrl" class="signature-image" alt="Doctor's signature" />
+        <ng-container *ngIf="!hideSignature">
+          <img *ngIf="document?.doctor?.signatureUrl" [src]="document!.doctor.signatureUrl | assetUrl" class="signature-image" alt="Doctor's signature" />
+        </ng-container>
+        <div class="signature-empty" *ngIf="hideSignature" aria-hidden="true"></div>
         <div class="signature-line">
           <div class="signature-name">{{ document ? document.doctor.fullName : '[Doctor Name]' }}</div>
           <div class="signature-caption">{{ label('doctorSignature', "Doctor's Signature") }}</div>

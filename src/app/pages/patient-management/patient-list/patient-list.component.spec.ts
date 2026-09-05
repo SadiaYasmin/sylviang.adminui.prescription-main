@@ -1,5 +1,7 @@
 import { NO_ERRORS_SCHEMA } from '@angular/core';
 import { ComponentFixture, fakeAsync, TestBed, tick } from '@angular/core/testing';
+import { ActivatedRoute, Router } from '@angular/router';
+import { BreadcrumbService } from '@app/@core/services';
 import { UI_CONFIG } from '@app/@core/constants';
 import { AuthService } from '@core/services/auth/auth.service';
 import { PatientService } from '@core/services/patients/patient.service';
@@ -40,7 +42,7 @@ describe('PatientListComponent', () => {
     },
   };
 
-  function configure(role: string | null) {
+  function configure(role: string | null, queryParams: Record<string, string | null> = {}) {
     patientServiceSpy = jasmine.createSpyObj('PatientService', ['getPatients']);
     patientServiceSpy.getPatients.and.returnValue(of(listResponse as any));
     authServiceSpy = jasmine.createSpyObj('AuthService', ['getRole']);
@@ -51,6 +53,12 @@ describe('PatientListComponent', () => {
       providers: [
         { provide: PatientService, useValue: patientServiceSpy },
         { provide: AuthService, useValue: authServiceSpy },
+        {
+          provide: ActivatedRoute,
+          useValue: { snapshot: { queryParamMap: { get: (key: string) => queryParams[key] ?? null } } },
+        },
+        { provide: Router, useValue: jasmine.createSpyObj('Router', ['navigate']) },
+        { provide: BreadcrumbService, useValue: jasmine.createSpyObj('BreadcrumbService', ['setBreadcrumbs']) },
       ],
       schemas: [NO_ERRORS_SCHEMA],
     }).compileComponents();
@@ -176,5 +184,34 @@ describe('PatientListComponent', () => {
     expect(component.allergyDisplay({ allergyPresetId: null, allergyOtherText: 'Shellfish' } as any)).toBe('Shellfish');
     expect(component.allergyDisplay({ allergyPresetId: 'Penicillin', allergyOtherText: null } as any)).toBe('Penicillin');
     expect(component.allergyDisplay({ allergyPresetId: 'None', allergyOtherText: null } as any)).toBe('None');
+  });
+
+  it('should show no nav banner without analytics query params', () => {
+    configure('Admin');
+    fixture.detectChanges();
+
+    expect(component.hasNavPatientFilter).toBeFalse();
+  });
+
+  it('should label new-patient navigation with its date range and result count', () => {
+    configure('Admin', { from: '2026-08-06', to: '2026-09-05', newOnly: 'true' });
+    fixture.detectChanges();
+
+    expect(component.hasNavPatientFilter).toBeTrue();
+    expect(component.navFilterLabel).toContain('new patient');
+    expect(component.navFilterLabel).toContain('1');
+    expect(patientServiceSpy.getPatients).toHaveBeenCalledWith(jasmine.objectContaining({ newOnly: true }));
+  });
+
+  it('should label returning-patient navigation and clear the filter on demand', () => {
+    configure('Admin', { from: '2026-08-06', to: '2026-09-05', returningOnly: 'true' });
+    fixture.detectChanges();
+
+    expect(component.navFilterLabel).toContain('returning patient');
+
+    component.clearNavFilter();
+
+    expect(component.hasNavPatientFilter).toBeFalse();
+    expect(patientServiceSpy.getPatients).toHaveBeenCalledWith(jasmine.objectContaining({ returningOnly: undefined }));
   });
 });

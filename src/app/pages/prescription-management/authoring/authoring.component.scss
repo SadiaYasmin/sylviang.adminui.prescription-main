@@ -266,6 +266,27 @@
 .btn-secondary {
   border: 1px solid #cbd5e1;
   background: #fff;
+  // Explicit ink on the button AND its icon/label children — without this the label
+  // inherits the theme body color (near-white in dark mode) and washes out against
+  // this white background; the child rule also beats any stray `span` color leaks.
+  color: #1e293b;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+
+  i,
+  span {
+    color: inherit;
+  }
+
+  &:hover:not(:disabled) {
+    background: #f1f5f9;
+  }
+
+  &:disabled {
+    opacity: 0.55;
+  }
 }
 
 .btn-primary {

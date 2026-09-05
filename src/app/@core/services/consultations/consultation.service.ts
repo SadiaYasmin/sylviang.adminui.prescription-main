@@ -10,6 +10,8 @@ import {
   ICreateConsultationResponse,
   IOpenConsultationResponse,
   IQueueItem,
+  ISuggestDoctorRequest,
+  ISuggestDoctorResponse,
 } from '@core/interfaces/consultations/consultation.interface';
 import { BASE_URL_Consultations } from '@env/environment';
 
@@ -39,6 +41,10 @@ export class ConsultationService {
 
   getMyAssignedDoctors() {
     return this.httpClient.get<ApiResponse<IAssignedDoctorSummary[]>>(`${this.API_URL}/my-assigned-doctors`);
+  }
+
+  suggestDoctor(request: ISuggestDoctorRequest) {
+    return this.httpClient.post<ApiResponse<ISuggestDoctorResponse>>(`${this.API_URL}/suggest-doctor`, request);
   }
 
   getConsultations(request: IConsultationListRequest) {

@@ -124,7 +124,10 @@
     ></app-template-preview>
 
     <div class="authoring-bottom-actions">
-      <button type="button" class="btn-secondary" [disabled]="saving" (click)="saveDraft()">Save as Draft</button>
+      <button type="button" class="btn-secondary" [disabled]="saving" (click)="saveDraft()">
+        <i class="fa fa-floppy-disk"></i>
+        <span>Save as Draft</span>
+      </button>
       <button type="button" class="btn-primary" [disabled]="saving" (click)="finalize()">Finalize</button>
     </div>
   </div>

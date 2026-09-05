@@ -1,6 +1,6 @@
 import { Component, EventEmitter, Input, OnChanges, Output, SimpleChanges } from '@angular/core';
 import { IPatientSummary } from '@core/interfaces/patients/patient.interface';
-import { IAssignedDoctorSummary } from '@core/interfaces/consultations/consultation.interface';
+import { IAssignedDoctorSummary, ISuggestedDoctor } from '@core/interfaces/consultations/consultation.interface';
 import { ConsultationService } from '@core/services/consultations/consultation.service';
 import { ToastService } from '@core/services/misc/toast.service';
 
@@ -27,6 +27,14 @@ export class CreateConsultationDialogComponent implements OnChanges {
   selectedDoctorId: number | null = null;
   submitting = false;
 
+  showSuggestionPanel = false;
+  patientNote = '';
+  suggesting = false;
+  suggestions: ISuggestedDoctor[] = [];
+  suggestionSummary: string | null = null;
+  suggestionAiUsed = true;
+  suggestionRequested = false;
+
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['visible'] && this.visible) {
       this.resetForm();
@@ -37,6 +45,44 @@ export class CreateConsultationDialogComponent implements OnChanges {
   private resetForm(): void {
     this.selectedDoctorId = null;
     this.submitting = false;
+    this.showSuggestionPanel = false;
+    this.patientNote = '';
+    this.suggesting = false;
+    this.suggestions = [];
+    this.suggestionSummary = null;
+    this.suggestionAiUsed = true;
+    this.suggestionRequested = false;
+  }
+
+  toggleSuggestionPanel(): void {
+    this.showSuggestionPanel = !this.showSuggestionPanel;
+  }
+
+  getSuggestions(): void {
+    if (!this.patientNote.trim() || this.suggesting) return;
+
+    this.suggesting = true;
+    this.suggestionRequested = true;
+    this.consultationService.suggestDoctor({ patientNote: this.patientNote.trim() }).subscribe({
+      next: (response) => {
+        this.suggesting = false;
+        if (!response.hasError && response.content) {
+          this.suggestions = response.content.suggestions || [];
+          this.suggestionSummary = response.content.summary;
+          this.suggestionAiUsed = response.content.aiUsed;
+        } else {
+          this.suggestions = [];
+        }
+      },
+      error: () => {
+        this.suggesting = false;
+        this.suggestions = [];
+      },
+    });
+  }
+
+  pickSuggestion(suggestion: ISuggestedDoctor): void {
+    this.selectedDoctorId = suggestion.doctorId;
   }
 
   private loadDoctors(): void {

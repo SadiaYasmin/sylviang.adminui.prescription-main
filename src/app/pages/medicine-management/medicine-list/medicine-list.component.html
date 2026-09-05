@@ -6,6 +6,15 @@
         <label for="searchInput">Search brand or generic name</label>
       </p-floatlabel>
 
+      <p-select
+        [options]="statusFilterOptions"
+        [(ngModel)]="statusFilter"
+        [ngModelOptions]="{ standalone: true }"
+        (onChange)="onStatusFilterChange()"
+        optionLabel="label"
+        optionValue="value"
+      ></p-select>
+
       <button pButton (click)="applySearch()">
         <i class="fa fa-search"></i>
         <span>Search</span>
@@ -15,15 +24,6 @@
         <i class="fa fa-times"></i>
         <span>Reset</span>
       </button>
-
-      <p-select
-        [options]="statusFilterOptions"
-        [(ngModel)]="statusFilter"
-        [ngModelOptions]="{ standalone: true }"
-        (onChange)="onStatusFilterChange()"
-        optionLabel="label"
-        optionValue="value"
-      ></p-select>
     </div>
 
     <div class="flex items-center gap-2 flex-wrap">

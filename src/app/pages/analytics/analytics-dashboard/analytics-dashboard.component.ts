@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { BreadcrumbService } from '@app/@core/services';
+import { ToastService } from '@core/services/misc/toast.service';
 import { AnalyticsService } from '@core/services/analytics/analytics.service';
 import {
   AnalyticsGranularity,
@@ -14,10 +15,19 @@ import {
 } from '@core/interfaces/analytics/analytics.interface';
 import { resolvePrescriptionTrendRange } from '@app/shared/utils/prescription-trend-range.util';
 import { ANALYTICS_MONO_TABS_DT } from '@app/shared/utils/analytics-mono-tokens.util';
+import { downloadAnalyticsTabPdf } from '../pdf/analytics-pdf.util';
 
 type AnalyticsTabKey = 'summary' | 'medicines' | 'doctors' | 'trends' | 'patients';
 
 const ANALYTICS_TAB_KEYS: AnalyticsTabKey[] = ['summary', 'medicines', 'doctors', 'trends', 'patients'];
+
+const ANALYTICS_TAB_TITLES: Record<AnalyticsTabKey, string> = {
+  summary: 'Executive Summary',
+  medicines: 'Medicine & Prescription',
+  doctors: 'Doctor Performance',
+  trends: 'Prescription Trends',
+  patients: 'Patient Analytics',
+};
 
 /**
  * US-072–076: the Admin analytics suite. One page, five tabs (matching the reference
@@ -40,6 +50,7 @@ const ANALYTICS_TAB_KEYS: AnalyticsTabKey[] = ['summary', 'medicines', 'doctors'
 export class AnalyticsDashboardComponent implements OnInit {
   activeTab: AnalyticsTabKey = 'summary';
   private loadedTabs = new Set<AnalyticsTabKey>();
+  exportingPdf = false;
 
   /** Scoped design-token override so the tab indicator/active-tab text match this page's monochromatic teal instead of the app's global primary color — see analytics-mono-tokens.util.ts. */
   readonly tabsDt = ANALYTICS_MONO_TABS_DT;
@@ -93,6 +104,7 @@ export class AnalyticsDashboardComponent implements OnInit {
     private route: ActivatedRoute,
     private router: Router,
     private breadcrumbService: BreadcrumbService,
+    private toast: ToastService,
   ) {}
 
   ngOnInit(): void {
@@ -391,5 +403,19 @@ export class AnalyticsDashboardComponent implements OnInit {
     this.patientCustomFrom = range.from;
     this.patientCustomTo = range.to;
     this.loadPatientAnalytics(false);
+  }
+
+  async onDownloadPdf(): Promise<void> {
+    if (this.exportingPdf) return;
+
+    this.exportingPdf = true;
+    try {
+      await downloadAnalyticsTabPdf(this.activeTab, ANALYTICS_TAB_TITLES[this.activeTab]);
+    } catch (err) {
+      console.error('Analytics PDF export failed', err);
+      this.toast.error({ detail: 'Could not generate the PDF. Please try again.' });
+    } finally {
+      this.exportingPdf = false;
+    }
   }
 }

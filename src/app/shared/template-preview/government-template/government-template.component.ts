@@ -30,6 +30,8 @@ export class GovernmentTemplateComponent {
 
   @Input() editable = false;
   @Input() document: IPrescriptionDocument | null = null;
+  /** When true, keep the signature block visually empty (no image, no scribble placeholder) — the public QR verification page uses this so the doctor's signature is never revealed to a scanner. */
+  @Input() hideSignature = false;
   @Output() contentChange = new EventEmitter<IPrescriptionContent>();
 
   get content(): IPrescriptionContent {

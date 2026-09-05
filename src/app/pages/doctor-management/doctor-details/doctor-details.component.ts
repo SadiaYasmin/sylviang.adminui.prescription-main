@@ -102,7 +102,7 @@ export class DoctorDetailsComponent implements OnInit {
     return resolvePrescriptionTrendRange(this.rangePreset, this.customFrom, this.customTo);
   }
 
-  /** Total Prescriptions card → Consultations, this doctor, the page's selected date range. */
+  /** Completed Prescription card → Consultations, this doctor, the page's selected date range. */
   get consultationsFilteredQueryParams(): Record<string, string | number> {
     const { from, to } = this.resolveRange();
     return { doctorId: this.doctorId!, dateMode: 'Range', fromDate: from, toDate: to };

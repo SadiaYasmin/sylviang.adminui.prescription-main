@@ -106,9 +106,14 @@
           </tr>
         </thead>
         <tbody>
-          <tr *ngFor="let m of a.rarelyUsedMedicines">
+          <tr *ngFor="let m of rarelyUsedMedicines">
             <td class="px-4 py-2">{{ m.name }}</td>
             <td class="px-4 py-2 text-right font-medium">{{ m.count }}</td>
+          </tr>
+          <tr *ngIf="rarelyUsedTruncated">
+            <td colspan="2" class="px-4 py-2 text-xs text-muted-color">
+              Showing the {{ rarelyUsedDisplayLimit }} rarest of {{ a.rarelyUsedMedicines.length }} rarely used medicines.
+            </td>
           </tr>
           <tr *ngIf="a.rarelyUsedMedicines.length === 0">
             <td colspan="2" class="px-4 py-6 text-center text-muted-color">Nothing rarely used.</td>

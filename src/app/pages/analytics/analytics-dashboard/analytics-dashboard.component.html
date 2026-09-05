@@ -1,5 +1,10 @@
 <section class="page-container">
-  <h2 class="text-xl font-semibold mb-4 analytics-heading">Analytics &amp; Reports</h2>
+  <div class="flex items-center justify-between gap-3 mb-4">
+    <h2 class="text-xl font-semibold analytics-heading truncate">Analytics &amp; Reports</h2>
+    <button type="button" pButton size="small" icon="fa-solid fa-download" class="shrink-0 whitespace-nowrap" [loading]="exportingPdf" (click)="onDownloadPdf()">
+      Download PDF
+    </button>
+  </div>
 
   <p-tabs [value]="activeTab" [dt]="tabsDt" (valueChange)="onTabChange($event)">
     <p-tablist>
@@ -12,72 +17,82 @@
 
     <p-tabpanels>
       <p-tabpanel value="summary">
-        <app-executive-summary-tab
-          [summary]="summary"
-          [loading]="summaryLoading"
-          [rangePreset]="summaryRangePreset"
-          [rangeFrom]="summaryRangeFrom"
-          [rangeTo]="summaryRangeTo"
-          (rangePresetChange)="onSummaryRangePresetChange($event)"
-          (customRangeChange)="onSummaryCustomRangeChange($event)"
-        ></app-executive-summary-tab>
+        <div data-pdf-tab="summary">
+          <app-executive-summary-tab
+            [summary]="summary"
+            [loading]="summaryLoading"
+            [rangePreset]="summaryRangePreset"
+            [rangeFrom]="summaryRangeFrom"
+            [rangeTo]="summaryRangeTo"
+            (rangePresetChange)="onSummaryRangePresetChange($event)"
+            (customRangeChange)="onSummaryCustomRangeChange($event)"
+          ></app-executive-summary-tab>
+        </div>
       </p-tabpanel>
 
       <p-tabpanel value="medicines">
-        <app-medicine-prescription-tab
-          [analytics]="medicineAnalytics"
-          [loading]="medicineLoading"
-          [trend]="medicineTrend"
-          [trendLoading]="medicineTrendLoading"
-          [trendGranularity]="medicineTrendGranularity"
-          [trendRangePreset]="medicineTrendRangePreset"
-          [rangeFrom]="medicineRangeFrom"
-          [rangeTo]="medicineRangeTo"
-          (trendGranularityChange)="onMedicineTrendGranularityChange($event)"
-          (trendRangePresetChange)="onMedicineTrendRangePresetChange($event)"
-          (trendCustomRangeChange)="onMedicineTrendCustomRangeChange($event)"
-        ></app-medicine-prescription-tab>
+        <div data-pdf-tab="medicines">
+          <app-medicine-prescription-tab
+            [analytics]="medicineAnalytics"
+            [loading]="medicineLoading"
+            [trend]="medicineTrend"
+            [trendLoading]="medicineTrendLoading"
+            [trendGranularity]="medicineTrendGranularity"
+            [trendRangePreset]="medicineTrendRangePreset"
+            [rangeFrom]="medicineRangeFrom"
+            [rangeTo]="medicineRangeTo"
+            (trendGranularityChange)="onMedicineTrendGranularityChange($event)"
+            (trendRangePresetChange)="onMedicineTrendRangePresetChange($event)"
+            (trendCustomRangeChange)="onMedicineTrendCustomRangeChange($event)"
+          ></app-medicine-prescription-tab>
+        </div>
       </p-tabpanel>
 
       <p-tabpanel value="doctors">
-        <app-doctor-performance-tab
-          [leaderboard]="doctorPerfLeaderboard"
-          [loading]="doctorPerfLoading"
-          [rangePreset]="doctorPerfRangePreset"
-          (rangePresetChange)="onDoctorPerfRangePresetChange($event)"
-          (customRangeChange)="onDoctorPerfCustomRangeChange($event)"
-        ></app-doctor-performance-tab>
+        <div data-pdf-tab="doctors">
+          <app-doctor-performance-tab
+            [leaderboard]="doctorPerfLeaderboard"
+            [loading]="doctorPerfLoading"
+            [rangePreset]="doctorPerfRangePreset"
+            (rangePresetChange)="onDoctorPerfRangePresetChange($event)"
+            (customRangeChange)="onDoctorPerfCustomRangeChange($event)"
+          ></app-doctor-performance-tab>
+        </div>
       </p-tabpanel>
 
       <p-tabpanel value="trends">
-        <app-prescription-trends-tab
-          [trend]="trend"
-          [granularity]="trendGranularity"
-          [rangePreset]="trendRangePreset"
-          [loading]="trendLoading"
-          (granularityChange)="onTrendGranularityChange($event)"
-          (rangePresetChange)="onTrendRangePresetChange($event)"
-          (customRangeChange)="onTrendCustomRangeChange($event)"
-          [leaderboard]="trendsLeaderboard"
-          [leaderboardLoading]="trendsLeaderboardLoading"
-          [busiestHours]="trendsBusiestHours"
-          [busiestHoursLoading]="trendsBusiestHoursLoading"
-        ></app-prescription-trends-tab>
+        <div data-pdf-tab="trends">
+          <app-prescription-trends-tab
+            [trend]="trend"
+            [granularity]="trendGranularity"
+            [rangePreset]="trendRangePreset"
+            [loading]="trendLoading"
+            (granularityChange)="onTrendGranularityChange($event)"
+            (rangePresetChange)="onTrendRangePresetChange($event)"
+            (customRangeChange)="onTrendCustomRangeChange($event)"
+            [leaderboard]="trendsLeaderboard"
+            [leaderboardLoading]="trendsLeaderboardLoading"
+            [busiestHours]="trendsBusiestHours"
+            [busiestHoursLoading]="trendsBusiestHoursLoading"
+          ></app-prescription-trends-tab>
+        </div>
       </p-tabpanel>
 
       <p-tabpanel value="patients">
-        <app-patient-analytics-tab
-          [analytics]="patientAnalytics"
-          [loading]="patientLoading"
-          [trendLoading]="patientTrendLoading"
-          [trendGranularity]="patientTrendGranularity"
-          (trendGranularityChange)="onPatientTrendGranularityChange($event)"
-          [rangePreset]="patientRangePreset"
-          [rangeFrom]="patientRangeFrom"
-          [rangeTo]="patientRangeTo"
-          (rangePresetChange)="onPatientRangePresetChange($event)"
-          (customRangeChange)="onPatientCustomRangeChange($event)"
-        ></app-patient-analytics-tab>
+        <div data-pdf-tab="patients">
+          <app-patient-analytics-tab
+            [analytics]="patientAnalytics"
+            [loading]="patientLoading"
+            [trendLoading]="patientTrendLoading"
+            [trendGranularity]="patientTrendGranularity"
+            (trendGranularityChange)="onPatientTrendGranularityChange($event)"
+            [rangePreset]="patientRangePreset"
+            [rangeFrom]="patientRangeFrom"
+            [rangeTo]="patientRangeTo"
+            (rangePresetChange)="onPatientRangePresetChange($event)"
+            (customRangeChange)="onPatientCustomRangeChange($event)"
+          ></app-patient-analytics-tab>
+        </div>
       </p-tabpanel>
     </p-tabpanels>
   </p-tabs>

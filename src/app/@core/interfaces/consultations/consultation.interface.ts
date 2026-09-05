@@ -59,6 +59,25 @@ export interface IAssignedDoctorSummary {
   fullName: string;
 }
 
+export interface ISuggestDoctorRequest {
+  patientNote: string;
+}
+
+export interface ISuggestedDoctor {
+  doctorId: number;
+  fullName: string;
+  department: string | null;
+  specialization: string | null;
+  currentQueueLength: number;
+  reasoning: string;
+}
+
+export interface ISuggestDoctorResponse {
+  suggestions: ISuggestedDoctor[];
+  summary: string | null;
+  aiUsed: boolean;
+}
+
 export interface IConsultationListRequest {
   page?: number;
   pageSize?: number;

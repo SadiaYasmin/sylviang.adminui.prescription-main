@@ -14,6 +14,7 @@ import { InputTextModule } from 'primeng/inputtext';
 import { SelectModule } from 'primeng/select';
 import { SkeletonModule } from 'primeng/skeleton';
 import { TableModule } from 'primeng/table';
+import { TextareaModule } from 'primeng/textarea';
 import { CreateConsultationDialogComponent } from './create-consultation-dialog/create-consultation-dialog.component';
 import { ManagePatientComponent } from './manage-patient/manage-patient.component';
 import { PatientListComponent } from './patient-list/patient-list.component';
@@ -39,6 +40,7 @@ import { PatientManagementRoutingModule } from './patient-management-routing.mod
     InputNumberModule,
     DialogModule,
     ConfirmDialogModule,
+    TextareaModule,
   ],
 })
 export class PatientManagementModule {}

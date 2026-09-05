@@ -167,10 +167,13 @@
         <div class="qr-caption">{{ qrMessage }}</div>
       </div>
       <div class="signature-block">
-        <img *ngIf="document?.doctor?.signatureUrl" [src]="document!.doctor.signatureUrl | assetUrl" class="signature-image" alt="Doctor's signature" />
-        <svg *ngIf="!document?.doctor?.signatureUrl" class="signature-scribble" viewBox="0 0 160 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <path d="M6 24 C 20 6, 30 6, 34 20 S 46 30, 54 16 C 60 6, 70 8, 72 20 C 74 28, 84 26, 92 14 C 100 4, 118 6, 124 18 C 128 26, 140 24, 154 12" stroke="#334155" stroke-width="1.6" stroke-linecap="round" />
-        </svg>
+        <ng-container *ngIf="!hideSignature">
+          <img *ngIf="document?.doctor?.signatureUrl" [src]="document!.doctor.signatureUrl | assetUrl" class="signature-image" alt="Doctor's signature" />
+          <svg *ngIf="!document?.doctor?.signatureUrl" class="signature-scribble" viewBox="0 0 160 34" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path d="M6 24 C 20 6, 30 6, 34 20 S 46 30, 54 16 C 60 6, 70 8, 72 20 C 74 28, 84 26, 92 14 C 100 4, 118 6, 124 18 C 128 26, 140 24, 154 12" stroke="#334155" stroke-width="1.6" stroke-linecap="round" />
+          </svg>
+        </ng-container>
+        <div class="signature-empty" *ngIf="hideSignature" aria-hidden="true"></div>
         <div class="signature-line">
           <div class="signature-name">{{ document ? document.doctor.fullName : '[Doctor Name]' }}</div>
           <div class="signature-caption">{{ label('doctorSignature', "Doctor's Signature") }}</div>

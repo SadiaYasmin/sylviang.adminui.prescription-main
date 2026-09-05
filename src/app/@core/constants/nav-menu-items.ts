@@ -127,6 +127,7 @@ export const webSidebarMenuItems: IMenuItem[] = [
     subItems: [
       {
         href: '/templates/template-list',
+        activeMatch: '/templates/manage-template',
         title: 'Template List',
         active: false,
         icon: 'fa-solid fa-list',

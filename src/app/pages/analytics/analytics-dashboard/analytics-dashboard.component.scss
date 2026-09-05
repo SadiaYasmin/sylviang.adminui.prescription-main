@@ -41,3 +41,14 @@
 .analytics-heading {
   color: var(--analytics-heading);
 }
+
+// On narrow viewports the 5-tab row is wider than the page. `.p-tablist-content` is meant
+// to scroll internally (that's how PrimeNG Tabs normally handles overflow) but computes to
+// `overflow-x: visible` here, so the row instead overflows the whole page — dragging the
+// header/Download button sideways with it as the user scrolls to reach a hidden tab.
+// Scoping the scroll to the tab row itself fixes both: tabs become reachable via their own
+// scrollbar, and the header stays put.
+:host ::ng-deep .p-tablist-content {
+  overflow-x: auto;
+  scrollbar-width: thin;
+}
